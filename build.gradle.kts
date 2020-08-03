@@ -44,9 +44,9 @@ fun updateEnvironment(task: JavaExec, environmentFile: String) {
     file(environmentFile)
         .readLines()
         .map { it.split("=") }
-        .forEach {
-            check(it.size == 2) { "Should be 2 elements for transforming into pair" }
-            val (key, value) = it[0] to it[1]
+        .forEach { list ->
+            check(list.size == 2) { "Should be 2 elements for transforming into pair" }
+            val (key, value) = list
             task.environment(key, value)
         }
 }
