@@ -2,7 +2,10 @@ package slack.server
 
 import com.slack.api.bolt.App
 import combine
+import core.model.PollAuthor
 import core.model.PollType
+import core.model.SingleChoicePoll
+import core.model.base.VotingTime
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import slack.service.SlackPollCreationRepository
@@ -27,15 +30,16 @@ open class SlackAppConfiguration(
     }
 
     private fun registerPollCreation(app: App) {
-        app.command("/liquid") { _, context ->
+        app.command("/liquid") { request, context ->
             provider.client(context.asyncClient())
+
 
             val audienceFuture = provider.usersList().combine(provider.conversationsList())
             val (users, channels) = audienceFuture.get()
 
             val view = CreatePollView(
                 PollType.DEFAULT,
-                MOCK.OPTIONS,
+                listOf(),
                 users,
                 channels
             )
@@ -45,7 +49,7 @@ open class SlackAppConfiguration(
             context.ack()
         }
 
-        app.viewSubmission(CreationIDConstants.CREATION_VIEW_CALLBACK) { request, context ->
+        app.viewSubmission(CreationIDConstants.CREATION_VIEW_SUBMISSION_CALLBACK) { request, context ->
             provider.client(context.asyncClient())
             /*
             val state = request.payload.view.state
@@ -59,9 +63,24 @@ open class SlackAppConfiguration(
             context.ack()
         }
 
+        app.viewSubmission(CreationIDConstants.ADD_OPTION_VIEW_SUBMISSION_CALLBACK) { request, context ->
+            provider.client(context.asyncClient())
+            /*
+            val state = request.payload.view.state
+            val options = state.values.values.flatMap { id2StateMap ->
+                id2StateMap.entries.map {
+                    val id = it.key
+                    val content = it.value.value
+                    PollOption(id, content)
+                }
+            }
+            */
+            context.ack()
+        }
+
         app.blockAction(CreationIDConstants.SINGLE_POLL_ADD_CHOICE) { request, context ->
             provider.client(context.asyncClient())
-            val addView = AddOptionsPollView(MOCK.OPTIONS.map { it.content })
+            val addView = AddOptionsPollView(MOCK.OPTIONS)
             provider.pushView(addView, context.triggerId)
             context.ack()
         }
