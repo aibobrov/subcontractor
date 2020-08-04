@@ -5,7 +5,7 @@ import com.slack.api.model.view.View
 import com.slack.api.model.view.Views.*
 import core.model.PollOption
 import core.model.PollType
-import slack.model.SlackConversation
+import slack.model.SlackChannel
 import slack.model.SlackUser
 import slack.ui.base.SlackViewUIRepresentable
 
@@ -13,7 +13,7 @@ class CreatePollView(
     currentPollType: PollType,
     options: List<PollOption>,
     users: List<SlackUser>,
-    channels: List<SlackConversation>
+    channels: List<SlackChannel>
 ) : SlackViewUIRepresentable {
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)
     private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(users, channels)
@@ -24,6 +24,7 @@ class CreatePollView(
             .title(viewTitle { it.type("plain_text").text(VIEW_TITLE) })
             .close(viewClose { it.type("plain_text").text(VIEW_CLOSE_BUTTON_TITLE) })
             .submit(viewSubmit { it.type("plain_text").text(VIEW_CREATE_BUTTON_TITLE) })
+            .callbackId(CreationIDConstants.CREATION_VIEW_CALLBACK)
             .blocks(withBlocks {
                 createPollBlockView.representIn(this)
                 audiencePickerBlockView.representIn(this)

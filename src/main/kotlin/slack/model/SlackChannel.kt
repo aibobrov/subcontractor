@@ -1,6 +1,6 @@
 package slack.model
 
-data class SlackConversation(
+data class SlackChannel(
     val id: String,
     val name: String
 )

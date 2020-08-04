@@ -2,13 +2,13 @@ package slack.ui.create
 
 import com.slack.api.model.kotlin_extension.block.composition.dsl.OptionGroupObjectDsl
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
-import slack.model.SlackConversation
+import slack.model.SlackChannel
 import slack.model.SlackUser
 import slack.ui.base.SlackBlockUIRepresentable
 
 class CreatePollAudiencePickerBlockView(
     private val users: List<SlackUser>,
-    private val channels: List<SlackConversation>
+    private val channels: List<SlackChannel>
 ) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         buildAudienceSelect(builder)
@@ -16,8 +16,10 @@ class CreatePollAudiencePickerBlockView(
 
     private fun buildAudienceSelect(builder: LayoutBlockDsl) {
         builder.input {
+            blockId(CreationIDConstants.AUDIENCE_BLOCK_ID)
             label(AUDIENCE_HEADER_LABEL)
             multiStaticSelect {
+                actionId(CreationIDConstants.POLL_AUDIENCE)
                 placeholder(AUDIENCE_SELECT_PLACEHOLDER)
                 optionGroups {
                     buildAudienceUserOptionGroup(this)

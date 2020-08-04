@@ -28,9 +28,11 @@ class CreatePollBlockView(
 
     private fun buildQuestionInput(builder: LayoutBlockDsl) {
         builder.input {
+            blockId(CreationIDConstants.QUESTION_BLOCK_ID)
             label(QUESTION_SECTION_HEADER_TITLE)
             element {
                 plainTextInput {
+                    actionId(CreationIDConstants.POLL_QUESTION)
                     multiline(false)
                     placeholder(QUESTION_INPUT_PLACEHOLDER)
                 }
@@ -46,6 +48,7 @@ class CreatePollBlockView(
         private fun createPollSetupView(pollType: PollType, options: List<PollOption>): SlackBlockUIRepresentable {
             return when (pollType) {
                 PollType.SINGLE_CHOICE -> CreatePollSingleChoiceView(options)
+                PollType.AGREE_DISAGREE -> TODO()
             }
         }
     }

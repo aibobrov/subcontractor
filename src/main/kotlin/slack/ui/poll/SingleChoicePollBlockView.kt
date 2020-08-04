@@ -1,13 +1,11 @@
 package slack.ui.poll
 
-import com.slack.api.model.kotlin_extension.block.SectionBlockBuilder
 import com.slack.api.model.kotlin_extension.block.dsl.ContextBlockElementDsl
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.PollOption
 import core.model.SingleChoicePoll
 import core.model.VoterInfo
 import core.model.base.OptionID
-import core.model.base.Text
 import slack.ui.base.SlackBlockUIRepresentable
 
 
@@ -36,13 +34,13 @@ class SingleChoicePollBlockView(
 
     private fun buildTitle(builder: LayoutBlockDsl, poll: SingleChoicePoll) {
         builder.section {
-            buildText(this, poll.question)
+            plainText(poll.question)
         }
     }
 
-    private fun buildQuestionOption(builder: LayoutBlockDsl, poll: PollOption) {
+    private fun buildQuestionOption(builder: LayoutBlockDsl, option: PollOption) {
         builder.section {
-            buildText(this, poll.content)
+            plainText(option.content)
             accessory {
                 button {
                     text(VOTE_BUTTON_TITLE)

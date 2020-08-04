@@ -1,31 +1,32 @@
 import core.model.*
 import core.model.base.OptionID
-import core.model.base.Text
 import core.model.base.VotingTime
 
 object MOCK {
     val OPTIONS = listOf(
         PollOption(
             "1",
-            Text.Markdown("Ace Wasabi Rock-n-Roll Sushi Bar"),
+            "Ace Wasabi Rock-n-Roll Sushi Bar",
             "Some additional information"
         ),
         PollOption(
             "2",
-            Text.Markdown("Super Hungryman Hamburgers")
+            "Super Hungryman Hamburgers"
         ),
         PollOption(
             "3",
-            Text.Markdown("Kagawa-Ya Udon Noodle Shop")
+            "Kagawa-Ya Udon Noodle Shop"
         )
     )
     val POLL = SingleChoicePoll(
         "1",
-        Text.Markdown("Where should we order lunch from?"),
-        "-",
+        "Where should we order lunch from?",
         null,
         OPTIONS,
-        VotingTime.Unlimited
+        VotingTime.Unlimited,
+        listOf(),
+        false,
+        PollAuthor("1", "some_name")
     )
 
     val VOTERS: Map<OptionID, List<VoterInfo>> = mapOf(

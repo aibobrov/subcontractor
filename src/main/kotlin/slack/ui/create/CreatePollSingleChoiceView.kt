@@ -1,6 +1,5 @@
 package slack.ui.create
 
-import com.slack.api.model.kotlin_extension.block.composition.dsl.OptionObjectDsl
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.element.OverflowMenuElementBuilder
 import com.slack.api.model.kotlin_extension.block.element.StaticSelectElementBuilder
@@ -35,7 +34,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
             }
         }
         builder.section {
-            buildText(this, option.content)
+            plainText(option.content)
             accessory {
                 overflowMenu {
                     buildPollOptionOverflowMenu(this)
@@ -60,6 +59,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
         builder.actions {
             elements {
                 staticSelect {
+                    actionId(CreationIDConstants.POLL_TYPE)
                     buildStaticPollTypeSelect(this)
                     initialOption {
                         value(POLL_TYPE.name)
@@ -68,8 +68,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
                 }
                 button {
                     text(ADD_CHOICES_BUTTON_TITLE)
-                    actionId("single-option-poll-add")
-                    value("add some stuff")
+                    actionId(CreationIDConstants.SINGLE_POLL_ADD_CHOICE)
                 }
             }
         }
@@ -77,7 +76,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
 
 
     companion object {
-        private const val OVERFLOW_MOVE_LABEL = "⬇️  Move overflow label"
+        private const val OVERFLOW_MOVE_LABEL = "⬇️  Move option down"
         private const val OVERFLOW_EDIT_LABEL = "📝  Edit option"
         private const val OVERFLOW_DELETE_LABEL = "❌  Delete option"
         private val POLL_TYPE = PollType.SINGLE_CHOICE

@@ -1,18 +1,18 @@
-package slack.request
+package slack.service
 
 import com.slack.api.methods.AsyncMethodsClient
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.base.ChannelID
-import slack.model.SlackConversation
+import slack.model.SlackChannel
 import slack.model.SlackUser
 import java.util.concurrent.CompletableFuture
 
-class SlackRequestManagerProviderImpl : SlackRequestManagerProvider {
+class SlackRequestManagerProviderImpl : SlackRequestProvider {
     lateinit var methodsClient: AsyncMethodsClient
 
-    override fun client(methodsClient: AsyncMethodsClient): SlackRequestManagerProvider {
+    override fun client(methodsClient: AsyncMethodsClient): SlackRequestProvider {
         this.methodsClient = methodsClient
         return this
     }
@@ -51,12 +51,12 @@ class SlackRequestManagerProviderImpl : SlackRequestManagerProvider {
             .thenApply { Unit }
     }
 
-    override fun conversationsList(): CompletableFuture<List<SlackConversation>> {
+    override fun conversationsList(): CompletableFuture<List<SlackChannel>> {
         return methodsClient
             .conversationsList { it }
             .thenApply { response ->
                 response.channels.map {
-                    SlackConversation(it.id, "# ${it.nameNormalized}")
+                    SlackChannel(it.id, "# ${it.nameNormalized}")
                 }
             }
     }
@@ -66,7 +66,7 @@ class SlackRequestManagerProviderImpl : SlackRequestManagerProvider {
             .usersList { it }
             .thenApply { response ->
                 response.members
-                    .filter { !it.isDeleted }
+                    .filter { !it.isDeleted && !it.isBot }
                     .map {
                         SlackUser(it.id, it.name)
                     }

@@ -1,16 +1,16 @@
-package slack.request
+package slack.service
 
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.methods.AsyncMethodsClient
 import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.base.ChannelID
-import slack.model.SlackConversation
+import slack.model.SlackChannel
 import slack.model.SlackUser
 import java.util.concurrent.CompletableFuture
 
-interface SlackRequestManagerProvider {
-    fun client(methodsClient: AsyncMethodsClient): SlackRequestManagerProvider
+interface SlackRequestProvider {
+    fun client(methodsClient: AsyncMethodsClient): SlackRequestProvider
 
     fun openView(view: UIRepresentable<View>, triggerID: String): CompletableFuture<Unit>
 
@@ -18,7 +18,7 @@ interface SlackRequestManagerProvider {
 
     fun postChatMessage(view: UIRepresentable<List<LayoutBlock>>, channelID: ChannelID): CompletableFuture<Unit>
 
-    fun conversationsList(): CompletableFuture<List<SlackConversation>>
+    fun conversationsList(): CompletableFuture<List<SlackChannel>>
 
     fun usersList(): CompletableFuture<List<SlackUser>>
 }
