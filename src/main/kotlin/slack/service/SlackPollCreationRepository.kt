@@ -1,11 +1,11 @@
 package slack.service
 
-import core.model.base.Poll
+import core.model.PollBuilder
 
 interface SlackPollCreationRepository {
-    fun put(viewId: String, poll: Poll)
+    fun put(viewId: String, poll: PollBuilder)
 
-    fun get(viewId: String): Poll?
+    fun get(viewId: String): PollBuilder?
 
     fun remove(viewId: String)
 }

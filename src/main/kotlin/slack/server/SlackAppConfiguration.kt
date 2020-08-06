@@ -2,11 +2,7 @@ package slack.server
 
 import com.slack.api.bolt.App
 import combine
-import core.model.PollAuthor
-import core.model.PollOption
-import core.model.PollType
-import core.model.SingleChoicePoll
-import core.model.base.VotingTime
+import core.model.*
 import core.model.storage.LiquidPollRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,13 +12,14 @@ import slack.model.*
 import slack.ui.create.*
 import slack.ui.poll.SingleChoicePollBlockView
 import java.util.*
+import kotlin.IllegalArgumentException
+import kotlin.coroutines.coroutineContext
 
 // TODO: Poll view factory -- fun createPollView(type: PollType): UIRepresentable<View>
 // TODO: error handling (zero poll options not allowed)
 // TODO: Creation poll date
 // TODO: Chat poll view with author, date, vote view
 // TODO: research for types of delegation button/picker
-// TODO: Poll builder
 // TODO: Support poll types switching
 @Configuration
 open class SlackAppConfiguration(
@@ -55,18 +52,13 @@ open class SlackAppConfiguration(
                 channels
             )
 
-            val poll = SingleChoicePoll(
+            val pollBuilder = PollBuilder(
                 id = metadata.pollID,
-                question = "",
-                description = null,
-                options = listOf(),
-                votingTime = VotingTime.Unlimited,
-                tags = listOf(),
-                isFinished = false,
-                author = PollAuthor(request.payload.userId, request.payload.userName)
+                author = PollAuthor(request.payload.userId, request.payload.userName),
+                type = PollType.SINGLE_CHOICE
             )
 
-            creationRepository.put(metadata.pollID, poll)
+            creationRepository.put(metadata.pollID, pollBuilder)
 
             provider.openView(view, context.triggerId)
 
@@ -75,8 +67,9 @@ open class SlackAppConfiguration(
 
         app.viewSubmission(CreationConstants.CallbackID.CREATION_VIEW_SUBMISSION) { request, context ->
             provider.client(context.asyncClient())
+
             val state = request.payload.view.state
-            val question = state.let {
+            val newQuestion = state.let {
                 it.values[CreationConstants.BlockID.QUESTION]?.get(CreationConstants.ActionID.POLL_QUESTION)?.value
             }!!
 
@@ -88,14 +81,27 @@ open class SlackAppConfiguration(
                 CreationMetadata::class.java
             )
 
-            val poll = creationRepository.get(metadata.pollID) as SingleChoicePoll
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
 
-            val newPoll = poll.copy(question = question)
+            if (pollBuilder.options.isEmpty()) {
+                val audienceFuture = provider.usersList().combine(provider.conversationsList())
+                val (users, channels) = audienceFuture.get()
+                val newView = CreatePollView(
+                    metadata, pollBuilder.type, pollBuilder.options, users, channels, listOf(SlackError.EmptyOptions)
+                )
+                provider.updateView(newView, request.payload.view.id)
+                return@viewSubmission context.ackWithErrors(mutableMapOf())
+            }
+
+            val newPoll = pollBuilder.apply {
+                question = newQuestion
+            }.build()
 
             creationRepository.remove(metadata.pollID)
 
             liquidPollRepository.put(metadata.pollID, newPoll)
 
+            // sending messages
             val regex = "# (\\w+)".toPattern()
             val (channels, users) = audience.fold(mutableListOf<SlackChannel>() to mutableListOf<SlackUser>()) { acc, value ->
                 val matcher = regex.matcher(value.text.text)
@@ -109,7 +115,9 @@ open class SlackAppConfiguration(
                 acc
             }
 
-            val pollView = SingleChoicePollBlockView(newPoll, mapOf())
+            check(newPoll.type == PollType.SINGLE_CHOICE) // TODO: remove after poll type feature
+
+            val pollView = SingleChoicePollBlockView(newPoll as SingleChoicePoll, mapOf())
             for (channel in channels) {
                 provider.postChatMessage(pollView, channel.id)
             }
@@ -124,7 +132,7 @@ open class SlackAppConfiguration(
         app.viewSubmission(CreationConstants.CallbackID.ADD_OPTION_VIEW_SUBMISSION) { request, context ->
             provider.client(context.asyncClient())
             val state = request.payload.view.state
-            val options = state.values.values.flatMap { id2StateMap ->
+            val newOptions = state.values.values.flatMap { id2StateMap ->
                 id2StateMap.entries.map {
                     val id = it.key
                     val content = it.value.value
@@ -137,15 +145,15 @@ open class SlackAppConfiguration(
                 CreationMetadata::class.java
             )
 
-            val poll = creationRepository.get(metadata.pollID) as SingleChoicePoll
-            val newPoll = poll.copy(options = options)
-            creationRepository.put(metadata.pollID, newPoll)
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val newPollBuilder = pollBuilder.apply { options = newOptions }
+            creationRepository.put(metadata.pollID, newPollBuilder)
 
 
             val parentViewId = request.payload.view.previousViewId
             val audienceFuture = provider.usersList().combine(provider.conversationsList())
             val (users, channels) = audienceFuture.get()
-            val newView = CreatePollView(metadata, newPoll.type, newPoll.options, users, channels)
+            val newView = CreatePollView(metadata, newPollBuilder.type, newPollBuilder.options, users, channels)
             provider.updateView(newView, parentViewId)
             context.ack()
         }
@@ -155,15 +163,18 @@ open class SlackAppConfiguration(
                 request.payload.view.privateMetadata,
                 CreationMetadata::class.java
             )
-            val poll = creationRepository.get(metadata.pollID) as SingleChoicePoll
-            val newPoll = poll.copy(options = poll.options + PollOption(UUID.randomUUID().toString(), ""))
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+
+            val newPollBuilder = pollBuilder.apply {
+                options = options + PollOption(UUID.randomUUID().toString(), "")
+            }
             val addView = AddOptionsPollView(
                 metadata,
-                newPoll.options
+                newPollBuilder.options
             )
 
             provider.client(context.asyncClient()).pushView(addView, context.triggerId)
-            creationRepository.put(metadata.pollID, newPoll)
+            creationRepository.put(metadata.pollID, newPollBuilder)
             context.ack()
         }
 
@@ -173,24 +184,37 @@ open class SlackAppConfiguration(
                 request.payload.view.privateMetadata,
                 CreationMetadata::class.java
             )
-            val poll = creationRepository.get(metadata.pollID) as SingleChoicePoll
-            val newPoll = poll.copy(options = poll.options + PollOption(UUID.randomUUID().toString(), ""))
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+
+            val newPollBuilder = pollBuilder.apply {
+                options = pollBuilder.options + PollOption(UUID.randomUUID().toString(), "")
+            }
+
             val addView = AddOptionsPollView(
                 metadata,
-                newPoll.options
+                newPollBuilder.options
             )
 
             provider.updateView(addView, request.payload.view.id)
-            creationRepository.put(metadata.pollID, newPoll)
+            creationRepository.put(metadata.pollID, newPollBuilder)
             context.ack()
         }
 
         app.blockAction(CreationConstants.ActionID.POLL_TYPE) { request, context ->
             provider.client(context.asyncClient())
-            /*
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+
             val action = request.payload.actions.first()
             val pollType = PollType.valueOf(action.selectedOption.value)
-            */
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val newPollBuilder = pollBuilder.apply {
+                type = pollType
+            }
+            creationRepository.put(metadata.pollID, newPollBuilder)
+
             context.ack()
         }
     }

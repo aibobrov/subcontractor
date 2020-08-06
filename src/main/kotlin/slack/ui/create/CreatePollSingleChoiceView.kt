@@ -53,7 +53,6 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
                     }
                 }
             }
-
         }
 
         builder.actions {

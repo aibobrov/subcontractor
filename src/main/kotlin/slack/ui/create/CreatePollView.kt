@@ -6,6 +6,7 @@ import com.slack.api.model.view.Views.*
 import core.model.PollOption
 import core.model.PollType
 import slack.model.SlackChannel
+import slack.model.SlackError
 import slack.model.SlackUser
 import slack.ui.base.SlackViewUIRepresentable
 
@@ -14,10 +15,12 @@ class CreatePollView(
     currentPollType: PollType,
     options: List<PollOption>,
     users: List<SlackUser>,
-    channels: List<SlackChannel>
+    channels: List<SlackChannel>,
+    errors: List<SlackError> = listOf()
 ) : SlackViewUIRepresentable {
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)
     private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(users, channels)
+    private val errorBlockView = ErrorBlockView(errors)
 
     override fun representIn(builder: View.ViewBuilder) {
         builder
@@ -29,6 +32,7 @@ class CreatePollView(
             .privateMetadata(CreationConstants.GSON.toJson(metadata))
             .blocks(withBlocks {
                 createPollBlockView.representIn(this)
+                errorBlockView.representIn(this)
                 audiencePickerBlockView.representIn(this)
             })
 
