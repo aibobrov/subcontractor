@@ -5,7 +5,10 @@ import com.slack.api.model.view.Views.*
 import core.model.PollOption
 import slack.ui.base.SlackViewUIRepresentable
 
-class AddOptionsPollView(choices: List<PollOption>) : SlackViewUIRepresentable {
+class AddOptionsPollView(
+    private val metadata: CreationMetadata,
+    choices: List<PollOption>
+) : SlackViewUIRepresentable {
     private val blockView = AddOptionsPollBlockView(choices)
 
     override fun representIn(builder: View.ViewBuilder) {
@@ -14,7 +17,8 @@ class AddOptionsPollView(choices: List<PollOption>) : SlackViewUIRepresentable {
             .submit(viewSubmit { it.text(VIEW_CREATE_BUTTON_TITLE).type("plain_text") })
             .close(viewClose { it.text(VIEW_CLOSE_BUTTON_TITLE).type("plain_text") })
             .title(viewTitle { it.text(VIEW_TITLE).type("plain_text") })
-            .callbackId(CreationIDConstants.ADD_OPTION_VIEW_SUBMISSION_CALLBACK)
+            .callbackId(CreationConstants.CallbackID.ADD_OPTION_VIEW_SUBMISSION)
+            .privateMetadata(CreationConstants.GSON.toJson(metadata))
             .blocks(blockView.representation())
     }
 

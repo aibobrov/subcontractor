@@ -1,11 +1,8 @@
-package slack.service
+package core.model.storage
 
 import core.model.base.Poll
 
-interface SlackPollCreationRepository {
+interface LiquidPollRepository {
     fun put(viewId: String, poll: Poll)
-
     fun get(viewId: String): Poll?
-
-    fun remove(viewId: String)
 }

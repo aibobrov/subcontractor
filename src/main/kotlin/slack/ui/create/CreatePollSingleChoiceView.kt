@@ -59,7 +59,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
         builder.actions {
             elements {
                 staticSelect {
-                    actionId(CreationIDConstants.POLL_TYPE)
+                    actionId(CreationConstants.ActionID.POLL_TYPE)
                     buildStaticPollTypeSelect(this)
                     initialOption {
                         value(POLL_TYPE.name)
@@ -68,7 +68,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
                 }
                 button {
                     text(ADD_CHOICES_BUTTON_TITLE)
-                    actionId(CreationIDConstants.SINGLE_POLL_ADD_CHOICE)
+                    actionId(CreationConstants.ActionID.SINGLE_POLL_ADD_CHOICE)
                 }
             }
         }

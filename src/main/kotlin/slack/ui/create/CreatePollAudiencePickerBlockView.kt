@@ -16,10 +16,10 @@ class CreatePollAudiencePickerBlockView(
 
     private fun buildAudienceSelect(builder: LayoutBlockDsl) {
         builder.input {
-            blockId(CreationIDConstants.AUDIENCE_BLOCK_ID)
+            blockId(CreationConstants.BlockID.AUDIENCE)
             label(AUDIENCE_HEADER_LABEL)
             multiStaticSelect {
-                actionId(CreationIDConstants.POLL_AUDIENCE)
+                actionId(CreationConstants.ActionID.POLL_AUDIENCE)
                 placeholder(AUDIENCE_SELECT_PLACEHOLDER)
                 optionGroups {
                     buildAudienceUserOptionGroup(this)

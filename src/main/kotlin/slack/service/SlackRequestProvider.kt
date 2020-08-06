@@ -5,6 +5,7 @@ import com.slack.api.methods.AsyncMethodsClient
 import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.base.ChannelID
+import core.model.base.UserID
 import slack.model.SlackChannel
 import slack.model.SlackUser
 import java.util.concurrent.CompletableFuture
@@ -16,7 +17,11 @@ interface SlackRequestProvider {
 
     fun pushView(view: UIRepresentable<View>, triggerID: String): CompletableFuture<Unit>
 
+    fun updateView(view: UIRepresentable<View>, viewId: String): CompletableFuture<Unit>
+
     fun postChatMessage(view: UIRepresentable<List<LayoutBlock>>, channelID: ChannelID): CompletableFuture<Unit>
+
+    fun postDirectMessage(view: UIRepresentable<List<LayoutBlock>>, userID: UserID): CompletableFuture<Unit>
 
     fun conversationsList(): CompletableFuture<List<SlackChannel>>
 

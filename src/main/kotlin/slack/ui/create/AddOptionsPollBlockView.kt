@@ -18,7 +18,7 @@ class AddOptionsPollBlockView(private val choices: List<PollOption>) : SlackBloc
             markdownText(optionLabelInfoTitle(count))
             accessory {
                 button {
-                    actionId(CreationIDConstants.ADD_NEW_OPTION_BUTTON)
+                    actionId(CreationConstants.ActionID.ADD_NEW_OPTION_BUTTON)
                     text(ADD_OPTION_TITLE_BUTTON)
                 }
             }
@@ -38,6 +38,7 @@ class AddOptionsPollBlockView(private val choices: List<PollOption>) : SlackBloc
             plainTextInput {
                 multiline(false)
                 initialValue(option.content)
+                minLength(0)
                 actionId(option.id)
             }
         }

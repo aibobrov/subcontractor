@@ -3,8 +3,10 @@ package slack.service
 import com.slack.api.methods.AsyncMethodsClient
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
+import combine
 import core.UIRepresentable
 import core.model.base.ChannelID
+import core.model.base.UserID
 import slack.model.SlackChannel
 import slack.model.SlackUser
 import java.util.concurrent.CompletableFuture
@@ -27,6 +29,15 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             .thenApply { Unit }
     }
 
+    override fun updateView(view: UIRepresentable<View>, viewId: String): CompletableFuture<Unit> {
+        return methodsClient
+            .viewsUpdate {
+                it
+                    .viewId(viewId)
+                    .view(view.representation())
+            }
+            .thenApply { Unit }
+    }
 
     override fun pushView(view: UIRepresentable<View>, triggerID: String): CompletableFuture<Unit> {
         return methodsClient
@@ -49,6 +60,16 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                     .channel(channelID)
             }
             .thenApply { Unit }
+    }
+
+    override fun postDirectMessage(view: UIRepresentable<List<LayoutBlock>>, userID: UserID): CompletableFuture<Unit> {
+        return methodsClient
+            .conversationsOpen {
+                it.users(listOf(userID))
+            }
+            .thenCompose { response ->
+                postChatMessage(view, response.channel.id)
+            }
     }
 
     override fun conversationsList(): CompletableFuture<List<SlackChannel>> {
