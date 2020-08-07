@@ -3,7 +3,6 @@ package slack.service
 import com.slack.api.methods.AsyncMethodsClient
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
-import combine
 import core.UIRepresentable
 import core.model.base.ChannelID
 import core.model.base.UserID

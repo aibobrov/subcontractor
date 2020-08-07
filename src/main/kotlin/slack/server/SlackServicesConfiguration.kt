@@ -4,10 +4,7 @@ import core.model.storage.LiquidPollRepository
 import core.model.storage.LiquidPollRepositoryImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import slack.service.SlackPollCreationRepository
-import slack.service.SlackPollCreationRepositoryImpl
-import slack.service.SlackRequestManagerProviderImpl
-import slack.service.SlackRequestProvider
+import slack.service.*
 
 @Configuration
 open class SlackServicesConfiguration {

@@ -5,6 +5,7 @@ import com.slack.api.model.kotlin_extension.block.element.OverflowMenuElementBui
 import com.slack.api.model.kotlin_extension.block.element.StaticSelectElementBuilder
 import core.model.PollOption
 import core.model.PollType
+import slack.model.OptionAction
 import slack.ui.base.SlackBlockUIRepresentable
 
 class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackBlockUIRepresentable {
@@ -16,28 +17,33 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
     }
 
     private fun buildPollOptions(builder: LayoutBlockDsl) {
-        options.forEach { buildPollOption(builder, it) }
+        options.forEachIndexed { index, option ->
+            buildPollOption(builder, option, index == options.size - 1)
+        }
     }
 
-    private fun buildPollOption(builder: LayoutBlockDsl, option: PollOption) {
-        fun buildPollOptionOverflowMenu(builder: OverflowMenuElementBuilder) {
+    private fun buildPollOption(builder: LayoutBlockDsl, option: PollOption, isLast: Boolean) {
+        fun buildPollOptionOverflowMenu(builder: OverflowMenuElementBuilder, isLast: Boolean) {
             builder.options {
                 option {
+                    value(OptionAction.DELETE.name)
                     plainText(OVERFLOW_DELETE_LABEL, emoji = true)
                 }
-                option {
-                    plainText(OVERFLOW_EDIT_LABEL, emoji = true)
-                }
-                option {
-                    plainText(OVERFLOW_MOVE_LABEL, emoji = true)
+                if (!isLast) {
+                    option {
+                        value(OptionAction.MOVE_DOWN.name)
+                        plainText(OVERFLOW_MOVE_LABEL, emoji = true)
+                    }
                 }
             }
         }
         builder.section {
+            blockId(option.id)
             plainText(option.content)
             accessory {
                 overflowMenu {
-                    buildPollOptionOverflowMenu(this)
+                    actionId(CreationConstants.ActionID.OPTION_ACTION_OVERFLOW)
+                    buildPollOptionOverflowMenu(this, isLast)
                 }
             }
         }
@@ -67,7 +73,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
                 }
                 button {
                     text(ADD_CHOICES_BUTTON_TITLE)
-                    actionId(CreationConstants.ActionID.SINGLE_POLL_ADD_CHOICE)
+                    actionId(CreationConstants.ActionID.SINGLE_POLL_EDIT_CHOICE)
                 }
             }
         }
@@ -76,9 +82,8 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
 
     companion object {
         private const val OVERFLOW_MOVE_LABEL = "⬇️  Move option down"
-        private const val OVERFLOW_EDIT_LABEL = "📝  Edit option"
         private const val OVERFLOW_DELETE_LABEL = "❌  Delete option"
         private val POLL_TYPE = PollType.SINGLE_CHOICE
-        private const val ADD_CHOICES_BUTTON_TITLE = "Add choices"
+        private const val ADD_CHOICES_BUTTON_TITLE = "Edit choices"
     }
 }

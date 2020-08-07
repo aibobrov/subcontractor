@@ -6,8 +6,8 @@ import core.model.PollBuilder
 class SlackPollCreationRepositoryImpl : SlackPollCreationRepository {
     private val storage: MutableMap<String, PollBuilder> = mutableMapOf()
 
-    override fun put(viewId: String, poll: PollBuilder) {
-        storage[viewId] = poll
+    override fun put(viewId: String, pollBuilder: PollBuilder) {
+        storage[viewId] = pollBuilder
     }
 
     override fun get(viewId: String): PollBuilder? {

@@ -1,7 +1,8 @@
 package slack.server
 
 import com.slack.api.bolt.App
-import combine
+import utils.combine
+import utils.swap
 import core.model.*
 import core.model.storage.LiquidPollRepository
 import org.springframework.context.annotation.Bean
@@ -12,11 +13,9 @@ import slack.model.*
 import slack.ui.create.*
 import slack.ui.poll.SingleChoicePollBlockView
 import java.util.*
-import kotlin.IllegalArgumentException
-import kotlin.coroutines.coroutineContext
 
-// TODO: Poll view factory -- fun createPollView(type: PollType): UIRepresentable<View>
-// TODO: error handling (zero poll options not allowed)
+import kotlin.IllegalArgumentException
+
 // TODO: Creation poll date
 // TODO: Chat poll view with author, date, vote view
 // TODO: research for types of delegation button/picker
@@ -158,7 +157,7 @@ open class SlackAppConfiguration(
             context.ack()
         }
 
-        app.blockAction(CreationConstants.ActionID.SINGLE_POLL_ADD_CHOICE) { request, context ->
+        app.blockAction(CreationConstants.ActionID.SINGLE_POLL_EDIT_CHOICE) { request, context ->
             val metadata = GSON.fromJson(
                 request.payload.view.privateMetadata,
                 CreationMetadata::class.java
@@ -166,7 +165,11 @@ open class SlackAppConfiguration(
             val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
 
             val newPollBuilder = pollBuilder.apply {
-                options = options + PollOption(UUID.randomUUID().toString(), "")
+                options = if (options.isEmpty()) {
+                    options + PollOption(UUID.randomUUID().toString(), "")
+                } else {
+                    options
+                }
             }
             val addView = AddOptionsPollView(
                 metadata,
@@ -197,6 +200,38 @@ open class SlackAppConfiguration(
 
             provider.updateView(addView, request.payload.view.id)
             creationRepository.put(metadata.pollID, newPollBuilder)
+            context.ack()
+        }
+
+        app.blockAction(CreationConstants.ActionID.OPTION_ACTION_OVERFLOW) { request, context ->
+            provider.client(context.asyncClient())
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+
+            val action = request.payload.actions.first()
+            val optionID = action.blockId
+            val optionAction = OptionAction.valueOf(action.selectedOption.value)
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val index = pollBuilder.options.indexOfFirst { it.id == optionID }
+            val newOptions = pollBuilder.options.toMutableList()
+            when (optionAction) {
+                OptionAction.DELETE -> newOptions.removeAt(index)
+                OptionAction.MOVE_DOWN -> newOptions.swap(index, index + 1)
+            }
+
+            val newBuilder = pollBuilder.apply { options = newOptions }
+            creationRepository.put(metadata.pollID, newBuilder)
+
+            val audienceFuture = provider.usersList().combine(provider.conversationsList())
+            val (users, channels) = audienceFuture.get()
+            val newView = CreatePollView(
+                metadata, pollBuilder.type, pollBuilder.options, users, channels
+            )
+            provider.updateView(newView, request.payload.view.id)
+
+
             context.ack()
         }
 
