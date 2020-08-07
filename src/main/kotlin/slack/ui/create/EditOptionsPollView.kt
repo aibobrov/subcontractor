@@ -5,11 +5,11 @@ import com.slack.api.model.view.Views.*
 import core.model.PollOption
 import slack.ui.base.SlackViewUIRepresentable
 
-class AddOptionsPollView(
+class EditOptionsPollView(
     private val metadata: CreationMetadata,
     choices: List<PollOption>
 ) : SlackViewUIRepresentable {
-    private val blockView = AddOptionsPollBlockView(choices)
+    private val blockView = EditOptionsPollBlockView(choices)
 
     override fun representIn(builder: View.ViewBuilder) {
         builder

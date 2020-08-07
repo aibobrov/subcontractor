@@ -12,6 +12,9 @@ import slack.service.SlackRequestProvider
 import slack.model.*
 import slack.ui.create.*
 import slack.ui.poll.SingleChoicePollBlockView
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 
 import kotlin.IllegalArgumentException
@@ -43,19 +46,22 @@ open class SlackAppConfiguration(
             val (users, channels) = audienceFuture.get()
 
             val metadata = CreationMetadata(UUID.randomUUID().toString())
-            val view = CreatePollView(
-                metadata,
-                PollType.DEFAULT,
-                listOf(),
-                users,
-                channels
-            )
-
             val pollBuilder = PollBuilder(
                 id = metadata.pollID,
                 author = PollAuthor(request.payload.userId, request.payload.userName),
                 type = PollType.SINGLE_CHOICE
             )
+            val view = CreatePollView(
+                metadata,
+                pollBuilder.advancedOption,
+                PollType.DEFAULT,
+                listOf(),
+                pollBuilder.startTime,
+                pollBuilder.finishTime,
+                users,
+                channels
+            )
+
 
             creationRepository.put(metadata.pollID, pollBuilder)
 
@@ -86,7 +92,15 @@ open class SlackAppConfiguration(
                 val audienceFuture = provider.usersList().combine(provider.conversationsList())
                 val (users, channels) = audienceFuture.get()
                 val newView = CreatePollView(
-                    metadata, pollBuilder.type, pollBuilder.options, users, channels, listOf(SlackError.EmptyOptions)
+                    metadata,
+                    pollBuilder.advancedOption,
+                    pollBuilder.type,
+                    pollBuilder.options,
+                    pollBuilder.startTime,
+                    pollBuilder.finishTime,
+                    users,
+                    channels,
+                    listOf(SlackError.EmptyOptions)
                 )
                 provider.updateView(newView, request.payload.view.id)
                 return@viewSubmission context.ackWithErrors(mutableMapOf())
@@ -152,7 +166,16 @@ open class SlackAppConfiguration(
             val parentViewId = request.payload.view.previousViewId
             val audienceFuture = provider.usersList().combine(provider.conversationsList())
             val (users, channels) = audienceFuture.get()
-            val newView = CreatePollView(metadata, newPollBuilder.type, newPollBuilder.options, users, channels)
+            val newView = CreatePollView(
+                metadata,
+                newPollBuilder.advancedOption,
+                newPollBuilder.type,
+                newPollBuilder.options,
+                newPollBuilder.startTime,
+                newPollBuilder.finishTime,
+                users,
+                channels
+            )
             provider.updateView(newView, parentViewId)
             context.ack()
         }
@@ -171,7 +194,7 @@ open class SlackAppConfiguration(
                     options
                 }
             }
-            val addView = AddOptionsPollView(
+            val addView = EditOptionsPollView(
                 metadata,
                 newPollBuilder.options
             )
@@ -193,7 +216,7 @@ open class SlackAppConfiguration(
                 options = pollBuilder.options + PollOption(UUID.randomUUID().toString(), "")
             }
 
-            val addView = AddOptionsPollView(
+            val addView = EditOptionsPollView(
                 metadata,
                 newPollBuilder.options
             )
@@ -227,7 +250,14 @@ open class SlackAppConfiguration(
             val audienceFuture = provider.usersList().combine(provider.conversationsList())
             val (users, channels) = audienceFuture.get()
             val newView = CreatePollView(
-                metadata, pollBuilder.type, pollBuilder.options, users, channels
+                metadata,
+                pollBuilder.advancedOption,
+                pollBuilder.type,
+                pollBuilder.options,
+                pollBuilder.startTime,
+                pollBuilder.finishTime,
+                users,
+                channels
             )
             provider.updateView(newView, request.payload.view.id)
 
@@ -250,6 +280,188 @@ open class SlackAppConfiguration(
             }
             creationRepository.put(metadata.pollID, newPollBuilder)
 
+            context.ack()
+        }
+
+        app.blockAction(CreationConstants.ActionID.START_DATE_PICKER) { request, context ->
+            provider.client(context.asyncClient())
+            val selectedDateString = request.payload.actions.first().selectedDate
+            val selectedDate = LocalDate.parse(selectedDateString, CreationConstants.DATE_FORMATTER)
+
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            pollBuilder.startTime = (pollBuilder.startTime ?: LocalDateTime.now())
+                .withMonth(selectedDate.monthValue)
+                .withYear(selectedDate.year)
+                .withDayOfMonth(selectedDate.dayOfMonth)
+            context.ack()
+        }
+
+        app.blockAction(CreationConstants.ActionID.FINISH_DATE_PICKER) { request, context ->
+            provider.client(context.asyncClient())
+            val selectedDateString = request.payload.actions.first().selectedDate
+            val selectedDate = LocalDate.parse(selectedDateString, CreationConstants.DATE_FORMATTER)
+
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            pollBuilder.finishTime = (pollBuilder.finishTime ?: LocalDateTime.now())
+                .withMonth(selectedDate.monthValue)
+                .withYear(selectedDate.year)
+                .withDayOfMonth(selectedDate.dayOfMonth)
+            context.ack()
+        }
+
+        app.blockAction(CreationConstants.ActionID.START_TIME_PICKER) { request, context ->
+            val selectedTimeString = request.payload.actions.first().selectedOption.value
+            val selectedTime = LocalTime.parse(selectedTimeString, CreationConstants.TIME_FORMATTER)
+            provider.client(context.asyncClient())
+
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            pollBuilder.startTime = (pollBuilder.startTime ?: LocalDateTime.now())
+                .withHour(selectedTime.hour)
+                .withMinute(selectedTime.minute)
+                .withSecond(0)
+            context.ack()
+        }
+        app.blockAction(CreationConstants.ActionID.FINISH_TIME_PICKER) { request, context ->
+            provider.client(context.asyncClient())
+            val selectedTimeString = request.payload.actions.first().selectedOption.value
+            val selectedTime = LocalTime.parse(selectedTimeString, CreationConstants.TIME_FORMATTER)
+            provider.client(context.asyncClient())
+
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            pollBuilder.finishTime = (pollBuilder.finishTime ?: LocalDateTime.now())
+                .withHour(selectedTime.hour)
+                .withMinute(selectedTime.minute)
+                .withSecond(0)
+            context.ack()
+        }
+        app.blockAction(CreationConstants.ActionID.ANONYMOUS_TOGGLE) { request, context ->
+            provider.client(context.asyncClient())
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val newBuilder = pollBuilder.apply {
+                advancedOption = advancedOption.copy(isAnonymous = !advancedOption.isAnonymous)
+            }
+            creationRepository.put(metadata.pollID, newBuilder)
+            val audienceFuture = provider.usersList().combine(provider.conversationsList())
+            val (users, channels) = audienceFuture.get()
+            val newView = CreatePollView(
+                metadata,
+                pollBuilder.advancedOption,
+                pollBuilder.type,
+                pollBuilder.options,
+                pollBuilder.startTime,
+                pollBuilder.finishTime,
+                users,
+                channels
+            )
+            provider.updateView(newView, request.payload.view.id)
+
+
+            context.ack()
+        }
+
+        app.blockAction(CreationConstants.ActionID.SHOW_RESPONSES_TOGGLE) { request, context ->
+            provider.client(context.asyncClient())
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val newBuilder = pollBuilder.apply {
+                advancedOption = advancedOption.copy(showResponses = !advancedOption.showResponses)
+            }
+            creationRepository.put(metadata.pollID, newBuilder)
+
+
+            val audienceFuture = provider.usersList().combine(provider.conversationsList())
+            val (users, channels) = audienceFuture.get()
+            val newView = CreatePollView(
+                metadata,
+                pollBuilder.advancedOption,
+                pollBuilder.type,
+                pollBuilder.options,
+                pollBuilder.startTime,
+                pollBuilder.finishTime,
+                users,
+                channels
+            )
+            provider.updateView(newView, request.payload.view.id)
+
+            context.ack()
+        }
+        app.blockAction(CreationConstants.ActionID.START_TIME_TOGGLE) { request, context ->
+            provider.client(context.asyncClient())
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val newBuilder = pollBuilder.apply {
+                advancedOption = advancedOption.copy(startDateTimeEnabled = !advancedOption.startDateTimeEnabled)
+            }
+            creationRepository.put(metadata.pollID, newBuilder)
+
+            val audienceFuture = provider.usersList().combine(provider.conversationsList())
+            val (users, channels) = audienceFuture.get()
+
+            val newView = CreatePollView(
+                metadata,
+                pollBuilder.advancedOption,
+                pollBuilder.type,
+                pollBuilder.options,
+                pollBuilder.startTime,
+                pollBuilder.finishTime,
+                users,
+                channels
+            )
+            provider.updateView(newView, request.payload.view.id)
+            context.ack()
+        }
+        app.blockAction(CreationConstants.ActionID.FINISH_TIME_TOGGLE) { request, context ->
+            provider.client(context.asyncClient())
+            val metadata = GSON.fromJson(
+                request.payload.view.privateMetadata,
+                CreationMetadata::class.java
+            )
+            val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+            val newBuilder = pollBuilder.apply {
+                advancedOption = advancedOption.copy(finishDateTimeEnabled = !advancedOption.finishDateTimeEnabled)
+            }
+            creationRepository.put(metadata.pollID, newBuilder)
+
+
+            val audienceFuture = provider.usersList().combine(provider.conversationsList())
+            val (users, channels) = audienceFuture.get()
+            val newView = CreatePollView(
+                metadata,
+                pollBuilder.advancedOption,
+                pollBuilder.type,
+                pollBuilder.options,
+                pollBuilder.startTime,
+                pollBuilder.finishTime,
+                users,
+                channels
+            )
+            provider.updateView(newView, request.payload.view.id)
             context.ack()
         }
     }

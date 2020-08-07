@@ -4,7 +4,7 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.PollOption
 import slack.ui.base.SlackBlockUIRepresentable
 
-class AddOptionsPollBlockView(private val choices: List<PollOption>) : SlackBlockUIRepresentable {
+class EditOptionsPollBlockView(private val choices: List<PollOption>) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
             buildOptions(this, choices)

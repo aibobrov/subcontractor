@@ -2,6 +2,8 @@ package slack.ui.create
 
 import com.google.gson.Gson
 import com.slack.api.util.json.GsonFactory
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLBoundOperation
+import java.time.format.DateTimeFormatter
 
 object CreationConstants {
     object BlockID {
@@ -21,7 +23,18 @@ object CreationConstants {
         const val POLL_AUDIENCE = "POLL_AUDIENCE"
         const val POLL_QUESTION = "POLL_QUESTION"
         const val ADD_NEW_OPTION_BUTTON = "ADD_NEW_OPTION_BUTTON"
+        const val START_DATE_PICKER = "START_DATE_PICKER"
+        const val FINISH_DATE_PICKER = "FINISH_DATE_PICKER"
+        const val START_TIME_PICKER = "START_TIME_PICKER"
+        const val FINISH_TIME_PICKER = "FINISH_TIME_PICKER"
+
+        const val ANONYMOUS_TOGGLE = "ANONYMOUS_CHECKBOX"
+        const val SHOW_RESPONSES_TOGGLE = "SHOW_RESPONSES_CHECKBOX"
+        const val START_TIME_TOGGLE = "START_TIME_ENABLE"
+        const val FINISH_TIME_TOGGLE = "FINISH_TIME_ENABLE"
     }
 
+    val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+    val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     val GSON: Gson = GsonFactory.createSnakeCase()
 }

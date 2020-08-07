@@ -7,5 +7,7 @@ sealed class VotingTime {
 
     class Ranged(val range: ClosedRange<LocalDateTime>) : VotingTime()
 
+    class From(val date: LocalDateTime) : VotingTime()
+
     class UpTo(val date: LocalDateTime) : VotingTime()
 }
