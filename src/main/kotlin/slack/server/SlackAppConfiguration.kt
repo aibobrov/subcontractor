@@ -19,7 +19,6 @@ import java.util.*
 
 import kotlin.IllegalArgumentException
 
-// TODO: Creation poll date
 // TODO: Chat poll view with author, date, vote view
 // TODO: research for types of delegation button/picker
 // TODO: Support poll types switching

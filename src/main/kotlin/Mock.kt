@@ -26,7 +26,9 @@ object MOCK {
         VotingTime.Unlimited,
         listOf(),
         false,
-        PollAuthor("1", "some_name")
+        showResponses = false,
+        isAnonymous = false,
+        author = PollAuthor("1", "some_name")
     )
 
     val VOTERS: Map<OptionID, List<VoterInfo>> = mapOf(

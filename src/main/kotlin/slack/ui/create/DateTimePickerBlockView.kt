@@ -12,14 +12,14 @@ open class DateTimePickerBlockView(
     private val labelText: String,
     private val dateActionID: String,
     private val timeActionID: String,
-    private val currentDate: LocalDateTime,
+    private val currentDateTime: LocalDateTime,
     private val initialTime: LocalTime? = null,
     private val initialDate: LocalDate = LocalDate.now()
 ) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
-        val timeSelection = timeOptions(currentDate)
+        val timeSelection = timeOptions(currentDateTime)
         val times = if (timeSelection.isEmpty()) { // can be empty. Example: currentDate = 23:50
-            listOf(currentDate.toLocalTime())
+            listOf(currentDateTime.toLocalTime())
         } else {
             timeSelection
         }
@@ -68,9 +68,9 @@ open class DateTimePickerBlockView(
         const val DATE_PLACEHOLDER = "Select date"
         private const val TIME_INTERVAL: Long = 15
 
-        fun timeOptions(forDate: LocalDateTime): List<LocalTime> {
-            return if (LocalDateTime.now().toLocalDate().isEqual(forDate.toLocalDate())) {
-                DateUtils.timesBy(TIME_INTERVAL, forDate.toLocalTime())
+        fun timeOptions(fromDate: LocalDateTime): List<LocalTime> {
+            return if (LocalDateTime.now().toLocalDate().isEqual(fromDate.toLocalDate())) {
+                DateUtils.timesBy(TIME_INTERVAL, fromDate.toLocalTime())
             } else {
                 DateUtils.timesBy(TIME_INTERVAL)
             }
@@ -80,27 +80,27 @@ open class DateTimePickerBlockView(
 
 
 class StartDateTimePickerBlockView(
-    currentDate: LocalDateTime,
+    currentDateTime: LocalDateTime,
     initialTime: LocalTime? = null,
     initialDate: LocalDate = LocalDate.now()
 ) : DateTimePickerBlockView(
     "Send At",
     CreationConstants.ActionID.START_DATE_PICKER,
     CreationConstants.ActionID.START_TIME_PICKER,
-    currentDate,
+    currentDateTime,
     initialTime,
     initialDate
 )
 
 class FinishDateTimeBlockView(
-    currentDate: LocalDateTime,
+    currentDateTime: LocalDateTime,
     initialTime: LocalTime? = null,
     initialDate: LocalDate = LocalDate.now()
 ) : DateTimePickerBlockView(
     "Finish At",
     CreationConstants.ActionID.FINISH_DATE_PICKER,
     CreationConstants.ActionID.FINISH_TIME_PICKER,
-    currentDate,
+    currentDateTime,
     initialTime,
     initialDate
 )

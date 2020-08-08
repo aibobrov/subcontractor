@@ -6,7 +6,10 @@ import core.model.PollOption
 import core.model.SingleChoicePoll
 import core.model.VoterInfo
 import core.model.base.OptionID
+import core.model.base.VotingTime
 import slack.ui.base.SlackBlockUIRepresentable
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 
 class SingleChoicePollBlockView(
@@ -20,7 +23,9 @@ class SingleChoicePollBlockView(
             divider()
             buildPollOptions(this, poll)
             divider()
-            buildDelegateBlock(builder)
+            buildDelegateBlock(this)
+            divider()
+            buildContext(this, poll)
         }
     }
 
@@ -29,6 +34,15 @@ class SingleChoicePollBlockView(
             builder.context {
                 plainText(this@apply)
             }
+        }
+    }
+
+    private fun buildContext(builder: LayoutBlockDsl, poll: SingleChoicePoll) {
+        builder.context {
+            plainText(
+                "Owner @${poll.author.name} | 🕔  Closes: ${votingTime(poll.votingTime)} | ${anonymousText(poll.isAnonymous)}",
+                emoji = true
+            )
         }
     }
 
@@ -94,5 +108,25 @@ class SingleChoicePollBlockView(
                 else -> "$count votes"
             }
         }
+
+        fun votingTime(votingTime: VotingTime): String {
+            return when (votingTime) {
+                VotingTime.Unlimited -> "Never"
+                is VotingTime.From -> "Never"
+                is VotingTime.Ranged -> votingTime.range.endInclusive.format(DATE_TIME_FORMATTER)
+                is VotingTime.UpTo -> votingTime.date.format(DATE_TIME_FORMATTER)
+            }
+        }
+
+        fun anonymousText(flag: Boolean): String {
+            return if (flag) {
+                "🔒  Responses are Anonymous"
+            } else {
+                "🔓  Responses are Non-Anonymous"
+            }
+        }
+
+        val DATE_TIME_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
     }
 }

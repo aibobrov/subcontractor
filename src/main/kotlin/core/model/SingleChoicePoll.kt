@@ -12,6 +12,8 @@ data class SingleChoicePoll(
     override val votingTime: VotingTime,
     val tags: List<PollTag> = listOf(),
     val isFinished: Boolean = false,
+    val showResponses: Boolean,
+    val isAnonymous: Boolean,
     val author: PollAuthor
 ) : Poll {
     override val type: PollType

@@ -5,7 +5,6 @@ import core.model.base.PollID
 import core.model.base.PollTag
 import core.model.base.VotingTime
 import slack.model.PollAdvancedOption
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 
 class PollBuilder(
@@ -30,7 +29,16 @@ class PollBuilder(
     fun build(): Poll {
         return when (type) {
             PollType.SINGLE_CHOICE -> SingleChoicePoll(
-                id, question, description, options, votingTime(this), tags, isFinished, author
+                id,
+                question,
+                description,
+                options,
+                votingTime(this),
+                tags,
+                isFinished,
+                showResponses = advancedOption.showResponses,
+                isAnonymous = advancedOption.isAnonymous,
+                author = author
             )
             PollType.AGREE_DISAGREE -> TODO()
         }
@@ -40,8 +48,8 @@ class PollBuilder(
         fun votingTime(builder: PollBuilder): VotingTime {
             val startDateTimeEnabled = builder.advancedOption.startDateTimeEnabled
             val finishDateTimeEnabled = builder.advancedOption.finishDateTimeEnabled
-            val startTime = builder.startTime ?: throw IllegalArgumentException()
-            val finishTime = builder.finishTime ?: throw IllegalArgumentException()
+            val startTime = builder.startTime ?: LocalDateTime.now()
+            val finishTime = builder.finishTime ?: LocalDateTime.MAX
             return if (startDateTimeEnabled && finishDateTimeEnabled) {
                 VotingTime.Ranged(startTime..finishTime)
             } else if (startDateTimeEnabled) {
