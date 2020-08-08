@@ -2,10 +2,9 @@ package slack.ui.create
 
 import com.google.gson.Gson
 import com.slack.api.util.json.GsonFactory
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLBoundOperation
 import java.time.format.DateTimeFormatter
 
-object CreationConstants {
+object CreationConstant {
     object BlockID {
         const val AUDIENCE = "AUDIENCE_BLOCK_ID"
         const val QUESTION = "QUESTION_BLOCK_ID"
@@ -30,8 +29,8 @@ object CreationConstants {
 
         const val ANONYMOUS_TOGGLE = "ANONYMOUS_CHECKBOX"
         const val SHOW_RESPONSES_TOGGLE = "SHOW_RESPONSES_CHECKBOX"
-        const val START_TIME_TOGGLE = "START_TIME_ENABLE"
-        const val FINISH_TIME_TOGGLE = "FINISH_TIME_ENABLE"
+        const val START_DATETIME_TOGGLE = "START_TIME_ENABLE"
+        const val FINISH_DATETIME_TOGGLE = "FINISH_TIME_ENABLE"
     }
 
     val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE

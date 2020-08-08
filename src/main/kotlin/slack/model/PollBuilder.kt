@@ -1,10 +1,13 @@
-package core.model
+package slack.model
 
+import core.model.PollAuthor
+import core.model.PollOption
+import core.model.PollType
+import core.model.SingleChoicePoll
 import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.PollTag
 import core.model.base.VotingTime
-import slack.model.PollAdvancedOption
 import java.time.LocalDateTime
 
 class PollBuilder(

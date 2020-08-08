@@ -1,10 +1,8 @@
 package slack.ui.base
 
-import com.slack.api.model.kotlin_extension.block.SectionBlockBuilder
 import com.slack.api.model.kotlin_extension.block.container.MultiLayoutBlockContainer
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.view.View
-import com.slack.api.util.json.GsonFactory
 import core.BuildableUIRepresentable
 
 interface SlackBlockUIRepresentable : BuildableUIRepresentable<LayoutBlockDsl, SlackUI> {

@@ -17,8 +17,8 @@ class EditOptionsPollView(
             .submit(viewSubmit { it.text(VIEW_CREATE_BUTTON_TITLE).type("plain_text") })
             .close(viewClose { it.text(VIEW_CLOSE_BUTTON_TITLE).type("plain_text") })
             .title(viewTitle { it.text(VIEW_TITLE).type("plain_text") })
-            .callbackId(CreationConstants.CallbackID.ADD_OPTION_VIEW_SUBMISSION)
-            .privateMetadata(CreationConstants.GSON.toJson(metadata))
+            .callbackId(CreationConstant.CallbackID.ADD_OPTION_VIEW_SUBMISSION)
+            .privateMetadata(CreationConstant.GSON.toJson(metadata))
             .blocks(blockView.representation())
     }
 

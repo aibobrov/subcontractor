@@ -24,19 +24,19 @@ class AdvancedSettingsBlockView(
     }
 
     private fun buildStartPollDateOption(builder: BlockElementDsl, flag: Boolean) {
-        buildBinaryButton(builder, flag, START_TIME_ENABLE_TEXT, CreationConstants.ActionID.START_TIME_TOGGLE)
+        buildBinaryButton(builder, flag, START_TIME_ENABLE_TEXT, CreationConstant.ActionID.START_DATETIME_TOGGLE)
     }
 
     private fun buildFinishPollDateOption(builder: BlockElementDsl, flag: Boolean) {
-        buildBinaryButton(builder, flag, FINISH_TIME_ENABLE_TEXT, CreationConstants.ActionID.FINISH_TIME_TOGGLE)
+        buildBinaryButton(builder, flag, FINISH_TIME_ENABLE_TEXT, CreationConstant.ActionID.FINISH_DATETIME_TOGGLE)
     }
 
     private fun buildShowResponsesOption(builder: BlockElementDsl, flag: Boolean) {
-        buildBinaryButton(builder, flag, SHOW_RESPONSES_TEXT, CreationConstants.ActionID.SHOW_RESPONSES_TOGGLE)
+        buildBinaryButton(builder, flag, SHOW_RESPONSES_TEXT, CreationConstant.ActionID.SHOW_RESPONSES_TOGGLE)
     }
 
     private fun buildIsAnonymousOption(builder: BlockElementDsl, flag: Boolean) {
-        buildBinaryButton(builder, flag, ANONYMOUS_TEXT, CreationConstants.ActionID.ANONYMOUS_TOGGLE)
+        buildBinaryButton(builder, flag, ANONYMOUS_TEXT, CreationConstant.ActionID.ANONYMOUS_TOGGLE)
     }
 
     private fun buildBinaryButton(builder: BlockElementDsl, flag: Boolean, text: String, actionID: String) {

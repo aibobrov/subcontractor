@@ -46,8 +46,8 @@ class CreatePollView(
             .title(viewTitle { it.type("plain_text").text(VIEW_TITLE) })
             .close(viewClose { it.type("plain_text").text(VIEW_CLOSE_BUTTON_TITLE) })
             .submit(viewSubmit { it.type("plain_text").text(VIEW_CREATE_BUTTON_TITLE) })
-            .callbackId(CreationConstants.CallbackID.CREATION_VIEW_SUBMISSION)
-            .privateMetadata(CreationConstants.GSON.toJson(metadata))
+            .callbackId(CreationConstant.CallbackID.CREATION_VIEW_SUBMISSION)
+            .privateMetadata(CreationConstant.GSON.toJson(metadata))
             .blocks(withBlocks {
                 createPollBlockView.representIn(this)
                 errorBlockView.representIn(this)

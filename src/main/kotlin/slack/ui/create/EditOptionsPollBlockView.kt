@@ -18,7 +18,7 @@ class EditOptionsPollBlockView(private val choices: List<PollOption>) : SlackBlo
             markdownText(optionLabelInfoTitle(count))
             accessory {
                 button {
-                    actionId(CreationConstants.ActionID.ADD_NEW_OPTION_BUTTON)
+                    actionId(CreationConstant.ActionID.ADD_NEW_OPTION_BUTTON)
                     text(ADD_OPTION_TITLE_BUTTON)
                 }
             }

@@ -1,6 +1,6 @@
 package slack.service
 
-import core.model.PollBuilder
+import slack.model.PollBuilder
 
 interface SlackPollCreationRepository {
     fun put(viewId: String, pollBuilder: PollBuilder)

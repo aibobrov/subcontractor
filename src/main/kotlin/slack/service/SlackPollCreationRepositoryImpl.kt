@@ -1,6 +1,6 @@
 package slack.service
 
-import core.model.PollBuilder
+import slack.model.PollBuilder
 
 // in-memory storage
 class SlackPollCreationRepositoryImpl : SlackPollCreationRepository {

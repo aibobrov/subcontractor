@@ -28,11 +28,11 @@ class CreatePollBlockView(
 
     private fun buildQuestionInput(builder: LayoutBlockDsl) {
         builder.input {
-            blockId(CreationConstants.BlockID.QUESTION)
+            blockId(CreationConstant.BlockID.QUESTION)
             label(QUESTION_SECTION_HEADER_TITLE)
             element {
                 plainTextInput {
-                    actionId(CreationConstants.ActionID.POLL_QUESTION)
+                    actionId(CreationConstant.ActionID.POLL_QUESTION)
                     multiline(false)
                     placeholder(QUESTION_INPUT_PLACEHOLDER)
                 }

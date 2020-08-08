@@ -6,7 +6,7 @@
 
 2. Requesting scopes.
 
-Go to the your app settings -> OAuth & Permissions and select these scopes:
+Go to your app settings -> OAuth & Permissions and select these scopes:
 
 * `channels:read`
 * `chat:write`

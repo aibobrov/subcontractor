@@ -42,7 +42,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
             plainText(option.content)
             accessory {
                 overflowMenu {
-                    actionId(CreationConstants.ActionID.OPTION_ACTION_OVERFLOW)
+                    actionId(CreationConstant.ActionID.OPTION_ACTION_OVERFLOW)
                     buildPollOptionOverflowMenu(this, isLast)
                 }
             }
@@ -64,7 +64,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
         builder.actions {
             elements {
                 staticSelect {
-                    actionId(CreationConstants.ActionID.POLL_TYPE)
+                    actionId(CreationConstant.ActionID.POLL_TYPE)
                     buildStaticPollTypeSelect(this)
                     initialOption {
                         value(POLL_TYPE.name)
@@ -73,7 +73,7 @@ class CreatePollSingleChoiceView(private val options: List<PollOption>) : SlackB
                 }
                 button {
                     text(ADD_CHOICES_BUTTON_TITLE)
-                    actionId(CreationConstants.ActionID.SINGLE_POLL_EDIT_CHOICE)
+                    actionId(CreationConstant.ActionID.SINGLE_POLL_EDIT_CHOICE)
                 }
             }
         }

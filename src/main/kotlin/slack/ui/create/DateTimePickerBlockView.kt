@@ -38,7 +38,7 @@ open class DateTimePickerBlockView(
 
     private fun buildDatePicker(builder: BlockElementDsl, initialDate: LocalDate) {
         builder.datePicker {
-            initialDate(initialDate.format(CreationConstants.DATE_FORMATTER))
+            initialDate(initialDate.format(CreationConstant.DATE_FORMATTER))
             actionId(dateActionID)
             placeholder(DATE_PLACEHOLDER)
         }
@@ -50,14 +50,14 @@ open class DateTimePickerBlockView(
             options {
                 for (time in times) {
                     option {
-                        val formatted = time.format(CreationConstants.TIME_FORMATTER)
+                        val formatted = time.format(CreationConstant.TIME_FORMATTER)
                         plainText(formatted)
                         value(formatted)
                     }
                 }
             }
             initialOption {
-                val formatted = (initialTime ?: times.first()).format(CreationConstants.TIME_FORMATTER)
+                val formatted = (initialTime ?: times.first()).format(CreationConstant.TIME_FORMATTER)
                 plainText(formatted)
                 value(formatted)
             }
@@ -85,8 +85,8 @@ class StartDateTimePickerBlockView(
     initialDate: LocalDate = LocalDate.now()
 ) : DateTimePickerBlockView(
     "Send At",
-    CreationConstants.ActionID.START_DATE_PICKER,
-    CreationConstants.ActionID.START_TIME_PICKER,
+    CreationConstant.ActionID.START_DATE_PICKER,
+    CreationConstant.ActionID.START_TIME_PICKER,
     currentDateTime,
     initialTime,
     initialDate
@@ -98,8 +98,8 @@ class FinishDateTimeBlockView(
     initialDate: LocalDate = LocalDate.now()
 ) : DateTimePickerBlockView(
     "Finish At",
-    CreationConstants.ActionID.FINISH_DATE_PICKER,
-    CreationConstants.ActionID.FINISH_TIME_PICKER,
+    CreationConstant.ActionID.FINISH_DATE_PICKER,
+    CreationConstant.ActionID.FINISH_TIME_PICKER,
     currentDateTime,
     initialTime,
     initialDate

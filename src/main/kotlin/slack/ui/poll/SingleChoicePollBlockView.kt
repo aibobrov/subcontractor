@@ -40,7 +40,7 @@ class SingleChoicePollBlockView(
     private fun buildContext(builder: LayoutBlockDsl, poll: SingleChoicePoll) {
         builder.context {
             plainText(
-                "Owner @${poll.author.name} | 🕔  Closes: ${votingTime(poll.votingTime)} | ${anonymousText(poll.isAnonymous)}",
+                "Owner @${poll.author.name}  |  🕔  Closes: ${votingTime(poll.votingTime)}  |  ${anonymousText(poll.isAnonymous)}",
                 emoji = true
             )
         }
