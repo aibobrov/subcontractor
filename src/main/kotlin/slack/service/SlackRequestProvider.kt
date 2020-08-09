@@ -6,8 +6,10 @@ import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.base.ChannelID
 import core.model.base.UserID
+import slack.model.SlackAudience
 import slack.model.SlackChannel
 import slack.model.SlackUser
+import utils.combine
 import java.util.concurrent.CompletableFuture
 
 interface SlackRequestProvider {
@@ -26,4 +28,10 @@ interface SlackRequestProvider {
     fun conversationsList(): CompletableFuture<List<SlackChannel>>
 
     fun usersList(): CompletableFuture<List<SlackUser>>
+
+    fun audienceList(): CompletableFuture<SlackAudience> {
+        return usersList().combine(conversationsList()).thenApply {
+            SlackAudience(it.first, it.second)
+        }
+    }
 }

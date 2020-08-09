@@ -3,13 +3,13 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.PollOption
+import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.create.CreationMetadata
 import slack.ui.create.CreationConstant
-import slack.ui.create.EditOptionsPollView
 import java.util.*
 
 class SlackPollEditOptionAddOptionAction(
@@ -23,18 +23,18 @@ class SlackPollEditOptionAddOptionAction(
     override val actionID: String = CreationConstant.ActionID.ADD_NEW_OPTION_BUTTON
 
     override fun handle(metadata: CreationMetadata, content: SlackPollEditOptionAddOptionData) {
-        val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+        val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
 
-        pollBuilder.apply {
-            options = pollBuilder.options + PollOption(UUID.randomUUID().toString(), "")
+        builder.apply {
+            options = builder.options + PollOption(UUID.randomUUID().toString(), "")
         }
 
-        val addView = EditOptionsPollView(
+        val view = ViewFactory.editOptionsView(
             metadata,
-            pollBuilder.options
+            builder
         )
 
-        provider.updateView(addView, content.viewID)
+        provider.updateView(view, content.viewID)
     }
 }
 

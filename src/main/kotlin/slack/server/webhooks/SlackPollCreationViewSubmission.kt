@@ -6,19 +6,14 @@ import com.slack.api.model.view.ViewState
 import core.model.PollType
 import core.model.SingleChoicePoll
 import core.model.storage.LiquidPollRepository
-import slack.model.PollBuilder
-import slack.model.SlackChannel
-import slack.model.SlackError
-import slack.model.SlackUser
+import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
 import slack.server.base.SlackViewSubmissionWebhook
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreatePollView
 import slack.ui.create.CreationConstant
 import slack.ui.create.CreationMetadata
 import slack.ui.poll.SingleChoicePollBlockView
-import utils.combine
 
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
@@ -32,28 +27,20 @@ class SlackPollCreationViewSubmission(
     override val callbackID: String = CreationConstant.CallbackID.CREATION_VIEW_SUBMISSION
 
     override fun handle(metadata: CreationMetadata, content: CreationViewSubmissionData) {
-        val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
-        val errors = checkPoll(pollBuilder)
+        val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+        val errors = SlackPollBuilderValidator.validate(builder)
+
+        // TODO: fix bugs ackWithError
         if (errors.isNotEmpty()) {
-            val audienceFuture = provider.usersList().combine(provider.conversationsList())
-            audienceFuture.thenAccept {
-                val (users, channels) = it
-                val view = CreatePollView(
-                    metadata,
-                    pollBuilder.advancedOption,
-                    pollBuilder.type,
-                    pollBuilder.options,
-                    pollBuilder.startTime,
-                    pollBuilder.finishTime,
-                    users,
-                    channels,
-                    errors
-                )
+            val audienceFuture = provider.audienceList()
+            audienceFuture.thenAccept { audience ->
+                val view = ViewFactory.creationView(metadata, builder, audience, errors)
                 provider.updateView(view, content.viewID)
             }
-            return
+
+            throw SlackError.Multiple(errors)
         }
-        val newPoll = pollBuilder.apply { question = content.question }.build()
+        val newPoll = builder.apply { question = content.question }.build()
 
         creationRepository.remove(metadata.pollID)
 
@@ -69,16 +56,6 @@ class SlackPollCreationViewSubmission(
         for (user in content.selectedUsers) {
             provider.postDirectMessage(pollView, user.id)
         }
-    }
-
-    private fun checkPoll(pollBuilder: PollBuilder): List<SlackError> {
-        fun checkOptions(): SlackError? {
-            if (pollBuilder.options.isEmpty())
-                return SlackError.EmptyOptions
-            return null
-        }
-
-        return listOfNotNull(checkOptions())
     }
 }
 

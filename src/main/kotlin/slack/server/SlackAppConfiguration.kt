@@ -4,7 +4,7 @@ import com.slack.api.bolt.App
 import core.model.storage.LiquidPollRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import slack.server.base.AppRegistrable
+import slack.server.base.RegistrableWebhook
 import slack.server.webhooks.*
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
@@ -40,7 +40,7 @@ open class SlackAppConfiguration(
     @Bean
     open fun initSlackApp(): App {
         val app = App()
-        val webhooks: List<AppRegistrable> = listOf(
+        val webhooks: List<RegistrableWebhook> = listOf(
             liquidCommand,
             creationSubmission,
             liquidCommand,

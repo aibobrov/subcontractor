@@ -2,15 +2,15 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import slack.model.PollBuilder
+import slack.model.SlackPollBuilder
+import slack.model.SlackPollBuilderValidator
+import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreatePollView
-import slack.ui.create.CreationMetadata
 import slack.ui.create.CreationConstant
-import utils.combine
+import slack.ui.create.CreationMetadata
 
 abstract class SlackPollCreationAdvancedSettingsAction(
     provider: SlackRequestProvider,
@@ -21,28 +21,18 @@ abstract class SlackPollCreationAdvancedSettingsAction(
     CreationMetadata::class.java
 ) {
     override fun handle(metadata: CreationMetadata, content: SlackPollCreationAdvancedSettingsData) {
-        val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
-        updateBuilder(pollBuilder, content)
+        val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+        updateBuilder(builder, content)
 
-        val audienceFuture = provider.usersList().combine(provider.conversationsList())
-        audienceFuture.thenAccept {
-            val (users, channels) = it
-            val view = CreatePollView(
-                metadata,
-                pollBuilder.advancedOption,
-                pollBuilder.type,
-                pollBuilder.options,
-                pollBuilder.startTime,
-                pollBuilder.finishTime,
-                users,
-                channels
-            )
+        val audienceFuture = provider.audienceList()
+        audienceFuture.thenAccept { audience ->
+            val errors = SlackPollBuilderValidator.validate(builder)
+            val view = ViewFactory.creationView(metadata, builder, audience, errors)
             provider.updateView(view, content.viewID)
         }
-
     }
 
-    abstract fun updateBuilder(builder: PollBuilder, content: SlackPollCreationAdvancedSettingsData)
+    abstract fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData)
 }
 
 data class SlackPollCreationAdvancedSettingsData(val viewID: String) {
@@ -62,7 +52,7 @@ class SlackPollCreationAnonymousSettingAction(
 ) : SlackPollCreationAdvancedSettingsAction(provider, creationRepository) {
     override val actionID: String = CreationConstant.ActionID.ANONYMOUS_TOGGLE
 
-    override fun updateBuilder(builder: PollBuilder, content: SlackPollCreationAdvancedSettingsData) {
+    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
             advancedOption = advancedOption.copy(isAnonymous = !advancedOption.isAnonymous)
         }
@@ -75,7 +65,7 @@ class SlackPollCreationShowResponsesSettingAction(
 ) : SlackPollCreationAdvancedSettingsAction(provider, creationRepository) {
     override val actionID: String = CreationConstant.ActionID.SHOW_RESPONSES_TOGGLE
 
-    override fun updateBuilder(builder: PollBuilder, content: SlackPollCreationAdvancedSettingsData) {
+    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
             advancedOption = advancedOption.copy(showResponses = !advancedOption.showResponses)
         }
@@ -88,7 +78,7 @@ class SlackPollCreationFinishDateTimeSettingAction(
 ) : SlackPollCreationAdvancedSettingsAction(provider, creationRepository) {
     override val actionID: String = CreationConstant.ActionID.FINISH_DATETIME_TOGGLE
 
-    override fun updateBuilder(builder: PollBuilder, content: SlackPollCreationAdvancedSettingsData) {
+    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
             advancedOption = advancedOption.copy(finishDateTimeEnabled = !advancedOption.finishDateTimeEnabled)
         }
@@ -101,7 +91,7 @@ class SlackPollCreationStartDateTimeSettingAction(
 ) : SlackPollCreationAdvancedSettingsAction(provider, creationRepository) {
     override val actionID: String = CreationConstant.ActionID.START_DATETIME_TOGGLE
 
-    override fun updateBuilder(builder: PollBuilder, content: SlackPollCreationAdvancedSettingsData) {
+    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
             advancedOption = advancedOption.copy(startDateTimeEnabled = !advancedOption.startDateTimeEnabled)
         }

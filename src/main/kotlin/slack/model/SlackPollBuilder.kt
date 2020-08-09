@@ -10,7 +10,7 @@ import core.model.base.PollTag
 import core.model.base.VotingTime
 import java.time.LocalDateTime
 
-class PollBuilder(
+class SlackPollBuilder(
     val id: PollID,
     val author: PollAuthor,
     var type: PollType
@@ -48,7 +48,7 @@ class PollBuilder(
     }
 
     companion object {
-        fun votingTime(builder: PollBuilder): VotingTime {
+        fun votingTime(builder: SlackPollBuilder): VotingTime {
             val startDateTimeEnabled = builder.advancedOption.startDateTimeEnabled
             val finishDateTimeEnabled = builder.advancedOption.finishDateTimeEnabled
             val startTime = builder.startTime ?: LocalDateTime.now()

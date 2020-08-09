@@ -2,15 +2,14 @@ package slack.server.base
 
 import com.slack.api.bolt.App
 
-// TODO: rename interface
-interface AppRegistrable {
+interface RegistrableWebhook {
     fun registerIn(app: App)
 }
 
-interface SlackMetadataWebhook<Content, Metadata> : AppRegistrable {
+interface SlackMetadataWebhook<Content, Metadata> : RegistrableWebhook {
     fun handle(metadata: Metadata, content: Content)
 }
 
-interface SlackWebhook<Content> : AppRegistrable {
+interface SlackWebhook<Content> : RegistrableWebhook {
     fun handle(content: Content)
 }

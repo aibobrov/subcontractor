@@ -3,14 +3,14 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.model.OptionAction
+import slack.model.SlackPollBuilderValidator
+import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreatePollView
 import slack.ui.create.CreationConstant
 import slack.ui.create.CreationMetadata
-import utils.combine
 import utils.swap
 
 class SlackPollCreationSingleChoicePollOverflowAction(
@@ -24,31 +24,23 @@ class SlackPollCreationSingleChoicePollOverflowAction(
     override val actionID: String = CreationConstant.ActionID.OPTION_ACTION_OVERFLOW
 
     override fun handle(metadata: CreationMetadata, content: SlackPollCreationSingleChoicePollOverflowData) {
-        val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
-        val optionIndex = pollBuilder.options.indexOfFirst { it.id == content.optionID }
+        val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+        val optionIndex = builder.options.indexOfFirst { it.id == content.optionID }
 
-        val newOptions = pollBuilder.options.toMutableList()
+        val newOptions = builder.options.toMutableList()
         when (content.optionAction) {
             OptionAction.DELETE -> newOptions.removeAt(optionIndex)
             OptionAction.MOVE_DOWN -> newOptions.swap(optionIndex, optionIndex + 1)
         }
-        pollBuilder.apply { options = newOptions }
+        builder.apply { options = newOptions }
 
-        val audienceFuture = provider.usersList().combine(provider.conversationsList())
-        audienceFuture.thenAccept {
-            val (users, channels) = it
-            val view = CreatePollView(
-                metadata,
-                pollBuilder.advancedOption,
-                pollBuilder.type,
-                pollBuilder.options,
-                pollBuilder.startTime,
-                pollBuilder.finishTime,
-                users,
-                channels
-            )
+        val audienceFuture = provider.audienceList()
+        audienceFuture.thenAccept { audience ->
+            val errors = SlackPollBuilderValidator.validate(builder)
+            val view = ViewFactory.creationView(metadata, builder, audience, errors)
             provider.updateView(view, content.viewID)
         }
+
     }
 }
 

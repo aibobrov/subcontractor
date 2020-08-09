@@ -1,16 +1,16 @@
 package slack.service
 
-import slack.model.PollBuilder
+import slack.model.SlackPollBuilder
 
 // in-memory storage
 class SlackPollCreationRepositoryImpl : SlackPollCreationRepository {
-    private val storage: MutableMap<String, PollBuilder> = mutableMapOf()
+    private val storage: MutableMap<String, SlackPollBuilder> = mutableMapOf()
 
-    override fun put(viewId: String, pollBuilder: PollBuilder) {
-        storage[viewId] = pollBuilder
+    override fun put(viewId: String, builder: SlackPollBuilder) {
+        storage[viewId] = builder
     }
 
-    override fun get(viewId: String): PollBuilder? {
+    override fun get(viewId: String): SlackPollBuilder? {
         return storage[viewId]
     }
 

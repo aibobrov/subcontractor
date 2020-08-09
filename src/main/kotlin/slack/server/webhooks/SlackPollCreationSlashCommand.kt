@@ -3,17 +3,16 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.PollAuthor
-import slack.model.PollBuilder
+import slack.model.SlackPollBuilder
 import core.model.PollType
+import slack.model.SlackPollBuilderValidator
+import slack.model.ViewFactory
 import slack.server.base.SlackSlashCommandDataFactory
 import slack.server.base.SlackSlashCommandWebhook
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreatePollView
 import slack.ui.create.CreationMetadata
-import utils.combine
 import java.util.*
-
 
 class SlackPollCreationSlashCommand(
     provider: SlackRequestProvider,
@@ -25,26 +24,17 @@ class SlackPollCreationSlashCommand(
 
     override fun handle(content: CreationSlashCommandData) {
         val metadata = CreationMetadata(UUID.randomUUID().toString())
-        val pollBuilder = PollBuilder(
+        val builder = SlackPollBuilder(
             id = metadata.pollID,
             author = PollAuthor(content.userID, content.userName),
             type = PollType.SINGLE_CHOICE
         )
-        creationRepository.put(metadata.pollID, pollBuilder)
+        creationRepository.put(metadata.pollID, builder)
 
-        val audienceFuture = provider.usersList().combine(provider.conversationsList())
-        audienceFuture.thenAccept {
-            val (users, channels) = it
-            val view = CreatePollView(
-                metadata,
-                pollBuilder.advancedOption,
-                pollBuilder.type,
-                pollBuilder.options,
-                pollBuilder.startTime,
-                pollBuilder.finishTime,
-                users,
-                channels
-            )
+        val audienceFuture = provider.audienceList()
+        audienceFuture.thenAccept { audience ->
+            val errors = SlackPollBuilderValidator.validate(builder)
+            val view = ViewFactory.creationView(metadata, builder, audience, errors)
             provider.openView(view, content.triggerID)
         }
     }

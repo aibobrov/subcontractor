@@ -2,7 +2,9 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import slack.model.PollBuilder
+import slack.model.SlackPollBuilder
+import slack.model.SlackPollBuilderValidator
+import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackPollCreationRepository
@@ -21,12 +23,18 @@ abstract class SlackPollCreationDatePickerAction(
     CreationMetadata::class.java
 ) {
     override fun handle(metadata: CreationMetadata, content: SlackPollCreationDatePickerData) {
-        val pollBuilder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
-        updateBuilder(pollBuilder, content)
-        // TODO: update view
+        val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
+        updateBuilder(builder, content)
+
+        val audienceFuture = provider.audienceList()
+        audienceFuture.thenAccept { audience ->
+            val errors = SlackPollBuilderValidator.validate(builder)
+            val view = ViewFactory.creationView(metadata, builder, audience, errors)
+            provider.updateView(view, content.viewID)
+        }
     }
 
-    abstract fun updateBuilder(builder: PollBuilder, content: SlackPollCreationDatePickerData)
+    abstract fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationDatePickerData)
 }
 
 class SlackPollCreationStartDatePickerAction(
@@ -35,7 +43,7 @@ class SlackPollCreationStartDatePickerAction(
 ) : SlackPollCreationDatePickerAction(provider, creationRepository) {
 
     override val actionID: String = CreationConstant.ActionID.START_DATE_PICKER
-    override fun updateBuilder(builder: PollBuilder, content: SlackPollCreationDatePickerData) {
+    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationDatePickerData) {
         builder.apply {
             startTime = (startTime ?: LocalDateTime.now())
                 .withMonth(content.selectedDate.monthValue)
@@ -51,7 +59,7 @@ class SlackPollCreationFinishDatePickerAction(
 ) : SlackPollCreationDatePickerAction(provider, creationRepository) {
 
     override val actionID: String = CreationConstant.ActionID.FINISH_DATE_PICKER
-    override fun updateBuilder(builder: PollBuilder, content: SlackPollCreationDatePickerData) {
+    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationDatePickerData) {
         builder.apply {
             finishTime = (finishTime ?: LocalDateTime.now())
                 .withMonth(content.selectedDate.monthValue)
@@ -61,7 +69,7 @@ class SlackPollCreationFinishDatePickerAction(
     }
 }
 
-data class SlackPollCreationDatePickerData(val selectedDate: LocalDate) {
+data class SlackPollCreationDatePickerData(val viewID: String, val selectedDate: LocalDate) {
     companion object : SlackBlockActionDataFactory<SlackPollCreationDatePickerData> {
         override fun fromRequest(
             request: BlockActionRequest,
@@ -69,7 +77,7 @@ data class SlackPollCreationDatePickerData(val selectedDate: LocalDate) {
         ): SlackPollCreationDatePickerData {
             val selectedDateString = request.payload.actions.first().selectedDate
             val selectedDate = LocalDate.parse(selectedDateString, CreationConstant.DATE_FORMATTER)
-            return SlackPollCreationDatePickerData(selectedDate)
+            return SlackPollCreationDatePickerData(request.payload.view.id, selectedDate)
         }
     }
 }
