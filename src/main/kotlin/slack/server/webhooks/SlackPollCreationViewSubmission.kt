@@ -9,6 +9,7 @@ import core.model.storage.LiquidPollRepository
 import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
 import slack.server.base.SlackViewSubmissionWebhook
+import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.create.CreationConstant
@@ -61,11 +62,11 @@ class SlackPollCreationViewSubmission(
 
 
 data class CreationViewSubmissionData(
-    val viewID: String,
+    override val viewID: String,
     val question: String,
     val selectedChannels: List<SlackChannel>,
     val selectedUsers: List<SlackUser>
-) {
+): ViewIdentifiable {
     companion object : SlackViewSubmissionDataFactory<CreationViewSubmissionData> {
         override fun fromRequest(
             request: ViewSubmissionRequest,

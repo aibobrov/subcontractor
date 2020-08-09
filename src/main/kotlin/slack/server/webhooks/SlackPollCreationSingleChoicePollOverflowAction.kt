@@ -7,6 +7,7 @@ import slack.model.SlackPollBuilderValidator
 import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
+import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.create.CreationConstant
@@ -46,10 +47,10 @@ class SlackPollCreationSingleChoicePollOverflowAction(
 
 
 data class SlackPollCreationSingleChoicePollOverflowData(
-    val viewID: String,
+    override val viewID: String,
     val optionAction: OptionAction,
     val optionID: String
-) {
+): ViewIdentifiable {
     companion object : SlackBlockActionDataFactory<SlackPollCreationSingleChoicePollOverflowData> {
         override fun fromRequest(
             request: BlockActionRequest,

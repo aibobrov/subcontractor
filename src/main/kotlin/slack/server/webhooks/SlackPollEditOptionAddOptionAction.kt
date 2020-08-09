@@ -6,6 +6,7 @@ import core.model.PollOption
 import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
+import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.create.CreationMetadata
@@ -39,8 +40,8 @@ class SlackPollEditOptionAddOptionAction(
 }
 
 data class SlackPollEditOptionAddOptionData(
-    val viewID: String
-) {
+    override val viewID: String
+): ViewIdentifiable {
     companion object : SlackBlockActionDataFactory<SlackPollEditOptionAddOptionData> {
         override fun fromRequest(
             request: BlockActionRequest,

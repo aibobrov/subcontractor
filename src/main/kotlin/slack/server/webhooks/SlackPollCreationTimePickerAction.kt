@@ -7,6 +7,7 @@ import slack.model.SlackPollBuilderValidator
 import slack.model.ViewFactory
 import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
+import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.create.CreationConstant
@@ -14,30 +15,8 @@ import slack.ui.create.CreationMetadata
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-abstract class SlackPollCreationTimePickerAction(
-    provider: SlackRequestProvider,
-    private val creationRepository: SlackPollCreationRepository
-) : SlackBlockActionCommandWebhook<SlackPollCreationTimePickerData, CreationMetadata>(
-    provider,
-    SlackPollCreationTimePickerData.Companion,
-    CreationMetadata::class.java
-) {
-
-    override fun handle(metadata: CreationMetadata, content: SlackPollCreationTimePickerData) {
-        val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
-        updateBuilder(builder, content)
-        val audienceFuture = provider.audienceList()
-        audienceFuture.thenAccept { audience ->
-            val errors = SlackPollBuilderValidator.validate(builder)
-            val view = ViewFactory.creationView(metadata, builder, audience, errors)
-            provider.updateView(view, content.viewID)
-        }
-    }
-
-    abstract fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationTimePickerData)
-}
-
-data class SlackPollCreationTimePickerData(val viewID: String, val selectedTime: LocalTime) {
+data class SlackPollCreationTimePickerData(override val viewID: String, val selectedTime: LocalTime) :
+    ViewIdentifiable {
     companion object : SlackBlockActionDataFactory<SlackPollCreationTimePickerData> {
         override fun fromRequest(request: BlockActionRequest, context: ActionContext): SlackPollCreationTimePickerData {
             val selectedTimeString = request.payload.actions.first().selectedOption.value
@@ -50,10 +29,14 @@ data class SlackPollCreationTimePickerData(val viewID: String, val selectedTime:
 class SlackPollCreationStartTimePickerAction(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository
-) : SlackPollCreationTimePickerAction(provider, creationRepository) {
+) : SlackPollCreationSettingAction<SlackPollCreationTimePickerData>(
+    provider,
+    creationRepository,
+    SlackPollCreationTimePickerData.Companion
+) {
     override val actionID: String = CreationConstant.ActionID.START_TIME_PICKER
 
-    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationTimePickerData) {
+    override fun update(builder: SlackPollBuilder, content: SlackPollCreationTimePickerData) {
         builder.apply {
             startTime = (startTime ?: LocalDateTime.now())
                 .withHour(content.selectedTime.hour)
@@ -67,10 +50,14 @@ class SlackPollCreationStartTimePickerAction(
 class SlackPollCreationFinishTimePickerAction(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository
-) : SlackPollCreationTimePickerAction(provider, creationRepository) {
+) : SlackPollCreationSettingAction<SlackPollCreationTimePickerData>(
+    provider,
+    creationRepository,
+    SlackPollCreationTimePickerData.Companion
+) {
     override val actionID: String = CreationConstant.ActionID.FINISH_TIME_PICKER
 
-    override fun updateBuilder(builder: SlackPollBuilder, content: SlackPollCreationTimePickerData) {
+    override fun update(builder: SlackPollBuilder, content: SlackPollCreationTimePickerData) {
         builder.apply {
             finishTime = (finishTime ?: LocalDateTime.now())
                 .withHour(content.selectedTime.hour)
