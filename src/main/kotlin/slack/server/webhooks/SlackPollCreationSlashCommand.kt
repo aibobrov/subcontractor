@@ -5,6 +5,7 @@ import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.PollAuthor
 import slack.model.SlackPollBuilder
 import core.model.PollType
+import slack.model.BuilderFactory
 import slack.model.SlackPollBuilderValidator
 import slack.model.ViewFactory
 import slack.server.base.SlackSlashCommandDataFactory
@@ -24,7 +25,8 @@ class SlackPollCreationSlashCommand(
 
     override fun handle(content: CreationSlashCommandData) {
         val metadata = CreationMetadata(UUID.randomUUID().toString())
-        val builder = SlackPollBuilder(
+
+        val builder = BuilderFactory.createBuilder(
             id = metadata.pollID,
             author = PollAuthor(content.userID, content.userName),
             type = PollType.SINGLE_CHOICE

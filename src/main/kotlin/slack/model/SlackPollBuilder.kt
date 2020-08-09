@@ -1,33 +1,36 @@
 package slack.model
 
-import core.model.PollAuthor
-import core.model.PollOption
-import core.model.PollType
-import core.model.SingleChoicePoll
+import core.model.*
 import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.PollTag
 import core.model.base.VotingTime
 import java.time.LocalDateTime
 
-class SlackPollBuilder(
+abstract class SlackPollBuilder(
     val id: PollID,
     val author: PollAuthor,
     var type: PollType
 ) {
-    var question: String = ""
-    var description: String? = null
-    var options: List<PollOption> = listOf()
-    var startTime: LocalDateTime? = null
-    var finishTime: LocalDateTime? = null
-    var tags: List<PollTag> = listOf()
-    var isFinished: Boolean = false
-    var advancedOption: PollAdvancedOption = PollAdvancedOption(
-        showResponses = true,
-        startDateTimeEnabled = false,
-        finishDateTimeEnabled = false,
-        isAnonymous = false
-    )
+    abstract var question: String
+    abstract var description: String?
+    abstract var options: List<PollOption>
+    abstract var startTime: LocalDateTime?
+    abstract var finishTime: LocalDateTime?
+    abstract var tags: List<PollTag>
+    abstract var isFinished: Boolean
+    abstract var advancedOption: PollAdvancedOption
+
+    fun with(builder: SlackPollBuilder) {
+        question = builder.question
+        description = builder.description
+        options = builder.options
+        startTime = builder.startTime
+        finishTime = builder.finishTime
+        tags = builder.tags
+        isFinished = builder.isFinished
+        advancedOption = builder.advancedOption
+    }
 
     fun build(): Poll {
         return when (type) {
@@ -37,15 +40,24 @@ class SlackPollBuilder(
                 description,
                 options,
                 votingTime(this),
-                tags,
                 isFinished,
                 showResponses = advancedOption.showResponses,
                 isAnonymous = advancedOption.isAnonymous,
-                author = author
+                author = author,
+                tags = tags
             )
-            PollType.AGREE_DISAGREE -> TODO()
+            PollType.AGREE_DISAGREE -> AgreeDisagreePoll(
+                id,
+                question,
+                votingTime(this),
+                showResponses = advancedOption.showResponses,
+                isAnonymous = advancedOption.isAnonymous,
+                author = author,
+                isFinished = isFinished
+            )
         }
     }
+
 
     companion object {
         fun votingTime(builder: SlackPollBuilder): VotingTime {

@@ -3,6 +3,7 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
+import core.model.AgreeDisagreePoll
 import core.model.PollType
 import core.model.SingleChoicePoll
 import core.model.storage.LiquidPollRepository
@@ -14,6 +15,7 @@ import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.create.CreationConstant
 import slack.ui.create.CreationMetadata
+import slack.ui.poll.CompactPollBlockView
 import slack.ui.poll.SingleChoicePollBlockView
 
 class SlackPollCreationViewSubmission(
@@ -31,7 +33,6 @@ class SlackPollCreationViewSubmission(
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         val errors = SlackPollBuilderValidator.validate(builder)
 
-        // TODO: fix bugs ackWithError
         if (errors.isNotEmpty()) {
             val audienceFuture = provider.audienceList()
             audienceFuture.thenAccept { audience ->
@@ -47,15 +48,16 @@ class SlackPollCreationViewSubmission(
 
         liquidPollRepository.put(metadata.pollID, newPoll)
 
-        check(newPoll.type == PollType.SINGLE_CHOICE) // TODO: remove after poll type feature
-
-        val pollView = SingleChoicePollBlockView(newPoll as SingleChoicePoll, mapOf())
+        val view = when (newPoll) {
+            is SingleChoicePoll -> SingleChoicePollBlockView(newPoll, mapOf())
+            else -> CompactPollBlockView(newPoll)
+        }
         for (channel in content.selectedChannels) {
-            provider.postChatMessage(pollView, channel.id)
+            provider.postChatMessage(view, channel.id)
         }
 
         for (user in content.selectedUsers) {
-            provider.postDirectMessage(pollView, user.id)
+            provider.postDirectMessage(view, user.id)
         }
     }
 }
@@ -66,7 +68,7 @@ data class CreationViewSubmissionData(
     val question: String,
     val selectedChannels: List<SlackChannel>,
     val selectedUsers: List<SlackUser>
-): ViewIdentifiable {
+) : ViewIdentifiable {
     companion object : SlackViewSubmissionDataFactory<CreationViewSubmissionData> {
         override fun fromRequest(
             request: ViewSubmissionRequest,

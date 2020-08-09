@@ -10,7 +10,7 @@ import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 
 // TODO: research for types of delegation button/picker
-// TODO: Support poll types switching
+// TODO: View components + abstractions
 @Configuration
 open class SlackAppConfiguration(
     provider: SlackRequestProvider,
@@ -23,7 +23,8 @@ open class SlackAppConfiguration(
     val editOptionsSubmission = SlackPollEditOptionsViewSubmission(provider, creationRepository)
     val editOptionAction = SlackPollSingleChoiceEditOptionAction(provider, creationRepository)
     val editOptionAddOptionAction = SlackPollEditOptionAddOptionAction(provider, creationRepository)
-    val editOverflowAccessError = SlackPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
+    val editOverflowOptionAction = SlackPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
+    val changeTypeAction = SlackPollCreationChangeTypeAction(provider, creationRepository)
 
     // Advanced Settings
     val anonymousSettingAction = SlackPollCreationAnonymousSettingAction(provider, creationRepository)
@@ -48,7 +49,8 @@ open class SlackAppConfiguration(
             editOptionsSubmission,
             editOptionAction,
             editOptionAddOptionAction,
-            editOverflowAccessError,
+            editOverflowOptionAction,
+            changeTypeAction,
             anonymousSettingAction,
             showResponsesSettingAction,
             startDateTimePickerSettingAction,

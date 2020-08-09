@@ -16,6 +16,8 @@ class SingleChoicePollBlockView(
     private val poll: SingleChoicePoll,
     private val optionVoters: Map<OptionID, List<VoterInfo>>
 ) : SlackBlockUIRepresentable {
+    val delegationBlockView = DelegationBlockView()
+    val contextBlockView = PollContextBlockView(poll)
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
             buildTitle(this, poll)
@@ -23,9 +25,9 @@ class SingleChoicePollBlockView(
             divider()
             buildPollOptions(this, poll)
             divider()
-            buildDelegateBlock(this)
+            delegationBlockView.representIn(this)
             divider()
-            buildContext(this, poll)
+            contextBlockView.representIn(this)
         }
     }
 
@@ -34,15 +36,6 @@ class SingleChoicePollBlockView(
             builder.context {
                 plainText(this@apply)
             }
-        }
-    }
-
-    private fun buildContext(builder: LayoutBlockDsl, poll: SingleChoicePoll) {
-        builder.context {
-            plainText(
-                "Owner @${poll.author.name}  |  🕔  Closes: ${votingTime(poll.votingTime)}  |  ${anonymousText(poll.isAnonymous)}",
-                emoji = true
-            )
         }
     }
 
@@ -87,19 +80,9 @@ class SingleChoicePollBlockView(
         }
     }
 
-    private fun buildDelegateBlock(builder: LayoutBlockDsl) {
-        builder.section {
-            plainText(DELEGATE_LABEL_TITLE)
-            usersSelect {
-                placeholder(DELEGATE_USER_SELECT_PLACEHOLDER)
-            }
-        }
-    }
 
     companion object {
         internal const val VOTE_BUTTON_TITLE = "Vote"
-        internal const val DELEGATE_LABEL_TITLE = "Delegate vote"
-        internal const val DELEGATE_USER_SELECT_PLACEHOLDER = "Select user"
 
         internal fun votesCountLabel(count: Int): String {
             return when (count) {

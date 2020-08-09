@@ -47,8 +47,8 @@ class CreatePollBlockView(
 
         private fun createPollSetupView(pollType: PollType, options: List<PollOption>): SlackBlockUIRepresentable {
             return when (pollType) {
-                PollType.SINGLE_CHOICE -> CreatePollSingleChoiceView(options)
-                PollType.AGREE_DISAGREE -> TODO()
+                PollType.SINGLE_CHOICE -> CreatePollEditableOptionsBlockView(options)
+                PollType.AGREE_DISAGREE -> CreatePollStaticOptionsBlockView(options)
             }
         }
     }
