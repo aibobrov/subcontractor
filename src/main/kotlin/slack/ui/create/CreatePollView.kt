@@ -19,8 +19,8 @@ class CreatePollView(
     private val advancedSettings: PollAdvancedOption,
     currentPollType: PollType,
     options: List<PollOption>,
-    initialStartTime: LocalDateTime?,
-    initialFinishTime: LocalDateTime?,
+    startTime: LocalDateTime?,
+    finishTime: LocalDateTime?,
     users: List<SlackUser>,
     channels: List<SlackChannel>,
     errors: List<SlackError> = listOf()
@@ -28,16 +28,8 @@ class CreatePollView(
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)
     private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(users, channels)
     private val errorBlockView = ErrorBlockView(errors)
-    private val startDateTimePickerBlockView = StartDateTimePickerBlockView(
-        LocalDateTime.now(),
-        initialStartTime?.toLocalTime(),
-        initialStartTime?.toLocalDate() ?: LocalDate.now()
-    )
-    private val finishDateTimeBlockView = FinishDateTimeBlockView(
-        LocalDateTime.now(),
-        initialFinishTime?.toLocalTime(),
-        initialFinishTime?.toLocalDate() ?: LocalDate.now()
-    )
+    private val startDateTimePickerBlockView = StartDateTimePickerBlockView(startTime)
+    private val finishDateTimeBlockView = FinishDateTimePickerBlockView(finishTime)
     private val advancedSettingsBlockView = AdvancedSettingsBlockView(advancedSettings)
 
     override fun representIn(builder: View.ViewBuilder) {
