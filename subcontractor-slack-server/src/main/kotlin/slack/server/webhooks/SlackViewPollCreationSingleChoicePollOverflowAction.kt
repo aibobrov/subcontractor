@@ -35,13 +35,9 @@ class SlackViewPollCreationSingleChoicePollOverflowAction(
         }
         builder.apply { options = newOptions }
 
-        val audienceFuture = provider.audienceList()
-        audienceFuture.thenAccept { audience ->
-            val errors = SlackPollBuilderValidator.validate(builder)
-            val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
-            provider.updateView(view, content.viewID)
-        }
-
+        val errors = SlackPollBuilderValidator.validate(builder)
+        val view = SlackUIFactory.creationView(metadata, builder, errors)
+        provider.updateView(view, content.viewID)
     }
 }
 
@@ -50,7 +46,7 @@ data class SlackPollCreationSingleChoicePollOverflowData(
     override val viewID: String,
     val optionAction: OptionAction,
     val optionID: String
-): ViewIdentifiable {
+) : ViewIdentifiable {
     companion object : SlackBlockActionDataFactory<SlackPollCreationSingleChoicePollOverflowData> {
         override fun fromRequest(
             request: BlockActionRequest,

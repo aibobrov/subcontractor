@@ -33,11 +33,8 @@ class SlackPollCreationViewSubmission(
         val errors = SlackPollBuilderValidator.validate(builder)
 
         if (errors.isNotEmpty()) {
-            val audienceFuture = provider.audienceList()
-            audienceFuture.thenAccept { audience ->
-                val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
+                val view = SlackUIFactory.creationView(metadata, builder, errors)
                 provider.updateView(view, content.viewID)
-            }
 
             throw SlackError.Multiple(errors)
         }
@@ -49,14 +46,11 @@ class SlackPollCreationViewSubmission(
 
         // TODO: results fetch (business logic + slack api request)
         val results = VoteResults(mapOf())
-        val view = SlackUIFactory.createPollBlocks(newPoll, results)
+        val blocks = SlackUIFactory.createPollBlocks(newPoll, results)
 
-        for (channel in content.selectedChannels) {
-            provider.postChatMessage(view, channel.id)
-        }
-
-        for (user in content.selectedUsers) {
-            provider.postDirectMessage(view, user.id)
+        // TODO: store audience(conversation identifiers)? separately?
+        for (conversation in builder.audience) {
+            provider.postChatMessage(blocks, conversation.id)
         }
     }
 }
@@ -64,9 +58,7 @@ class SlackPollCreationViewSubmission(
 
 data class CreationViewSubmissionData(
     override val viewID: String,
-    val question: String,
-    val selectedChannels: List<SlackChannel>,
-    val selectedUsers: List<SlackUser>
+    val question: String
 ) : ViewIdentifiable {
     companion object : SlackViewSubmissionDataFactory<CreationViewSubmissionData> {
         override fun fromRequest(
@@ -75,37 +67,15 @@ data class CreationViewSubmissionData(
         ): CreationViewSubmissionData {
             val viewState = request.payload.view.state
             val question = fetchQuestion(viewState)
-            val selectedAudience = fetchSelectedAudience(viewState)
-
-            val channels = mutableListOf<SlackChannel>()
-            val users = mutableListOf<SlackUser>()
-            for (audience in selectedAudience) {
-                val matcher = CHANNEL_NAME_PATTERN.matcher(audience.text.text)
-
-                if (matcher.matches()) {
-                    channels.add(SlackChannel(audience.value, matcher.group(1)))
-                } else {
-                    users.add(SlackUser(audience.value, audience.text.text))
-                }
-            }
 
             return CreationViewSubmissionData(
                 request.payload.view.id,
-                question ?: "",
-                channels,
-                users
+                question ?: ""
             )
         }
 
-        val CHANNEL_NAME_PATTERN = "# (\\w+)".toPattern()
-
         private fun fetchQuestion(state: ViewState): String? {
             return state.values[UIConstant.BlockID.QUESTION]?.get(UIConstant.ActionID.POLL_QUESTION)?.value
-        }
-
-        private fun fetchSelectedAudience(state: ViewState): List<ViewState.SelectedOption> {
-            return state.values[UIConstant.BlockID.AUDIENCE]?.get(UIConstant.ActionID.POLL_AUDIENCE)?.selectedOptions
-                ?: listOf()
         }
     }
 }

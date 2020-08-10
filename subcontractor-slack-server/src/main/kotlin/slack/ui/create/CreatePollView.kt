@@ -6,11 +6,7 @@ import com.slack.api.model.view.View
 import com.slack.api.model.view.Views.*
 import core.model.PollOption
 import core.model.PollType
-import slack.model.PollAdvancedOption
-import slack.model.SlackChannel
-import slack.model.SlackError
-import slack.model.SlackUser
-import slack.model.SlackPollMetadata
+import slack.model.*
 import slack.ui.base.SlackViewUIRepresentable
 import slack.ui.base.UIConstant
 import slack.ui.components.ErrorBlockView
@@ -25,12 +21,11 @@ class CreatePollView(
     options: List<PollOption>,
     startTime: LocalDateTime?,
     finishTime: LocalDateTime?,
-    users: List<SlackUser>,
-    channels: List<SlackChannel>,
+    audience: SlackAudience,
     errors: List<SlackError> = listOf()
 ) : SlackViewUIRepresentable {
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)
-    private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(users, channels)
+    private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(audience)
     private val errorBlockView = ErrorBlockView(errors)
     private val startDateTimePickerBlockView =
         StartDateTimePickerBlockView(startTime)

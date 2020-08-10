@@ -29,12 +29,9 @@ class SlackViewPollCreationChangeTypeAction(
 
         creationRepository.put(metadata.pollID, newBuilder)
 
-        val audienceFuture = provider.audienceList()
-        audienceFuture.thenAccept { audience ->
-            val errors = SlackPollBuilderValidator.validate(newBuilder)
-            val view = SlackUIFactory.creationView(metadata, newBuilder, audience, errors)
-            provider.updateView(view, content.viewID)
-        }
+        val errors = SlackPollBuilderValidator.validate(newBuilder)
+        val view = SlackUIFactory.creationView(metadata, newBuilder, errors)
+        provider.updateView(view, content.viewID)
     }
 }
 

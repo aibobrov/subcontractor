@@ -38,6 +38,9 @@ open class SlackAppConfiguration(
     val finishDatePickerAction = SlackViewPollCreationFinishDatePickerAction(provider, creationRepository)
     val finishTimePickerAction = SlackViewPollCreationFinishTimePickerAction(provider, creationRepository)
 
+    // Audience
+    val audiencePickerAction = SlackPollCreationAudiencePickerAction(provider, creationRepository)
+
     // Empty action
     val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
 
@@ -66,6 +69,7 @@ open class SlackAppConfiguration(
             startTimePickerAction,
             finishDatePickerAction,
             finishTimePickerAction,
+            audiencePickerAction,
             emptyAction,
             delegationAction,
             voteAction

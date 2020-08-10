@@ -8,7 +8,6 @@ import core.model.VoteResults
 import core.model.base.Poll
 import slack.ui.create.CreatePollView
 import slack.ui.create.EditOptionsPollView
-import slack.ui.poll.CompactOptionsBlockView
 import slack.ui.poll.CompactPollBlockView
 import slack.ui.poll.SingleChoicePollBlockView
 
@@ -16,7 +15,6 @@ object SlackUIFactory {
     fun creationView(
         metadata: SlackPollMetadata,
         builder: SlackPollBuilder,
-        audience: SlackAudience,
         errors: List<SlackError>
     ): UIRepresentable<View> {
         return CreatePollView(
@@ -26,8 +24,7 @@ object SlackUIFactory {
             builder.options,
             builder.startTime,
             builder.finishTime,
-            audience.users,
-            audience.channel,
+            builder.audience,
             errors
         )
     }

@@ -25,12 +25,9 @@ abstract class SlackViewPollCreationSettingAction<Data: ViewIdentifiable>(
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         update(builder, content)
 
-        val audienceFuture = provider.audienceList()
-        audienceFuture.thenAccept { audience ->
             val errors = SlackPollBuilderValidator.validate(builder)
-            val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
+            val view = SlackUIFactory.creationView(metadata, builder, errors)
             provider.updateView(view, content.viewID)
-        }
     }
 
     abstract fun update(builder: SlackPollBuilder, content: Data)

@@ -25,13 +25,10 @@ class SlackPollEditOptionsViewSubmission(
     override fun handle(metadata: SlackPollMetadata, content: EditOptionViewSubmissionData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         builder.apply { options = content.options }
-        val audienceFuture = provider.audienceList()
-        audienceFuture.thenAccept { audience ->
-            val errors = SlackPollBuilderValidator.validate(builder)
-            val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
-            provider.updateView(view, content.parentViewID)
-        }
 
+        val errors = SlackPollBuilderValidator.validate(builder)
+        val view = SlackUIFactory.creationView(metadata, builder, errors)
+        provider.updateView(view, content.parentViewID)
     }
 }
 

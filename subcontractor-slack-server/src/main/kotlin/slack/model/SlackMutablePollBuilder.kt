@@ -24,4 +24,5 @@ class SlackMutablePollBuilder(
         finishDateTimeEnabled = false,
         isAnonymous = false
     )
+    override var audience: SlackAudience = SlackAudience.EMPTY
 }
