@@ -7,8 +7,7 @@ import core.model.base.PollID
 
 object BuilderFactory {
     fun createBuilder(builder: SlackPollBuilder, newType: PollType): SlackPollBuilder {
-        val newBuilder = createBuilder(builder.id, builder.author, newType).apply { with(builder) }
-        return newBuilder
+        return createBuilder(builder.id, builder.author, newType).apply { with(builder) }
     }
 
 

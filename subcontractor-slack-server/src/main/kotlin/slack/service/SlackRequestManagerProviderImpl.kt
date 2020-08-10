@@ -83,7 +83,6 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             }
             .thenCompose { response ->
                 postChatMessage(blocks, response.channel.id)
-
             }
     }
 

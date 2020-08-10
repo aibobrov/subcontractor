@@ -5,7 +5,6 @@ import core.model.base.Poll
 import core.model.base.VotingTime
 import slack.ui.base.SlackBlockUIRepresentable
 import utils.unixTimestamp
-import java.sql.Timestamp
 
 class PollContextBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {

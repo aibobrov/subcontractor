@@ -23,12 +23,12 @@ class PollOptionsBlockView(private val options: List<PollOption>) : SlackBlockUI
             builder.options {
                 option {
                     value(OptionAction.DELETE.name)
-                    plainText(OVERFLOW_DELETE_LABEL, emoji = true)
+                    plainText(OVERFLOW_DELETE_LABEL)
                 }
                 if (!isLast) {
                     option {
                         value(OptionAction.MOVE_DOWN.name)
-                        plainText(OVERFLOW_MOVE_LABEL, emoji = true)
+                        plainText(OVERFLOW_MOVE_LABEL)
                     }
                 }
             }

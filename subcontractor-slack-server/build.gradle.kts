@@ -54,6 +54,6 @@ fun updateEnvironment(task: JavaExec, environmentFile: String) {
 }
 
 
-tasks.withType<JavaExec>() {
+tasks.withType<JavaExec> {
     updateEnvironment(this, "$rootDir/.env")
 }

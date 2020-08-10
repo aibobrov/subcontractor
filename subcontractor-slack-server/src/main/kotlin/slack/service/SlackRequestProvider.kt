@@ -1,15 +1,13 @@
 package slack.service
 
-import com.slack.api.model.block.LayoutBlock
 import com.slack.api.methods.AsyncMethodsClient
+import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.base.ChannelID
 import core.model.base.UserID
-import slack.model.SlackAudience
 import slack.model.SlackConversation
 import slack.model.SlackUser
-import utils.combine
 import java.util.concurrent.CompletableFuture
 
 interface SlackRequestProvider {

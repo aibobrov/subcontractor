@@ -3,19 +3,18 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
-import core.model.SingleChoicePoll
 import core.model.VoteResults
 import core.model.storage.LiquidPollRepository
-import slack.model.*
+import slack.model.SlackError
+import slack.model.SlackPollBuilderValidator
+import slack.model.SlackPollMetadata
+import slack.model.SlackUIFactory
 import slack.server.base.SlackViewSubmissionDataFactory
 import slack.server.base.SlackViewSubmissionWebhook
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
-import slack.model.SlackPollMetadata
-import slack.ui.poll.CompactPollBlockView
-import slack.ui.poll.SingleChoicePollBlockView
 
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,

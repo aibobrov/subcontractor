@@ -5,7 +5,6 @@ import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackPatternBlockActionWebhook
 import slack.service.SlackRequestProvider
-import slack.model.SlackPollMetadata
 import java.util.regex.Pattern
 
 class SlackEmptyAction(

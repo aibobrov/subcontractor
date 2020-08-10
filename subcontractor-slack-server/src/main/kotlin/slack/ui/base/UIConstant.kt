@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter
 
 object UIConstant {
     object BlockID {
-        const val AUDIENCE = "AUDIENCE_BLOCK_ID"
         const val QUESTION = "QUESTION_BLOCK_ID"
     }
 

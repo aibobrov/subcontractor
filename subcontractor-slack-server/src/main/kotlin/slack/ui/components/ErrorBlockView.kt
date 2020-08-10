@@ -14,7 +14,7 @@ class ErrorBlockView(private val errors: List<SlackError>) : SlackBlockUIReprese
 
     private fun buildError(builder: LayoutBlockDsl, error: SlackError) {
         builder.section {
-            plainText("$WARNING ${error.localizedMessage}", emoji = true)
+            plainText("$WARNING ${error.localizedMessage}")
         }
     }
 
