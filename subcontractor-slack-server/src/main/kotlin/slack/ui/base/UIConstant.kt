@@ -24,6 +24,7 @@ object UIConstant {
         const val OPTION_ACTION_OVERFLOW = "OPTION_ACTION_OVERFLOW"
         const val SINGLE_POLL_EDIT_CHOICE = "SINGLE_POLL_ADD_CHOICE"
         const val POLL_TYPE = "POLL_TYPE"
+        const val POLL_NUMBER = "POLL_NUMBER"
         const val POLL_AUDIENCE = "POLL_AUDIENCE"
         const val POLL_QUESTION = "POLL_QUESTION"
         const val ADD_NEW_OPTION_BUTTON = "ADD_NEW_OPTION_BUTTON"

@@ -21,6 +21,7 @@ abstract class SlackPollBuilder(
     abstract var isFinished: Boolean
     abstract var advancedOption: PollAdvancedOption
     abstract var audience: SlackAudience
+    abstract var number: Int
 
     fun with(builder: SlackPollBuilder) {
         question = builder.question
@@ -31,6 +32,7 @@ abstract class SlackPollBuilder(
         tags = builder.tags
         isFinished = builder.isFinished
         advancedOption = builder.advancedOption
+        number = builder.number
         audience = builder.audience
     }
 
@@ -56,6 +58,16 @@ abstract class SlackPollBuilder(
                 isAnonymous = advancedOption.isAnonymous,
                 author = author,
                 isFinished = isFinished
+            )
+            PollType.ONE_TO_N -> OneToNPoll(
+                id,
+                question,
+                votingTime(this),
+                showResponses = advancedOption.showResponses,
+                isAnonymous = advancedOption.isAnonymous,
+                author = author,
+                isFinished = isFinished,
+                number = number
             )
         }
     }
@@ -84,5 +96,12 @@ abstract class SlackPollBuilder(
             finishDateTimeEnabled = false,
             isAnonymous = false
         )
+
+        fun defaultNumber(pollType: PollType): Int {
+            return when (pollType) {
+                PollType.ONE_TO_N -> OneToNPoll.OPTIONS_RANGE.first
+                else -> 1
+            }
+        }
     }
 }

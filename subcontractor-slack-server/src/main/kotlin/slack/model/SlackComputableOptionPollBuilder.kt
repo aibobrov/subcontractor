@@ -6,17 +6,17 @@ import core.model.PollType
 import core.model.base.PollTag
 import java.time.LocalDateTime
 
-class SlackImmutableOptionPollBuilder(
+class SlackComputableOptionPollBuilder(
     id: String,
     author: PollAuthor,
     type: PollType,
-    private val immutableOptions: List<PollOption>
+    private val compute: (SlackComputableOptionPollBuilder) -> List<PollOption>
 ) : SlackPollBuilder(id, author, type) {
 
     override var question: String = ""
     override var description: String? = null
     override var options: List<PollOption>
-        get() = immutableOptions
+        get() = compute(this)
         set(_) {}
 
     override var startTime: LocalDateTime? = null

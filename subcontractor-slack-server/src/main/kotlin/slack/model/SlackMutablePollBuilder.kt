@@ -19,5 +19,6 @@ class SlackMutablePollBuilder(
     override var tags: List<PollTag> = listOf()
     override var isFinished: Boolean = false
     override var advancedOption: PollAdvancedOption = DEFAULT_SETTINGS
+    override var number: Int = defaultNumber(type)
     override var audience: SlackAudience = SlackAudience.EMPTY
 }

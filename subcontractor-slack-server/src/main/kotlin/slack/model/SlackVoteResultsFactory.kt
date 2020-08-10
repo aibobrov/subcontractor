@@ -27,6 +27,7 @@ object SlackVoteResultsFactory {
                 SlackPollVoteInfo.Verbose(voteResultsFuture.get())
             }
             PollType.AGREE_DISAGREE -> SlackPollVoteInfo.Compact(result)
+            PollType.ONE_TO_N -> SlackPollVoteInfo.Compact(result)
         }
     }
 
@@ -34,6 +35,7 @@ object SlackVoteResultsFactory {
         return when(poll.type) {
             PollType.SINGLE_CHOICE -> SlackPollVoteInfo.Verbose(SlackVerboseVoteResults.EMPTY)
             PollType.AGREE_DISAGREE -> SlackPollVoteInfo.Compact(SlackCompactVoteResults.EMPTY)
+            PollType.ONE_TO_N -> SlackPollVoteInfo.Compact(SlackCompactVoteResults.EMPTY)
         }
     }
 

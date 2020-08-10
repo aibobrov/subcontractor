@@ -27,6 +27,7 @@ open class SlackAppConfiguration(
     val editOptionAddOptionAction = SlackViewPollEditOptionAddOptionAction(provider, creationRepository)
     val editOverflowOptionAction = SlackViewPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
     val changeTypeAction = SlackViewPollCreationChangeTypeAction(provider, creationRepository)
+    val numberPickerAction = SlackPollCreationNumberPickerAction(provider, creationRepository)
 
     // Advanced Settings
     val anonymousSettingAction = SlackViewPollCreationAnonymousSettingAction(provider, creationRepository)
@@ -64,6 +65,7 @@ open class SlackAppConfiguration(
             editOptionAddOptionAction,
             editOverflowOptionAction,
             changeTypeAction,
+            numberPickerAction,
             anonymousSettingAction,
             showResponsesSettingAction,
             startDateTimePickerSettingAction,
