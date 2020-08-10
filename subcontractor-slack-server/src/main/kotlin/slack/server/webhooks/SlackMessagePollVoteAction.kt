@@ -32,29 +32,13 @@ class SlackMessagePollVoteAction(
     override fun handle(content: SlackMessagePollVoteData) {
         businessLogic.vote(content.userID, content.pollID, content.optionID)
         val poll = liquidPollRepository.get(content.pollID) ?: throw IllegalArgumentException()
-        // TODO: check
+
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
         val voteInfo = SlackVoteResultsFactory.voteResults(poll, compactVoteResults, provider)
 
         val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
         provider.updateChatMessage(blocks, content.channelID, content.ts)
-    }
-
-    companion object {
-        // TODO: remove after business logic
-        fun dummy(pollID: PollID, options: List<PollOption>, users: Set<SlackUser>): VoteResults {
-            var usersSet = users
-            val map = mutableMapOf<OptionID, Set<Voter>>()
-            for (option in options) {
-                val count = min(Random.nextInt(usersSet.size + 1), usersSet.size)
-                val usersList = usersSet.toMutableList().apply { shuffle() }
-
-                map[option.id] = usersList.take(count).map { Voter(it.id, VoteWork.Vote(pollID, option.id)) }.toSet()
-                usersSet = usersList.drop(count).toSet()
-            }
-            return VoteResults(map)
-        }
     }
 }
 

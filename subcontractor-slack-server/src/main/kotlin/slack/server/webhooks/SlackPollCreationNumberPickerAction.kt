@@ -3,7 +3,6 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.model.SlackPollBuilder
-import slack.model.SlackPollMetadata
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository

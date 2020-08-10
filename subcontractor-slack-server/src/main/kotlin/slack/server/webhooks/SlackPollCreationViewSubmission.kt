@@ -3,8 +3,6 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
-import core.model.PollType
-import core.model.VoteResults
 import core.model.storage.LiquidPollRepository
 import service.VotingBusinessLogic
 import slack.model.*
