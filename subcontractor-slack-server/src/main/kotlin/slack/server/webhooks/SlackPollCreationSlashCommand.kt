@@ -4,14 +4,13 @@ import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.PollAuthor
 import core.model.PollType
-import slack.model.BuilderFactory
-import slack.model.SlackPollBuilderValidator
-import slack.model.SlackUIFactory
+import core.model.base.ChannelID
+import core.model.base.UserID
+import slack.model.*
 import slack.server.base.SlackSlashCommandDataFactory
 import slack.server.base.SlackSlashCommandWebhook
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.model.SlackPollMetadata
 import java.util.*
 
 class SlackPollCreationSlashCommand(
@@ -29,7 +28,7 @@ class SlackPollCreationSlashCommand(
             id = metadata.pollID,
             author = PollAuthor(content.userID, content.userName),
             type = PollType.DEFAULT
-        )
+        ).apply { audience = SlackAudience(listOf(SlackConversation(content.channelID))) }
         creationRepository.put(metadata.pollID, builder)
 
         val errors = SlackPollBuilderValidator.validate(builder)
@@ -40,13 +39,15 @@ class SlackPollCreationSlashCommand(
 
 data class CreationSlashCommandData(
     val triggerID: String,
-    val userID: String,
+    val channelID: ChannelID,
+    val userID: UserID,
     val userName: String
 ) {
     companion object : SlackSlashCommandDataFactory<CreationSlashCommandData> {
         override fun fromRequest(request: SlashCommandRequest, context: SlashCommandContext): CreationSlashCommandData {
             return CreationSlashCommandData(
-                context.triggerId,
+                request.payload.triggerId,
+                request.payload.channelId,
                 request.payload.userId,
                 request.payload.userName
             )

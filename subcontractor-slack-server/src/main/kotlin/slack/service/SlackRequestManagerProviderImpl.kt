@@ -8,6 +8,7 @@ import core.model.base.ChannelID
 import core.model.base.UserID
 import slack.model.SlackConversation
 import slack.model.SlackUser
+import slack.model.SlackUserProfile
 import java.util.concurrent.CompletableFuture
 
 class SlackRequestManagerProviderImpl : SlackRequestProvider {
@@ -76,7 +77,10 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             .thenApply { Unit }
     }
 
-    override fun postDirectMessage(blocks: UIRepresentable<List<LayoutBlock>>, userID: UserID): CompletableFuture<Unit> {
+    override fun postDirectMessage(
+        blocks: UIRepresentable<List<LayoutBlock>>,
+        userID: UserID
+    ): CompletableFuture<Unit> {
         return methodsClient
             .conversationsOpen {
                 it.users(listOf(userID))
@@ -105,6 +109,28 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                     .map {
                         SlackUser(it.id, it.name)
                     }
+            }
+    }
+
+    override fun userProfile(userID: UserID): CompletableFuture<SlackUserProfile> {
+        return methodsClient
+            .usersProfileGet { it.user(userID) }
+            .thenApply {
+                SlackUserProfile(userID, it.profile.image32, it.profile.realName)
+            }
+    }
+
+    override fun userProfiles(userIDs: List<String>): CompletableFuture<Map<UserID, SlackUserProfile>> {
+        val userProfiles = userIDs.map(this::userProfile)
+        val allOf = CompletableFuture.allOf(*userProfiles.toTypedArray())
+        return allOf
+            .thenApply { _ ->
+                userProfiles
+                    .map {
+                        val profile = it.get()
+                        profile.id to profile
+                    }
+                    .toMap()
             }
     }
 }

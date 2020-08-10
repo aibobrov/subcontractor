@@ -2,15 +2,16 @@ package slack.ui.poll
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.SingleChoicePoll
-import core.model.VoteResults
+import slack.model.SlackVoteResults
 import slack.ui.base.SlackBlockUIRepresentable
 
-class SingleChoicePollBlockView(
+class VerbosePollBlockView(
     private val poll: SingleChoicePoll,
-    optionVoters: VoteResults
+    voteResults: SlackVoteResults,
+    showResults: Boolean
 ) : SlackBlockUIRepresentable {
     val delegationBlockView = DelegationBlockView()
-    val optionsBlockView = VerboseOptionsBlockView(poll.id, poll.options, optionVoters)
+    val optionsBlockView = VerboseOptionsBlockView(poll.id, poll.options, voteResults, showResults)
     val contextBlockView = PollContextBlockView(poll)
 
     override fun representIn(builder: LayoutBlockDsl) {

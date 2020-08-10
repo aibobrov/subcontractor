@@ -3,12 +3,9 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
-import core.model.VoteResults
+import core.model.PollType
 import core.model.storage.LiquidPollRepository
-import slack.model.SlackError
-import slack.model.SlackPollBuilderValidator
-import slack.model.SlackPollMetadata
-import slack.model.SlackUIFactory
+import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
 import slack.server.base.SlackViewSubmissionWebhook
 import slack.server.base.ViewIdentifiable
@@ -32,8 +29,8 @@ class SlackPollCreationViewSubmission(
         val errors = SlackPollBuilderValidator.validate(builder)
 
         if (errors.isNotEmpty()) {
-                val view = SlackUIFactory.creationView(metadata, builder, errors)
-                provider.updateView(view, content.viewID)
+            val view = SlackUIFactory.creationView(metadata, builder, errors)
+            provider.updateView(view, content.viewID)
 
             throw SlackError.Multiple(errors)
         }
@@ -44,8 +41,26 @@ class SlackPollCreationViewSubmission(
         liquidPollRepository.put(metadata.pollID, newPoll)
 
         // TODO: results fetch (business logic + slack api request)
-        val results = VoteResults(mapOf())
-        val blocks = SlackUIFactory.createPollBlocks(newPoll, results)
+        val userList = provider.usersList().get()
+        val result = SlackMessagePollVoteAction.dummy(newPoll.options, userList.toSet())
+
+        val resultInfo: SlackPollVoteInfo = when (newPoll.type) {
+            PollType.SINGLE_CHOICE -> {
+                val ids = userList.map { it.id }
+                val profiles = provider.userProfiles(ids).get()
+
+                // TODO: cleanup
+                val slackResults = SlackVoteResults(
+                    result.mapValues { entry ->
+                        entry.value.map { profiles[it.id] ?: error("unreachable") }
+                    }
+                )
+                SlackPollVoteInfo.Verbose(slackResults)
+            }
+            PollType.AGREE_DISAGREE -> SlackPollVoteInfo.Compact(result)
+        }
+
+        val blocks = SlackUIFactory.createPollBlocks(newPoll, resultInfo)
 
         // TODO: store audience(conversation identifiers)? separately?
         for (conversation in builder.audience) {

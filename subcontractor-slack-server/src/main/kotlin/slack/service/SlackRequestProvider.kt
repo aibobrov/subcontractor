@@ -7,6 +7,7 @@ import core.UIRepresentable
 import core.model.base.ChannelID
 import core.model.base.UserID
 import slack.model.SlackConversation
+import slack.model.SlackUserProfile
 import slack.model.SlackUser
 import java.util.concurrent.CompletableFuture
 
@@ -32,4 +33,8 @@ interface SlackRequestProvider {
     fun conversationsList(): CompletableFuture<List<SlackConversation>>
 
     fun usersList(): CompletableFuture<List<SlackUser>>
+
+    fun userProfile(userID: UserID): CompletableFuture<SlackUserProfile>
+
+    fun userProfiles(userIDs: List<String>): CompletableFuture<Map<UserID, SlackUserProfile>>
 }

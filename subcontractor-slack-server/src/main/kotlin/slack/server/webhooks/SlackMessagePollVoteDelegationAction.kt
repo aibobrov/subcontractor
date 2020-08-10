@@ -9,11 +9,13 @@ import core.model.VoteResults
 import core.model.base.ChannelID
 import core.model.base.UserID
 import core.model.base.VotingTime
+import slack.model.SlackPollVoteInfo
+import slack.model.SlackVoteResults
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackRequestProvider
 import slack.server.base.SlackMessageBlockActionWebhook
 import slack.ui.base.UIConstant
-import slack.ui.poll.SingleChoicePollBlockView
+import slack.ui.poll.VerbosePollBlockView
 
 class SlackMessagePollVoteDelegationAction(
     provider: SlackRequestProvider
@@ -25,7 +27,7 @@ class SlackMessagePollVoteDelegationAction(
 
     override fun handle(content: SlackMessagePollVoteDelegationData) {
         // TODO: delegation business logic
-        val newView = SingleChoicePollBlockView(
+        val newView = VerbosePollBlockView(
             poll = SingleChoicePoll(
                 id = "1",
                 question = "+++",
@@ -38,7 +40,8 @@ class SlackMessagePollVoteDelegationAction(
                 author = PollAuthor(content.userID, "nsartbobrov"),
                 tags = listOf()
             ),
-            optionVoters = VoteResults(mapOf())
+            voteResults = SlackVoteResults(mapOf()),
+            showResults = true
         )
         provider.updateChatMessage(newView, content.channelID, content.ts)
     }
@@ -51,7 +54,10 @@ data class SlackMessagePollVoteDelegationData(
     val channelID: ChannelID
 ) {
     companion object : SlackBlockActionDataFactory<SlackMessagePollVoteDelegationData> {
-        override fun fromRequest(request: BlockActionRequest, context: ActionContext): SlackMessagePollVoteDelegationData {
+        override fun fromRequest(
+            request: BlockActionRequest,
+            context: ActionContext
+        ): SlackMessagePollVoteDelegationData {
             val delegatorID = request.payload.user.id
             val userID = request.payload.actions.first().selectedUser
             return SlackMessagePollVoteDelegationData(

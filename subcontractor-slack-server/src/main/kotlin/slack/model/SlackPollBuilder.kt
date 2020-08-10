@@ -31,6 +31,7 @@ abstract class SlackPollBuilder(
         tags = builder.tags
         isFinished = builder.isFinished
         advancedOption = builder.advancedOption
+        audience = builder.audience
     }
 
     fun build(): Poll {
@@ -76,5 +77,12 @@ abstract class SlackPollBuilder(
                 VotingTime.Unlimited
             }
         }
+
+        val DEFAULT_SETTINGS = PollAdvancedOption(
+            showResponses = true,
+            startDateTimeEnabled = false,
+            finishDateTimeEnabled = false,
+            isAnonymous = false
+        )
     }
 }

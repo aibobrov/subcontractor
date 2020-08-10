@@ -46,7 +46,7 @@ open class SlackAppConfiguration(
 
     // Voting
     val delegationAction = SlackMessagePollVoteDelegationAction(provider)
-    val voteAction = SlackMessagePollVoteAction(provider)
+    val voteAction = SlackMessagePollVoteAction(provider, liquidPollRepository)
 
     @Bean
     open fun initSlackApp(): App {

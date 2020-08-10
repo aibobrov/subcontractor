@@ -23,11 +23,6 @@ class SlackImmutableOptionPollBuilder(
     override var finishTime: LocalDateTime? = null
     override var tags: List<PollTag> = listOf()
     override var isFinished: Boolean = false
-    override var advancedOption: PollAdvancedOption = PollAdvancedOption(
-        showResponses = true,
-        startDateTimeEnabled = false,
-        finishDateTimeEnabled = false,
-        isAnonymous = false
-    )
+    override var advancedOption: PollAdvancedOption = DEFAULT_SETTINGS
     override var audience: SlackAudience = SlackAudience.EMPTY
 }

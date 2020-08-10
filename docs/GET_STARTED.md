@@ -14,6 +14,7 @@ Go to your app settings -> OAuth & Permissions and select these scopes:
 * `commands`
 * `groups:read`
 * `users:read`
+* `users:profile:read`
 
 3. Install your app in your development workspace
 
