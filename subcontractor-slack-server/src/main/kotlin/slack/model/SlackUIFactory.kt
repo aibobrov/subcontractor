@@ -4,9 +4,6 @@ import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.SingleChoicePoll
-import core.model.VoteResults
-import core.model.VoteWork
-import core.model.Voter
 import core.model.base.Poll
 import slack.ui.create.CreatePollView
 import slack.ui.create.EditOptionsPollView
@@ -43,13 +40,13 @@ object SlackUIFactory {
             poll is SingleChoicePoll && results is SlackPollVoteInfo.Verbose -> {
                 createVerbosePollBlocks(poll, results.info)
             }
-            else -> createCompactPollBlocks(poll, results.voteResults())
+            else -> createCompactPollBlocks(poll, results.compact())
         }
     }
 
     fun createCompactPollBlocks(
         poll: Poll,
-        results: VoteResults
+        results: SlackCompactVoteResults
     ): UIRepresentable<List<LayoutBlock>> {
         val showResponses = poll.showResponses && results.totalVoters > 0
         return CompactPollBlockView(poll, results, showResponses)
@@ -57,7 +54,7 @@ object SlackUIFactory {
 
     fun createVerbosePollBlocks(
         poll: SingleChoicePoll,
-        results: SlackVoteResults
+        results: SlackVerboseVoteResults
     ): UIRepresentable<List<LayoutBlock>> {
         val showResponses = poll.showResponses && results.totalVoters > 0
         return VerbosePollBlockView(poll, results, showResponses)

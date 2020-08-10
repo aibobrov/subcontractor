@@ -1,21 +1,17 @@
 package slack.model
 
-import core.model.VoteResults
-import core.model.VoteWork
-import core.model.Voter
-
 sealed class SlackPollVoteInfo {
-    class Compact(val info: VoteResults) : SlackPollVoteInfo() {
-        override fun voteResults(): VoteResults = info
+    class Compact(val info: SlackCompactVoteResults) : SlackPollVoteInfo() {
+        override fun compact(): SlackCompactVoteResults = info
     }
 
-    class Verbose(val info: SlackVoteResults) : SlackPollVoteInfo() {
-        override fun voteResults(): VoteResults = VoteResults(
+    class Verbose(val info: SlackVerboseVoteResults) : SlackPollVoteInfo() {
+        override fun compact(): SlackCompactVoteResults = SlackCompactVoteResults(
             info.mapValues { entry ->
-                entry.value.map { Voter(it.id, VoteWork.Vote(entry.key)) }
+                entry.value.map { SlackUser(it.id) }
             }
         )
     }
 
-    abstract fun voteResults(): VoteResults
+    abstract fun compact(): SlackCompactVoteResults
 }

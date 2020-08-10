@@ -2,15 +2,15 @@ package slack.ui.components
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.PollOption
-import core.model.VoteResults
-import core.model.Voter
+import slack.model.SlackCompactVoteResults
+import slack.model.SlackUser
 import slack.ui.base.SlackBlockUIRepresentable
 import utils.ProgressUtils
 import java.text.DecimalFormat
 
 class PollResultBlockView(
     private val options: List<PollOption>,
-    private val results: VoteResults,
+    private val results: SlackCompactVoteResults,
     private val isAnonymous: Boolean
 ) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
@@ -21,7 +21,7 @@ class PollResultBlockView(
     private fun buildOptionsResult(
         builder: LayoutBlockDsl,
         options: List<PollOption>,
-        results: VoteResults
+        results: SlackCompactVoteResults
     ) {
         val totalVotes = results.totalVoters.toDouble()
         for (option in options) {
@@ -34,7 +34,7 @@ class PollResultBlockView(
 
     private fun buildOptionResult(
         builder: LayoutBlockDsl,
-        users: List<Voter>,
+        users: List<SlackUser>,
         option: PollOption,
         ratio: Double,
         votesCount: Int
@@ -62,7 +62,7 @@ class PollResultBlockView(
             return "*_${option.content}_*\n$progress  ${DECIMAL_FORMATTER.format(percentage)}% ($votesCount)"
         }
 
-        fun userListString(users: List<Voter>): String {
+        fun userListString(users: List<SlackUser>): String {
             return users.joinToString(" ") { "<@${it.id}>" }
         }
 

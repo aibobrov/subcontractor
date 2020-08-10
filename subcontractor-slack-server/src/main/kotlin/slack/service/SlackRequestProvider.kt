@@ -36,5 +36,5 @@ interface SlackRequestProvider {
 
     fun userProfile(userID: UserID): CompletableFuture<SlackUserProfile>
 
-    fun userProfiles(userIDs: List<String>): CompletableFuture<Map<UserID, SlackUserProfile>>
+    fun userProfiles(userIDs: Set<String>): CompletableFuture<Map<UserID, SlackUserProfile>>
 }

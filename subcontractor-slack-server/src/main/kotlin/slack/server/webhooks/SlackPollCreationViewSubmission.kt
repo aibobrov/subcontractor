@@ -4,7 +4,9 @@ import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
 import core.model.PollType
+import core.model.VoteResults
 import core.model.storage.LiquidPollRepository
+import service.VotingBusinessLogic
 import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
 import slack.server.base.SlackViewSubmissionWebhook
@@ -16,7 +18,8 @@ import slack.ui.base.UIConstant
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository,
-    private val liquidPollRepository: LiquidPollRepository
+    private val liquidPollRepository: LiquidPollRepository,
+    private val businessLogic: VotingBusinessLogic
 ) : SlackViewSubmissionWebhook<CreationViewSubmissionData, SlackPollMetadata>(
     provider,
     CreationViewSubmissionData.Companion,
@@ -41,24 +44,7 @@ class SlackPollCreationViewSubmission(
         liquidPollRepository.put(metadata.pollID, newPoll)
 
         // TODO: results fetch (business logic + slack api request)
-        val userList = provider.usersList().get()
-        val result = SlackMessagePollVoteAction.dummy(newPoll.options, userList.toSet())
-
-        val resultInfo: SlackPollVoteInfo = when (newPoll.type) {
-            PollType.SINGLE_CHOICE -> {
-                val ids = userList.map { it.id }
-                val profiles = provider.userProfiles(ids).get()
-
-                // TODO: cleanup
-                val slackResults = SlackVoteResults(
-                    result.mapValues { entry ->
-                        entry.value.map { profiles[it.id] ?: error("unreachable") }
-                    }
-                )
-                SlackPollVoteInfo.Verbose(slackResults)
-            }
-            PollType.AGREE_DISAGREE -> SlackPollVoteInfo.Compact(result)
-        }
+        val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 
         val blocks = SlackUIFactory.createPollBlocks(newPoll, resultInfo)
 

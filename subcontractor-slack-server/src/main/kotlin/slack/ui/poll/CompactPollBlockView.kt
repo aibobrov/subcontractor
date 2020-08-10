@@ -1,17 +1,17 @@
 package slack.ui.poll
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
-import core.model.VoteResults
 import core.model.base.Poll
+import slack.model.SlackCompactVoteResults
 import slack.ui.base.SlackBlockUIRepresentable
 import slack.ui.components.PollResultBlockView
 
 class CompactPollBlockView(
     private val poll: Poll,
-    voteResults: VoteResults,
+    voteResults: SlackCompactVoteResults,
     private val showResults: Boolean
 ) : SlackBlockUIRepresentable {
-    val delegationBlockView = DelegationBlockView()
+    val delegationBlockView = DelegationBlockView(poll.id)
     val contextBlockView = PollContextBlockView(poll)
     val compactPollBlockView = CompactOptionsBlockView(poll.id, poll.options)
     val voterResultBlockView = PollResultBlockView(poll.options, voteResults, poll.isAnonymous)

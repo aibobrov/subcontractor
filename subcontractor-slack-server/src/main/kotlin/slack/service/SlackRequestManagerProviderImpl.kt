@@ -107,7 +107,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                 response.members
                     .filter { !it.isDeleted && !it.isBot }
                     .map {
-                        SlackUser(it.id, it.name)
+                        SlackUser(it.id)
                     }
             }
     }
@@ -120,7 +120,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             }
     }
 
-    override fun userProfiles(userIDs: List<String>): CompletableFuture<Map<UserID, SlackUserProfile>> {
+    override fun userProfiles(userIDs: Set<String>): CompletableFuture<Map<UserID, SlackUserProfile>> {
         val userProfiles = userIDs.map(this::userProfile)
         val allOf = CompletableFuture.allOf(*userProfiles.toTypedArray())
         return allOf

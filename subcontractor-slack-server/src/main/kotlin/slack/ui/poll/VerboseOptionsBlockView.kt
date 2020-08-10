@@ -5,14 +5,14 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.PollOption
 import core.model.base.PollID
 import slack.model.SlackUserProfile
-import slack.model.SlackVoteResults
+import slack.model.SlackVerboseVoteResults
 import slack.ui.base.SlackBlockUIRepresentable
 import slack.ui.base.UIConstant
 
 class VerboseOptionsBlockView(
     private val pollID: PollID,
     private val options: List<PollOption>,
-    private val optionVoters: SlackVoteResults,
+    private val optionVoters: SlackVerboseVoteResults,
     private val showResponses: Boolean
 ) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
@@ -38,7 +38,6 @@ class VerboseOptionsBlockView(
         }
     }
 
-    // TODO: new data class SlackExtendedUserInfo
     private fun buildVoter(builder: ContextBlockElementDsl, voter: SlackUserProfile) {
         builder.image(imageUrl = voter.profileImageURL, altText = voter.profileName)
     }

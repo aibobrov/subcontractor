@@ -2,15 +2,15 @@ package slack.ui.poll
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.SingleChoicePoll
-import slack.model.SlackVoteResults
+import slack.model.SlackVerboseVoteResults
 import slack.ui.base.SlackBlockUIRepresentable
 
 class VerbosePollBlockView(
     private val poll: SingleChoicePoll,
-    voteResults: SlackVoteResults,
+    voteResults: SlackVerboseVoteResults,
     showResults: Boolean
 ) : SlackBlockUIRepresentable {
-    val delegationBlockView = DelegationBlockView()
+    val delegationBlockView = DelegationBlockView(poll.id)
     val optionsBlockView = VerboseOptionsBlockView(poll.id, poll.options, voteResults, showResults)
     val contextBlockView = PollContextBlockView(poll)
 

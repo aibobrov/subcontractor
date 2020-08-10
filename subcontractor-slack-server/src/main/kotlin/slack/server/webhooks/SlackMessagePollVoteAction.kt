@@ -6,11 +6,10 @@ import core.model.*
 import core.model.base.ChannelID
 import core.model.base.OptionID
 import core.model.base.PollID
+import core.model.base.UserID
 import core.model.storage.LiquidPollRepository
-import slack.model.SlackPollVoteInfo
-import slack.model.SlackUIFactory
-import slack.model.SlackUser
-import slack.model.SlackVoteResults
+import service.VotingBusinessLogic
+import slack.model.*
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackPatternBlockActionWebhook
 import slack.service.SlackRequestProvider
@@ -22,7 +21,8 @@ import kotlin.random.Random
 
 class SlackMessagePollVoteAction(
     provider: SlackRequestProvider,
-    val liquidPollRepository: LiquidPollRepository
+    private val liquidPollRepository: LiquidPollRepository,
+    private val businessLogic: VotingBusinessLogic
 ) : SlackPatternBlockActionWebhook<SlackMessagePollVoteData>(
     provider,
     SlackMessagePollVoteData.Companion
@@ -30,41 +30,27 @@ class SlackMessagePollVoteAction(
     override val actionID: Pattern = UIConstant.ActionID.VOTE
 
     override fun handle(content: SlackMessagePollVoteData) {
+        businessLogic.vote(content.userID, content.pollID, content.optionID)
         val poll = liquidPollRepository.get(content.pollID) ?: throw IllegalArgumentException()
-        // TODO: voting business logic
-        val userList = provider.usersList().get()
-        val result = dummy(poll.options, userList.toSet())
+        // TODO: check
+        val voteResults = businessLogic.voteResults(poll.id)
+        val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
+        val voteInfo = SlackVoteResultsFactory.voteResults(poll, compactVoteResults, provider)
 
-        val resultInfo: SlackPollVoteInfo = when (poll.type) {
-            PollType.SINGLE_CHOICE -> {
-                val ids = userList.map { it.id }
-                val profiles = provider.userProfiles(ids).get()
-
-                // TODO: cleanup
-                val slackResults = SlackVoteResults(
-                    result.mapValues { entry ->
-                        entry.value.map { profiles[it.id] ?: error("unreachable") }
-                    }
-                )
-                SlackPollVoteInfo.Verbose(slackResults)
-            }
-            PollType.AGREE_DISAGREE -> SlackPollVoteInfo.Compact(result)
-        }
-
-        val blocks = SlackUIFactory.createPollBlocks(poll, resultInfo)
+        val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
         provider.updateChatMessage(blocks, content.channelID, content.ts)
     }
 
     companion object {
         // TODO: remove after business logic
-        fun dummy(options: List<PollOption>, users: Set<SlackUser>): VoteResults {
+        fun dummy(pollID: PollID, options: List<PollOption>, users: Set<SlackUser>): VoteResults {
             var usersSet = users
-            val map = mutableMapOf<OptionID, List<Voter>>()
+            val map = mutableMapOf<OptionID, Set<Voter>>()
             for (option in options) {
                 val count = min(Random.nextInt(usersSet.size + 1), usersSet.size)
                 val usersList = usersSet.toMutableList().apply { shuffle() }
 
-                map[option.id] = usersList.take(count).map { Voter(it.id, VoteWork.Vote(option.id)) }
+                map[option.id] = usersList.take(count).map { Voter(it.id, VoteWork.Vote(pollID, option.id)) }.toSet()
                 usersSet = usersList.drop(count).toSet()
             }
             return VoteResults(map)
@@ -73,6 +59,7 @@ class SlackMessagePollVoteAction(
 }
 
 data class SlackMessagePollVoteData(
+    val userID: UserID,
     val pollID: PollID,
     val optionID: OptionID,
     val ts: String,
@@ -80,12 +67,14 @@ data class SlackMessagePollVoteData(
 ) {
     companion object : SlackBlockActionDataFactory<SlackMessagePollVoteData> {
         override fun fromRequest(request: BlockActionRequest, context: ActionContext): SlackMessagePollVoteData {
+            val userID = request.payload.user.id
             val action = request.payload.actions.first()
             val pattern = UIConstant.ActionID.VOTE.toRegex()
             val matcher = pattern.findAll(action.actionId).first()
 
             val (_, pollID, optionID) = matcher.groups.toList()
             return SlackMessagePollVoteData(
+                userID,
                 pollID!!.value,
                 optionID!!.value,
                 request.payload.message.ts,

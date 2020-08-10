@@ -1,3 +1,3 @@
 package slack.model
 
-data class SlackUser(val id: String, val name: String)
+data class SlackUser(val id: String)
