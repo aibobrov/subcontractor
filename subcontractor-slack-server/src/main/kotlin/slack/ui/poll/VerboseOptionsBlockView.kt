@@ -29,7 +29,7 @@ class VerboseOptionsBlockView(
             plainText(option.content)
             accessory {
                 button {
-                    actionId(UIConstant.ActionID.voteAction(option.id))
+                    actionId(UIConstant.ActionID.voteAction(pollID, option.id))
                     text(SingleChoicePollBlockView.VOTE_BUTTON_TITLE)
                     value(option.id)
                 }

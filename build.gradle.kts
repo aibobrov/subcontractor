@@ -1,63 +1,17 @@
 plugins {
-    java
-    application
-    kotlin("jvm") version "1.3.72"
-    id("org.springframework.boot") version "2.3.1.RELEASE"
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    val kotlinVersion = "1.3.72"
+    base
+    kotlin("jvm") version kotlinVersion apply false
 }
 
-group = "org.subcontractor"
-version = "0.0.1"
-
-repositories {
-    mavenCentral()
-}
-
-application {
-    mainClassName = "MainKt"
-}
-
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-
-    // Slack
-    implementation("com.slack.api:slack-api-client-kotlin-extension:1.1.1")
-    implementation("com.slack.api:bolt:1.1.1")
-    implementation("com.slack.api:slack-api-client-kotlin-extension:1.1.1")
-    implementation("com.slack.api:bolt-servlet:1.1.1")
-
-    // Spring
-    implementation("org.springframework.boot:spring-boot-starter-web")
-
-    // JUnit
-    testImplementation("org.junit.jupiter", "junit-jupiter", "5.4.2")
-}
-
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
     }
 }
 
-// Fetch environment variables from .env file
-fun updateEnvironment(task: JavaExec, environmentFile: String) {
-    file(environmentFile)
-        .readLines()
-        .map { it.split("=") }
-        .forEach { list ->
-            check(list.size == 2) { "Should be 2 elements for transforming into pair" }
-            val (key, value) = list
-            task.environment(key, value)
-        }
-}
-
-tasks.withType<JavaExec>() {
-    updateEnvironment(this, ".env")
+subprojects {
+    version = "0.0.1"
+    group = "org.subcontractor"
 }

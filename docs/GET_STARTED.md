@@ -40,7 +40,7 @@ Example: `http://9954592af85d.ngrok.io/slack/events`
 8. Run server using:
 
 ```bash
-./gradlew bootRun
+./gradlew :subcontractor-slack-server:bootRun
 ```
 
 Or from Intellij IDEA

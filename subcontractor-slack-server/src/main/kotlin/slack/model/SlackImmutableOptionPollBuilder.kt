@@ -6,14 +6,19 @@ import core.model.PollType
 import core.model.base.PollTag
 import java.time.LocalDateTime
 
-class SlackMutablePollBuilder(
+class SlackImmutableOptionPollBuilder(
     id: String,
     author: PollAuthor,
-    type: PollType
+    type: PollType,
+    private val immutableOptions: List<PollOption>
 ) : SlackPollBuilder(id, author, type) {
+
     override var question: String = ""
     override var description: String? = null
-    override var options: List<PollOption> = listOf()
+    override var options: List<PollOption>
+        get() = immutableOptions
+        set(_) {}
+
     override var startTime: LocalDateTime? = null
     override var finishTime: LocalDateTime? = null
     override var tags: List<PollTag> = listOf()
@@ -24,15 +29,4 @@ class SlackMutablePollBuilder(
         finishDateTimeEnabled = false,
         isAnonymous = false
     )
-
-    constructor(builder: SlackPollBuilder) : this(builder.id, builder.author, builder.type) {
-        question = builder.question
-        description = builder.description
-        options = builder.options
-        startTime = builder.startTime
-        finishTime = builder.finishTime
-        tags = builder.tags
-        isFinished = builder.isFinished
-        advancedOption = builder.advancedOption
-    }
 }

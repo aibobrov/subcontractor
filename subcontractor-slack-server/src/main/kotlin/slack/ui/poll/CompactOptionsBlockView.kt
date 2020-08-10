@@ -17,12 +17,11 @@ class CompactOptionsBlockView(private val pollID: PollID, private val options: L
         fun buildButton(builder: BlockElementDsl, option: PollOption) {
             builder.button {
                 text(option.content, emoji = true)
-                actionId(UIConstant.ActionID.voteAction(option.id))
+                actionId(UIConstant.ActionID.voteAction(pollID, option.id))
                 value(option.id)
             }
         }
         builder.actions {
-            blockId(pollID)
             elements {
                 options.forEach { buildButton(this, it) }
             }

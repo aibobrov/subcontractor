@@ -33,11 +33,13 @@ data class SlackMessagePollVoteData(
     companion object : SlackBlockActionDataFactory<SlackMessagePollVoteData> {
         override fun fromRequest(request: BlockActionRequest, context: ActionContext): SlackMessagePollVoteData {
             val action = request.payload.actions.first()
-            val optionID = action.value
-            val pollID = action.blockId
+            val pattern = UIConstant.ActionID.VOTE.toRegex()
+            val matcher = pattern.findAll(action.actionId).first()
+
+            val (_, pollID, optionID) = matcher.groups.toList()
             return SlackMessagePollVoteData(
-                pollID,
-                optionID,
+                pollID!!.value,
+                optionID!!.value,
                 request.payload.message.ts,
                 request.payload.channel.id
             )

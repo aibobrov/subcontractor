@@ -10,5 +10,10 @@ object StandardTag {
     val HARDWARE = PollTag("hardware")
     val TESTING = PollTag("testing")
 
-    val ALL = listOf(GENERAL, SOFTWARE, HARDWARE, TESTING)
+    val ALL = listOf(
+        GENERAL,
+        SOFTWARE,
+        HARDWARE,
+        TESTING
+    )
 }

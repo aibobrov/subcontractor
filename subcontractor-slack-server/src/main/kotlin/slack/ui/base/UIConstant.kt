@@ -2,6 +2,8 @@ package slack.ui.base
 
 import com.google.gson.Gson
 import com.slack.api.util.json.GsonFactory
+import core.model.base.OptionID
+import core.model.base.PollID
 import java.time.format.DateTimeFormatter
 
 object UIConstant {
@@ -39,8 +41,8 @@ object UIConstant {
 
         // Message interactivity
         const val DELEGATE_VOTE = "DELEGATE_VOTE"
-        val VOTE = "VOTE_(.*)".toPattern()
-        fun voteAction(id: String): String = "VOTE_$id"
+        val VOTE = "VOTE#(.*)#(.*)".toPattern()
+        fun voteAction(pollID: PollID, optionID: OptionID): String = "VOTE#$pollID#$optionID"
     }
 
     val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE

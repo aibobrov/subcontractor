@@ -28,7 +28,7 @@ class SlackPollCreationSlashCommand(
         val builder = BuilderFactory.createBuilder(
             id = metadata.pollID,
             author = PollAuthor(content.userID, content.userName),
-            type = PollType.SINGLE_CHOICE
+            type = PollType.DEFAULT
         )
         creationRepository.put(metadata.pollID, builder)
 
