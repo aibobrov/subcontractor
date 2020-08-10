@@ -3,7 +3,6 @@ package slack.server.base
 import com.slack.api.bolt.App
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
-import com.slack.api.bolt.response.Response
 import slack.model.SlackError
 import slack.service.SlackRequestProvider
 
@@ -18,7 +17,7 @@ abstract class SlackViewSubmissionWebhook<Content, Metadata>(
         app.viewSubmission(callbackID) { request, context ->
             provider.client(context.asyncClient())
             val data = dataFactory.fromRequest(request, context)
-            val metadata = Constant.GSON.fromJson(request.payload.view.privateMetadata, classOfMetadata)
+            val metadata = SlackConstant.GSON.fromJson(request.payload.view.privateMetadata, classOfMetadata)
             try {
                 handle(metadata, data)
             } catch (e: SlackError) {

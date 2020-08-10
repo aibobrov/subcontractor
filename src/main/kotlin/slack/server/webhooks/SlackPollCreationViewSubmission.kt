@@ -3,9 +3,8 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
-import core.model.AgreeDisagreePoll
-import core.model.PollType
 import core.model.SingleChoicePoll
+import core.model.VoteResults
 import core.model.storage.LiquidPollRepository
 import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
@@ -13,8 +12,8 @@ import slack.server.base.SlackViewSubmissionWebhook
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationConstant
-import slack.ui.create.CreationMetadata
+import slack.ui.base.UIConstant
+import slack.model.SlackPollMetadata
 import slack.ui.poll.CompactPollBlockView
 import slack.ui.poll.SingleChoicePollBlockView
 
@@ -22,21 +21,21 @@ class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository,
     private val liquidPollRepository: LiquidPollRepository
-) : SlackViewSubmissionWebhook<CreationViewSubmissionData, CreationMetadata>(
+) : SlackViewSubmissionWebhook<CreationViewSubmissionData, SlackPollMetadata>(
     provider,
     CreationViewSubmissionData.Companion,
-    CreationMetadata::class.java
+    SlackPollMetadata::class.java
 ) {
-    override val callbackID: String = CreationConstant.CallbackID.CREATION_VIEW_SUBMISSION
+    override val callbackID: String = UIConstant.CallbackID.CREATION_VIEW_SUBMISSION
 
-    override fun handle(metadata: CreationMetadata, content: CreationViewSubmissionData) {
+    override fun handle(metadata: SlackPollMetadata, content: CreationViewSubmissionData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         val errors = SlackPollBuilderValidator.validate(builder)
 
         if (errors.isNotEmpty()) {
             val audienceFuture = provider.audienceList()
             audienceFuture.thenAccept { audience ->
-                val view = ViewFactory.creationView(metadata, builder, audience, errors)
+                val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
                 provider.updateView(view, content.viewID)
             }
 
@@ -48,10 +47,10 @@ class SlackPollCreationViewSubmission(
 
         liquidPollRepository.put(metadata.pollID, newPoll)
 
-        val view = when (newPoll) {
-            is SingleChoicePoll -> SingleChoicePollBlockView(newPoll, mapOf())
-            else -> CompactPollBlockView(newPoll)
-        }
+        // TODO: results fetch (business logic + slack api request)
+        val results = VoteResults(mapOf())
+        val view = SlackUIFactory.createPollBlocks(newPoll, results)
+
         for (channel in content.selectedChannels) {
             provider.postChatMessage(view, channel.id)
         }
@@ -101,11 +100,11 @@ data class CreationViewSubmissionData(
         val CHANNEL_NAME_PATTERN = "# (\\w+)".toPattern()
 
         private fun fetchQuestion(state: ViewState): String? {
-            return state.values[CreationConstant.BlockID.QUESTION]?.get(CreationConstant.ActionID.POLL_QUESTION)?.value
+            return state.values[UIConstant.BlockID.QUESTION]?.get(UIConstant.ActionID.POLL_QUESTION)?.value
         }
 
         private fun fetchSelectedAudience(state: ViewState): List<ViewState.SelectedOption> {
-            return state.values[CreationConstant.BlockID.AUDIENCE]?.get(CreationConstant.ActionID.POLL_AUDIENCE)?.selectedOptions
+            return state.values[UIConstant.BlockID.AUDIENCE]?.get(UIConstant.ActionID.POLL_AUDIENCE)?.selectedOptions
                 ?: listOf()
         }
     }

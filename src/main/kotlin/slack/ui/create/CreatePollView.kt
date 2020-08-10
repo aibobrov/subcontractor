@@ -10,12 +10,16 @@ import slack.model.PollAdvancedOption
 import slack.model.SlackChannel
 import slack.model.SlackError
 import slack.model.SlackUser
+import slack.model.SlackPollMetadata
 import slack.ui.base.SlackViewUIRepresentable
-import java.time.LocalDate
+import slack.ui.base.UIConstant
+import slack.ui.components.ErrorBlockView
+import slack.ui.components.FinishDateTimePickerBlockView
+import slack.ui.components.StartDateTimePickerBlockView
 import java.time.LocalDateTime
 
 class CreatePollView(
-    private val metadata: CreationMetadata,
+    private val metadata: SlackPollMetadata,
     private val advancedSettings: PollAdvancedOption,
     currentPollType: PollType,
     options: List<PollOption>,
@@ -28,8 +32,10 @@ class CreatePollView(
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)
     private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(users, channels)
     private val errorBlockView = ErrorBlockView(errors)
-    private val startDateTimePickerBlockView = StartDateTimePickerBlockView(startTime)
-    private val finishDateTimeBlockView = FinishDateTimePickerBlockView(finishTime)
+    private val startDateTimePickerBlockView =
+        StartDateTimePickerBlockView(startTime)
+    private val finishDateTimeBlockView =
+        FinishDateTimePickerBlockView(finishTime)
     private val advancedSettingsBlockView = AdvancedSettingsBlockView(advancedSettings)
 
     override fun representIn(builder: View.ViewBuilder) {
@@ -38,8 +44,8 @@ class CreatePollView(
             .title(viewTitle { it.type("plain_text").text(VIEW_TITLE) })
             .close(viewClose { it.type("plain_text").text(VIEW_CLOSE_BUTTON_TITLE) })
             .submit(viewSubmit { it.type("plain_text").text(VIEW_CREATE_BUTTON_TITLE) })
-            .callbackId(CreationConstant.CallbackID.CREATION_VIEW_SUBMISSION)
-            .privateMetadata(CreationConstant.GSON.toJson(metadata))
+            .callbackId(UIConstant.CallbackID.CREATION_VIEW_SUBMISSION)
+            .privateMetadata(UIConstant.GSON.toJson(metadata))
             .blocks(withBlocks {
                 createPollBlockView.representIn(this)
                 errorBlockView.representIn(this)

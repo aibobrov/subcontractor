@@ -5,7 +5,7 @@ import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.service.SlackRequestProvider
 
-abstract class SlackBlockActionCommandWebhook<Content, Metadata>(
+abstract class SlackViewBlockActionWebhook<Content, Metadata>(
     protected val provider: SlackRequestProvider,
     private val dataFactory: SlackDataFactory<BlockActionRequest, ActionContext, Content>,
     private val classOfMetadata: Class<Metadata>
@@ -16,7 +16,7 @@ abstract class SlackBlockActionCommandWebhook<Content, Metadata>(
         app.blockAction(actionID) { request, context ->
             provider.client(context.asyncClient())
             val data = dataFactory.fromRequest(request, context)
-            val metadata = Constant.GSON.fromJson(request.payload.view.privateMetadata, classOfMetadata)
+            val metadata = SlackConstant.GSON.fromJson(request.payload.view.privateMetadata, classOfMetadata)
             handle(metadata, data)
             context.ack()
         }

@@ -1,10 +1,12 @@
-package slack.ui.create
+package slack.ui.components
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.element.dsl.BlockElementDsl
-import slack.server.base.Constant
+import slack.server.base.SlackConstant
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 import utils.DateUtils
+import utils.unixTimeStamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -18,7 +20,8 @@ abstract class DateTimePickerBlockView(
     abstract val labelText: String
 
     override fun representIn(builder: LayoutBlockDsl) {
-        val timeSelection = timeOptions(selectedDateTime?.toLocalDate())
+        val timeSelection =
+            timeOptions(selectedDateTime?.toLocalDate())
         builder.apply {
             section {
                 markdownText("*$labelText*")
@@ -29,7 +32,10 @@ abstract class DateTimePickerBlockView(
                     buildDatePicker(this, DateUtils.max(selectedDate, LocalDate.now()))
                     buildStaticTimeSelect(
                         this,
-                        selectedTime(selectedDate, selectedDateTime?.toLocalTime()),
+                        selectedTime(
+                            selectedDate,
+                            selectedDateTime?.toLocalTime()
+                        ),
                         timeSelection
                     )
                 }
@@ -39,7 +45,7 @@ abstract class DateTimePickerBlockView(
 
     private fun buildDatePicker(builder: BlockElementDsl, selectedDate: LocalDate) {
         builder.datePicker {
-            initialDate(selectedDate.format(CreationConstant.DATE_FORMATTER))
+            initialDate(selectedDate.format(UIConstant.DATE_FORMATTER))
             actionId(dateActionID)
             placeholder(DATE_PLACEHOLDER)
         }
@@ -51,17 +57,17 @@ abstract class DateTimePickerBlockView(
             options {
                 for (time in times) {
                     option {
-                        val formatted = time.format(CreationConstant.TIME_FORMATTER)
-                        plainText(formatted)
-                        value(formatted)
+                        plainText(formattedTime(time.unixTimeStamp))
+                        val formattedValue = time.format(UIConstant.TIME_VALUE_FORMATTER)
+                        value(formattedValue)
                     }
                 }
             }
             initialOption {
-                val time = selectedTime?.let { DateUtils.round(it, Constant.TIME_INTERVAL) } ?: times.first()
-                val formatted = time.format(CreationConstant.TIME_FORMATTER)
-                plainText(formatted)
-                value(formatted)
+                val initialTime = selectedTime?.let { DateUtils.round(it, SlackConstant.TIME_INTERVAL) } ?: times.first()
+                plainText(formattedTime(initialTime.unixTimeStamp))
+                val formattedValue = initialTime.format(UIConstant.TIME_VALUE_FORMATTER)
+                value(formattedValue)
             }
         }
     }
@@ -75,9 +81,12 @@ abstract class DateTimePickerBlockView(
         fun timeOptions(forDate: LocalDate?): List<LocalTime> {
             val date = forDate ?: LocalDate.now()
             val timeList = if (LocalDateTime.now().toLocalDate().isEqual(date)) {
-                DateUtils.timesBy(Constant.TIME_INTERVAL, DateUtils.round(LocalTime.now(), Constant.TIME_INTERVAL))
+                DateUtils.timesBy(
+                    SlackConstant.TIME_INTERVAL,
+                    DateUtils.round(LocalTime.now(), SlackConstant.TIME_INTERVAL)
+                )
             } else {
-                DateUtils.timesBy(Constant.TIME_INTERVAL)
+                DateUtils.timesBy(SlackConstant.TIME_INTERVAL)
             }
             return if (timeList.isEmpty()) { // can be empty. Example: currentDate = 23:50
                 listOf(LocalTime.now())
@@ -93,21 +102,23 @@ abstract class DateTimePickerBlockView(
                 time
             }
         }
+
+        private fun formattedTime(timestamp: Long): String = "<!date^$timestamp^{time}|00:00>"
     }
 }
 
 class StartDateTimePickerBlockView(selectedDateTime: LocalDateTime?) : DateTimePickerBlockView(selectedDateTime) {
-    override val dateActionID: String = CreationConstant.ActionID.START_DATE_PICKER
+    override val dateActionID: String = UIConstant.ActionID.START_DATE_PICKER
 
-    override val timeActionID: String = CreationConstant.ActionID.START_TIME_PICKER
+    override val timeActionID: String = UIConstant.ActionID.START_TIME_PICKER
 
     override val labelText: String = "Send At"
 }
 
 class FinishDateTimePickerBlockView(selectedDateTime: LocalDateTime?) : DateTimePickerBlockView(selectedDateTime) {
-    override val dateActionID: String = CreationConstant.ActionID.FINISH_DATE_PICKER
+    override val dateActionID: String = UIConstant.ActionID.FINISH_DATE_PICKER
 
-    override val timeActionID: String = CreationConstant.ActionID.FINISH_TIME_PICKER
+    override val timeActionID: String = UIConstant.ActionID.FINISH_TIME_PICKER
 
     override val labelText: String = "Finish At"
 }

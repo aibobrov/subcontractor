@@ -4,31 +4,31 @@ import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import core.model.PollOption
 import slack.model.SlackPollBuilderValidator
-import slack.model.ViewFactory
+import slack.model.SlackUIFactory
 import slack.server.base.SlackViewSubmissionDataFactory
 import slack.server.base.SlackViewSubmissionWebhook
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationConstant
-import slack.ui.create.CreationMetadata
+import slack.ui.base.UIConstant
+import slack.model.SlackPollMetadata
 
 class SlackPollEditOptionsViewSubmission(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository
-) : SlackViewSubmissionWebhook<EditOptionViewSubmissionData, CreationMetadata>(
+) : SlackViewSubmissionWebhook<EditOptionViewSubmissionData, SlackPollMetadata>(
     provider,
     EditOptionViewSubmissionData.Companion,
-    CreationMetadata::class.java
+    SlackPollMetadata::class.java
 ) {
-    override val callbackID: String = CreationConstant.CallbackID.ADD_OPTION_VIEW_SUBMISSION
+    override val callbackID: String = UIConstant.CallbackID.ADD_OPTION_VIEW_SUBMISSION
 
-    override fun handle(metadata: CreationMetadata, content: EditOptionViewSubmissionData) {
+    override fun handle(metadata: SlackPollMetadata, content: EditOptionViewSubmissionData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         builder.apply { options = content.options }
         val audienceFuture = provider.audienceList()
         audienceFuture.thenAccept { audience ->
             val errors = SlackPollBuilderValidator.validate(builder)
-            val view = ViewFactory.creationView(metadata, builder, audience, errors)
+            val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
             provider.updateView(view, content.parentViewID)
         }
 

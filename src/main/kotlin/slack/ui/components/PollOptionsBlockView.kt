@@ -1,13 +1,13 @@
-package slack.ui.create
+package slack.ui.components
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.element.OverflowMenuElementBuilder
 import core.model.PollOption
-import core.model.PollType
 import slack.model.OptionAction
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 
-class PollOptionsBlockView(private val options: List<PollOption>, private val overflowIsNeeded: Boolean = true) : SlackBlockUIRepresentable {
+class PollOptionsBlockView(private val options: List<PollOption>) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         buildPollOptions(builder)
     }
@@ -36,10 +36,9 @@ class PollOptionsBlockView(private val options: List<PollOption>, private val ov
         builder.section {
             blockId(option.id)
             plainText(option.content)
-            if (overflowIsNeeded)
             accessory {
                 overflowMenu {
-                    actionId(CreationConstant.ActionID.OPTION_ACTION_OVERFLOW)
+                    actionId(UIConstant.ActionID.OPTION_ACTION_OVERFLOW)
                     buildPollOptionOverflowMenu(this, isLast)
                 }
             }

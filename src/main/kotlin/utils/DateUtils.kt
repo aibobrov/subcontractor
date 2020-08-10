@@ -1,7 +1,10 @@
 package utils
 
+import sun.security.krb5.internal.KDCOptions.with
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneOffset
 
 object DateUtils {
     // interval in minutes
@@ -42,3 +45,10 @@ object DateUtils {
         return if (lhs.isBefore(rhs)) rhs else lhs
     }
 }
+
+
+val LocalDateTime.unixTimestamp: Long
+    get() = atZone(ZoneOffset.UTC).toEpochSecond()
+
+val LocalTime.unixTimeStamp: Long
+    get() = LocalDateTime.of(LocalDate.now(), this).unixTimestamp

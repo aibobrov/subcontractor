@@ -3,6 +3,7 @@ package slack.ui.create
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.PollOption
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 
 class EditOptionsPollBlockView(private val choices: List<PollOption>) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
@@ -18,7 +19,7 @@ class EditOptionsPollBlockView(private val choices: List<PollOption>) : SlackBlo
             markdownText(optionLabelInfoTitle(count))
             accessory {
                 button {
-                    actionId(CreationConstant.ActionID.ADD_NEW_OPTION_BUTTON)
+                    actionId(UIConstant.ActionID.ADD_NEW_OPTION_BUTTON)
                     text(ADD_OPTION_TITLE_BUTTON)
                 }
             }

@@ -3,15 +3,11 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.model.SlackPollBuilder
-import slack.model.SlackPollBuilderValidator
-import slack.model.ViewFactory
-import slack.server.base.SlackBlockActionCommandWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationConstant
-import slack.ui.create.CreationMetadata
+import slack.ui.base.UIConstant
 
 data class SlackPollCreationAdvancedSettingsData(override val viewID: String) : ViewIdentifiable {
     companion object : SlackBlockActionDataFactory<SlackPollCreationAdvancedSettingsData> {
@@ -24,15 +20,15 @@ data class SlackPollCreationAdvancedSettingsData(override val viewID: String) : 
     }
 }
 
-class SlackPollCreationAnonymousSettingAction(
+class SlackViewPollCreationAnonymousSettingAction(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository
-) : SlackPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
+) : SlackViewPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
     provider,
     creationRepository,
     SlackPollCreationAdvancedSettingsData.Companion
 ) {
-    override val actionID: String = CreationConstant.ActionID.ANONYMOUS_TOGGLE
+    override val actionID: String = UIConstant.ActionID.ANONYMOUS_TOGGLE
 
     override fun update(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
@@ -41,15 +37,15 @@ class SlackPollCreationAnonymousSettingAction(
     }
 }
 
-class SlackPollCreationShowResponsesSettingAction(
+class SlackViewPollCreationShowResponsesSettingAction(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository
-) : SlackPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
+) : SlackViewPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
     provider,
     creationRepository,
     SlackPollCreationAdvancedSettingsData.Companion
 ) {
-    override val actionID: String = CreationConstant.ActionID.SHOW_RESPONSES_TOGGLE
+    override val actionID: String = UIConstant.ActionID.SHOW_RESPONSES_TOGGLE
 
     override fun update(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
@@ -58,15 +54,15 @@ class SlackPollCreationShowResponsesSettingAction(
     }
 }
 
-class SlackPollCreationFinishDateTimeSettingAction(
+class SlackViewPollCreationFinishDateTimeSettingAction(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository
-) : SlackPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
+) : SlackViewPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
     provider,
     creationRepository,
     SlackPollCreationAdvancedSettingsData.Companion
 ) {
-    override val actionID: String = CreationConstant.ActionID.FINISH_DATETIME_TOGGLE
+    override val actionID: String = UIConstant.ActionID.FINISH_DATETIME_TOGGLE
 
     override fun update(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {
@@ -75,15 +71,15 @@ class SlackPollCreationFinishDateTimeSettingAction(
     }
 }
 
-class SlackPollCreationStartDateTimeSettingAction(
+class SlackViewPollCreationStartDateTimeSettingAction(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository
-) : SlackPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
+) : SlackViewPollCreationSettingAction<SlackPollCreationAdvancedSettingsData>(
     provider,
     creationRepository,
     SlackPollCreationAdvancedSettingsData.Companion
 ) {
-    override val actionID: String = CreationConstant.ActionID.START_DATETIME_TOGGLE
+    override val actionID: String = UIConstant.ActionID.START_DATETIME_TOGGLE
 
     override fun update(builder: SlackPollBuilder, content: SlackPollCreationAdvancedSettingsData) {
         builder.apply {

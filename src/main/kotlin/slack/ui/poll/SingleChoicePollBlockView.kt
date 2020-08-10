@@ -1,29 +1,24 @@
 package slack.ui.poll
 
-import com.slack.api.model.kotlin_extension.block.dsl.ContextBlockElementDsl
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
-import core.model.PollOption
 import core.model.SingleChoicePoll
-import core.model.VoterInfo
-import core.model.base.OptionID
-import core.model.base.VotingTime
+import core.model.VoteResults
 import slack.ui.base.SlackBlockUIRepresentable
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-
 
 class SingleChoicePollBlockView(
     private val poll: SingleChoicePoll,
-    private val optionVoters: Map<OptionID, List<VoterInfo>>
+    optionVoters: VoteResults
 ) : SlackBlockUIRepresentable {
     val delegationBlockView = DelegationBlockView()
+    val optionsBlockView = VerboseOptionsBlockView(poll.id, poll.options, optionVoters)
     val contextBlockView = PollContextBlockView(poll)
+
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
-            buildTitle(this, poll)
+            buildTitle(this, poll.question)
             buildPollDescription(this, poll.description)
             divider()
-            buildPollOptions(this, poll)
+            optionsBlockView.representIn(this)
             divider()
             delegationBlockView.representIn(this)
             divider()
@@ -39,47 +34,11 @@ class SingleChoicePollBlockView(
         }
     }
 
-    private fun buildTitle(builder: LayoutBlockDsl, poll: SingleChoicePoll) {
+    private fun buildTitle(builder: LayoutBlockDsl, title: String) {
         builder.section {
-            plainText(poll.question)
+            plainText(title)
         }
     }
-
-    private fun buildQuestionOption(builder: LayoutBlockDsl, option: PollOption) {
-        builder.section {
-            plainText(option.content)
-            accessory {
-                button {
-                    text(VOTE_BUTTON_TITLE)
-                }
-            }
-        }
-    }
-
-    private fun buildVoter(builder: ContextBlockElementDsl, voter: VoterInfo) {
-        builder.image(imageUrl = voter.profileImageURL, altText = voter.profileName)
-    }
-
-    private fun buildQuestionContext(builder: LayoutBlockDsl, voters: List<VoterInfo>) {
-        builder.context {
-            elements {
-                voters.forEach { buildVoter(this, it) }
-                plainText(votesCountLabel(voters.size))
-            }
-        }
-    }
-
-    private fun buildOption(builder: LayoutBlockDsl, poll: PollOption, voters: List<VoterInfo>) {
-        buildQuestionOption(builder, poll)
-        buildQuestionContext(builder, voters)
-    }
-
-    private fun buildPollOptions(builder: LayoutBlockDsl, poll: SingleChoicePoll) {
-        poll.options.forEach {
-            buildOption(builder, it, optionVoters[it.id] ?: listOf())
-        }
-    }
-
 
     companion object {
         internal const val VOTE_BUTTON_TITLE = "Vote"
@@ -91,25 +50,5 @@ class SingleChoicePollBlockView(
                 else -> "$count votes"
             }
         }
-
-        fun votingTime(votingTime: VotingTime): String {
-            return when (votingTime) {
-                VotingTime.Unlimited -> "Never"
-                is VotingTime.From -> "Never"
-                is VotingTime.Ranged -> votingTime.range.endInclusive.format(DATE_TIME_FORMATTER)
-                is VotingTime.UpTo -> votingTime.date.format(DATE_TIME_FORMATTER)
-            }
-        }
-
-        fun anonymousText(flag: Boolean): String {
-            return if (flag) {
-                "🔒  Responses are Anonymous"
-            } else {
-                "🔓  Responses are Non-Anonymous"
-            }
-        }
-
-        val DATE_TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
     }
 }

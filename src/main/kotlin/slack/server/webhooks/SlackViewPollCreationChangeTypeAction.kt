@@ -2,28 +2,27 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import core.model.AgreeDisagreePoll
 import core.model.PollType
 import slack.model.*
-import slack.server.base.SlackBlockActionCommandWebhook
+import slack.server.base.SlackViewBlockActionWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationConstant
-import slack.ui.create.CreationMetadata
+import slack.ui.base.UIConstant
+import slack.model.SlackPollMetadata
 
-class SlackPollCreationChangeTypeAction(
+class SlackViewPollCreationChangeTypeAction(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository
-) : SlackBlockActionCommandWebhook<SlackPollCreationChangeTypeData, CreationMetadata>(
+) : SlackViewBlockActionWebhook<SlackPollCreationChangeTypeData, SlackPollMetadata>(
     provider,
     SlackPollCreationChangeTypeData.Companion,
-    CreationMetadata::class.java
+    SlackPollMetadata::class.java
 ) {
-    override val actionID: String = CreationConstant.ActionID.POLL_TYPE
+    override val actionID: String = UIConstant.ActionID.POLL_TYPE
 
-    override fun handle(metadata: CreationMetadata, content: SlackPollCreationChangeTypeData) {
+    override fun handle(metadata: SlackPollMetadata, content: SlackPollCreationChangeTypeData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
 
         val newBuilder = BuilderFactory.createBuilder(builder, content.pollType)
@@ -33,7 +32,7 @@ class SlackPollCreationChangeTypeAction(
         val audienceFuture = provider.audienceList()
         audienceFuture.thenAccept { audience ->
             val errors = SlackPollBuilderValidator.validate(newBuilder)
-            val view = ViewFactory.creationView(metadata, newBuilder, audience, errors)
+            val view = SlackUIFactory.creationView(metadata, newBuilder, audience, errors)
             provider.updateView(view, content.viewID)
         }
     }

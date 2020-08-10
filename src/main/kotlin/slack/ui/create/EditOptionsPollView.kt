@@ -3,10 +3,12 @@ package slack.ui.create
 import com.slack.api.model.view.View
 import com.slack.api.model.view.Views.*
 import core.model.PollOption
+import slack.model.SlackPollMetadata
 import slack.ui.base.SlackViewUIRepresentable
+import slack.ui.base.UIConstant
 
 class EditOptionsPollView(
-    private val metadata: CreationMetadata,
+    private val metadata: SlackPollMetadata,
     choices: List<PollOption>
 ) : SlackViewUIRepresentable {
     private val blockView = EditOptionsPollBlockView(choices)
@@ -17,8 +19,8 @@ class EditOptionsPollView(
             .submit(viewSubmit { it.text(VIEW_CREATE_BUTTON_TITLE).type("plain_text") })
             .close(viewClose { it.text(VIEW_CLOSE_BUTTON_TITLE).type("plain_text") })
             .title(viewTitle { it.text(VIEW_TITLE).type("plain_text") })
-            .callbackId(CreationConstant.CallbackID.ADD_OPTION_VIEW_SUBMISSION)
-            .privateMetadata(CreationConstant.GSON.toJson(metadata))
+            .callbackId(UIConstant.CallbackID.ADD_OPTION_VIEW_SUBMISSION)
+            .privateMetadata(UIConstant.GSON.toJson(metadata))
             .blocks(blockView.representation())
     }
 

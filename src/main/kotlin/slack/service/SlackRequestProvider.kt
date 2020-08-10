@@ -23,6 +23,12 @@ interface SlackRequestProvider {
 
     fun postChatMessage(view: UIRepresentable<List<LayoutBlock>>, channelID: ChannelID): CompletableFuture<Unit>
 
+    fun updateChatMessage(
+        view: UIRepresentable<List<LayoutBlock>>,
+        channelID: ChannelID,
+        ts: String
+    ): CompletableFuture<Unit>
+
     fun postDirectMessage(view: UIRepresentable<List<LayoutBlock>>, userID: UserID): CompletableFuture<Unit>
 
     fun conversationsList(): CompletableFuture<List<SlackChannel>>

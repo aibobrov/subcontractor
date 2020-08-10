@@ -3,34 +3,34 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.PollOption
-import slack.model.ViewFactory
-import slack.server.base.SlackBlockActionCommandWebhook
+import slack.model.SlackUIFactory
+import slack.server.base.SlackViewBlockActionWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationMetadata
-import slack.ui.create.CreationConstant
+import slack.model.SlackPollMetadata
+import slack.ui.base.UIConstant
 import java.util.*
 
-class SlackPollEditOptionAddOptionAction(
+class SlackViewPollEditOptionAddOptionAction(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository
-) : SlackBlockActionCommandWebhook<SlackPollEditOptionAddOptionData, CreationMetadata>(
+) : SlackViewBlockActionWebhook<SlackPollEditOptionAddOptionData, SlackPollMetadata>(
     provider,
     SlackPollEditOptionAddOptionData.Companion,
-    CreationMetadata::class.java
+    SlackPollMetadata::class.java
 ) {
-    override val actionID: String = CreationConstant.ActionID.ADD_NEW_OPTION_BUTTON
+    override val actionID: String = UIConstant.ActionID.ADD_NEW_OPTION_BUTTON
 
-    override fun handle(metadata: CreationMetadata, content: SlackPollEditOptionAddOptionData) {
+    override fun handle(metadata: SlackPollMetadata, content: SlackPollEditOptionAddOptionData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
 
         builder.apply {
             options = builder.options + PollOption(UUID.randomUUID().toString(), "")
         }
 
-        val view = ViewFactory.editOptionsView(
+        val view = SlackUIFactory.editOptionsView(
             metadata,
             builder
         )

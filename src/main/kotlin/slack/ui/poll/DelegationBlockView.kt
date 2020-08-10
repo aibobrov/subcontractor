@@ -2,8 +2,9 @@ package slack.ui.poll
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 
-class DelegationBlockView: SlackBlockUIRepresentable {
+class DelegationBlockView : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         buildDelegateBlock(builder)
     }
@@ -12,6 +13,7 @@ class DelegationBlockView: SlackBlockUIRepresentable {
         builder.section {
             plainText(DELEGATE_LABEL_TITLE)
             usersSelect {
+                actionId(UIConstant.ActionID.DELEGATE_VOTE)
                 placeholder(DELEGATE_USER_SELECT_PLACEHOLDER)
             }
         }

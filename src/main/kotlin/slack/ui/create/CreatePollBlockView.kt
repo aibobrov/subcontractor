@@ -4,6 +4,7 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.PollOption
 import core.model.PollType
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 
 class CreatePollBlockView(
     pollType: PollType,
@@ -28,11 +29,11 @@ class CreatePollBlockView(
 
     private fun buildQuestionInput(builder: LayoutBlockDsl) {
         builder.input {
-            blockId(CreationConstant.BlockID.QUESTION)
+            blockId(UIConstant.BlockID.QUESTION)
             label(QUESTION_SECTION_HEADER_TITLE)
             element {
                 plainTextInput {
-                    actionId(CreationConstant.ActionID.POLL_QUESTION)
+                    actionId(UIConstant.ActionID.POLL_QUESTION)
                     multiline(false)
                     placeholder(QUESTION_INPUT_PLACEHOLDER)
                 }

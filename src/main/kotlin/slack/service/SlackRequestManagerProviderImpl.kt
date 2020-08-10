@@ -61,6 +61,21 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             .thenApply { Unit }
     }
 
+    override fun updateChatMessage(
+        view: UIRepresentable<List<LayoutBlock>>,
+        channelID: ChannelID,
+        ts: String
+    ): CompletableFuture<Unit> {
+        return methodsClient
+            .chatUpdate {
+                it
+                    .ts(ts)
+                    .channel(channelID)
+                    .blocks(view.representation())
+            }
+            .thenApply { Unit }
+    }
+
     override fun postDirectMessage(view: UIRepresentable<List<LayoutBlock>>, userID: UserID): CompletableFuture<Unit> {
         return methodsClient
             .conversationsOpen {
@@ -68,6 +83,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             }
             .thenCompose { response ->
                 postChatMessage(view, response.channel.id)
+
             }
     }
 

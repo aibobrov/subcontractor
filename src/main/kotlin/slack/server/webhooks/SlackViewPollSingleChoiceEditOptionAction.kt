@@ -3,26 +3,26 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.PollOption
-import slack.model.ViewFactory
-import slack.server.base.SlackBlockActionCommandWebhook
+import slack.model.SlackUIFactory
+import slack.server.base.SlackViewBlockActionWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationConstant
-import slack.ui.create.CreationMetadata
+import slack.ui.base.UIConstant
+import slack.model.SlackPollMetadata
 import java.util.*
 
-class SlackPollSingleChoiceEditOptionAction(
+class SlackViewPollSingleChoiceEditOptionAction(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository
-) : SlackBlockActionCommandWebhook<SlackPollSingleChoiceEditOptionData, CreationMetadata>(
+) : SlackViewBlockActionWebhook<SlackPollSingleChoiceEditOptionData, SlackPollMetadata>(
     provider,
     SlackPollSingleChoiceEditOptionData.Companion,
-    CreationMetadata::class.java
+    SlackPollMetadata::class.java
 ) {
-    override val actionID: String = CreationConstant.ActionID.SINGLE_POLL_EDIT_CHOICE
+    override val actionID: String = UIConstant.ActionID.SINGLE_POLL_EDIT_CHOICE
 
-    override fun handle(metadata: CreationMetadata, content: SlackPollSingleChoiceEditOptionData) {
+    override fun handle(metadata: SlackPollMetadata, content: SlackPollSingleChoiceEditOptionData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
 
         builder.apply {
@@ -33,7 +33,7 @@ class SlackPollSingleChoiceEditOptionAction(
             }
         }
 
-        val addView = ViewFactory.editOptionsView(metadata, builder)
+        val addView = SlackUIFactory.editOptionsView(metadata, builder)
 
         provider.pushView(addView, content.triggerID)
     }

@@ -1,4 +1,4 @@
-package slack.ui.create
+package slack.ui.components
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import slack.model.SlackError

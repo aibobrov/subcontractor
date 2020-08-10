@@ -3,16 +3,15 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.PollAuthor
-import slack.model.SlackPollBuilder
 import core.model.PollType
 import slack.model.BuilderFactory
 import slack.model.SlackPollBuilderValidator
-import slack.model.ViewFactory
+import slack.model.SlackUIFactory
 import slack.server.base.SlackSlashCommandDataFactory
 import slack.server.base.SlackSlashCommandWebhook
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationMetadata
+import slack.model.SlackPollMetadata
 import java.util.*
 
 class SlackPollCreationSlashCommand(
@@ -24,7 +23,7 @@ class SlackPollCreationSlashCommand(
     override val commandName: String = "/liquid"
 
     override fun handle(content: CreationSlashCommandData) {
-        val metadata = CreationMetadata(UUID.randomUUID().toString())
+        val metadata = SlackPollMetadata(UUID.randomUUID().toString())
 
         val builder = BuilderFactory.createBuilder(
             id = metadata.pollID,
@@ -36,7 +35,7 @@ class SlackPollCreationSlashCommand(
         val audienceFuture = provider.audienceList()
         audienceFuture.thenAccept { audience ->
             val errors = SlackPollBuilderValidator.validate(builder)
-            val view = ViewFactory.creationView(metadata, builder, audience, errors)
+            val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
             provider.openView(view, content.triggerID)
         }
     }

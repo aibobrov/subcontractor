@@ -8,9 +8,8 @@ import slack.server.base.RegistrableWebhook
 import slack.server.webhooks.*
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
+import slack.ui.base.UIConstant
 
-// TODO: research for types of delegation button/picker
-// TODO: View components + abstractions
 @Configuration
 open class SlackAppConfiguration(
     provider: SlackRequestProvider,
@@ -21,22 +20,30 @@ open class SlackAppConfiguration(
     val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
     val creationSubmission = SlackPollCreationViewSubmission(provider, creationRepository, liquidPollRepository)
     val editOptionsSubmission = SlackPollEditOptionsViewSubmission(provider, creationRepository)
-    val editOptionAction = SlackPollSingleChoiceEditOptionAction(provider, creationRepository)
-    val editOptionAddOptionAction = SlackPollEditOptionAddOptionAction(provider, creationRepository)
-    val editOverflowOptionAction = SlackPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
-    val changeTypeAction = SlackPollCreationChangeTypeAction(provider, creationRepository)
+    val editOptionAction = SlackViewPollSingleChoiceEditOptionAction(provider, creationRepository)
+    val editOptionAddOptionAction = SlackViewPollEditOptionAddOptionAction(provider, creationRepository)
+    val editOverflowOptionAction = SlackViewPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
+    val changeTypeAction = SlackViewPollCreationChangeTypeAction(provider, creationRepository)
 
     // Advanced Settings
-    val anonymousSettingAction = SlackPollCreationAnonymousSettingAction(provider, creationRepository)
-    val showResponsesSettingAction = SlackPollCreationShowResponsesSettingAction(provider, creationRepository)
-    val startDateTimePickerSettingAction = SlackPollCreationStartDateTimeSettingAction(provider, creationRepository)
-    val finishDateTimePickerSettingAction = SlackPollCreationFinishDateTimeSettingAction(provider, creationRepository)
+    val anonymousSettingAction = SlackViewPollCreationAnonymousSettingAction(provider, creationRepository)
+    val showResponsesSettingAction = SlackViewPollCreationShowResponsesSettingAction(provider, creationRepository)
+    val startDateTimePickerSettingAction = SlackViewPollCreationStartDateTimeSettingAction(provider, creationRepository)
+    val finishDateTimePickerSettingAction =
+        SlackViewPollCreationFinishDateTimeSettingAction(provider, creationRepository)
 
     // Date/Time/DateTime picker
-    val startDatePickerAction = SlackPollCreationStartDatePickerAction(provider, creationRepository)
-    val startTimePickerAction = SlackPollCreationStartTimePickerAction(provider, creationRepository)
-    val finishDatePickerAction = SlackPollCreationFinishDatePickerAction(provider, creationRepository)
-    val finishTimePickerAction = SlackPollCreationFinishTimePickerAction(provider, creationRepository)
+    val startDatePickerAction = SlackViewPollCreationStartDatePickerAction(provider, creationRepository)
+    val startTimePickerAction = SlackViewPollCreationStartTimePickerAction(provider, creationRepository)
+    val finishDatePickerAction = SlackViewPollCreationFinishDatePickerAction(provider, creationRepository)
+    val finishTimePickerAction = SlackViewPollCreationFinishTimePickerAction(provider, creationRepository)
+
+    // Empty action
+    val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
+
+    // Voting
+    val delegationAction = SlackMessagePollVoteDelegationAction(provider)
+    val voteAction = SlackMessagePollVoteAction(provider)
 
     @Bean
     open fun initSlackApp(): App {
@@ -58,7 +65,10 @@ open class SlackAppConfiguration(
             startDatePickerAction,
             startTimePickerAction,
             finishDatePickerAction,
-            finishTimePickerAction
+            finishTimePickerAction,
+            emptyAction,
+            delegationAction,
+            voteAction
         )
 
         for (webhook in webhooks) {

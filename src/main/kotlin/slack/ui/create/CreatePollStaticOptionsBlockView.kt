@@ -5,11 +5,10 @@ import com.slack.api.model.kotlin_extension.block.element.StaticSelectElementBui
 import core.model.PollOption
 import core.model.PollType
 import slack.ui.base.SlackBlockUIRepresentable
-import slack.ui.poll.CompactOptionsBlockView
-import slack.ui.poll.CompactPollBlockView
+import slack.ui.base.UIConstant
 
 class CreatePollStaticOptionsBlockView(options: List<PollOption>) : SlackBlockUIRepresentable {
-    private val optionsBlockView = PollOptionsBlockView(options, false)
+    private val optionsBlockView = CreatePollCompactOptionsBlockView(options)
 
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
@@ -33,7 +32,7 @@ class CreatePollStaticOptionsBlockView(options: List<PollOption>) : SlackBlockUI
         builder.actions {
             elements {
                 staticSelect {
-                    actionId(CreationConstant.ActionID.POLL_TYPE)
+                    actionId(UIConstant.ActionID.POLL_TYPE)
                     buildStaticPollTypeSelect(this)
                     initialOption {
                         value(POLL_TYPE.name)

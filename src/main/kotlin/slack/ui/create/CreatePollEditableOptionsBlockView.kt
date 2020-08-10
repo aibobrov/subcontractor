@@ -1,12 +1,12 @@
 package slack.ui.create
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
-import com.slack.api.model.kotlin_extension.block.element.OverflowMenuElementBuilder
 import com.slack.api.model.kotlin_extension.block.element.StaticSelectElementBuilder
 import core.model.PollOption
 import core.model.PollType
-import slack.model.OptionAction
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
+import slack.ui.components.PollOptionsBlockView
 
 class CreatePollEditableOptionsBlockView(options: List<PollOption>) : SlackBlockUIRepresentable {
     private val optionsBlockView = PollOptionsBlockView(options)
@@ -33,7 +33,7 @@ class CreatePollEditableOptionsBlockView(options: List<PollOption>) : SlackBlock
         builder.actions {
             elements {
                 staticSelect {
-                    actionId(CreationConstant.ActionID.POLL_TYPE)
+                    actionId(UIConstant.ActionID.POLL_TYPE)
                     buildStaticPollTypeSelect(this)
                     initialOption {
                         value(POLL_TYPE.name)
@@ -42,7 +42,7 @@ class CreatePollEditableOptionsBlockView(options: List<PollOption>) : SlackBlock
                 }
                 button {
                     text(ADD_CHOICES_BUTTON_TITLE)
-                    actionId(CreationConstant.ActionID.SINGLE_POLL_EDIT_CHOICE)
+                    actionId(UIConstant.ActionID.SINGLE_POLL_EDIT_CHOICE)
                 }
             }
         }

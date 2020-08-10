@@ -4,27 +4,27 @@ import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.model.OptionAction
 import slack.model.SlackPollBuilderValidator
-import slack.model.ViewFactory
-import slack.server.base.SlackBlockActionCommandWebhook
+import slack.model.SlackUIFactory
+import slack.server.base.SlackViewBlockActionWebhook
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
-import slack.ui.create.CreationConstant
-import slack.ui.create.CreationMetadata
+import slack.ui.base.UIConstant
+import slack.model.SlackPollMetadata
 import utils.swap
 
-class SlackPollCreationSingleChoicePollOverflowAction(
+class SlackViewPollCreationSingleChoicePollOverflowAction(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository
-) : SlackBlockActionCommandWebhook<SlackPollCreationSingleChoicePollOverflowData, CreationMetadata>(
+) : SlackViewBlockActionWebhook<SlackPollCreationSingleChoicePollOverflowData, SlackPollMetadata>(
     provider,
     SlackPollCreationSingleChoicePollOverflowData.Companion,
-    CreationMetadata::class.java
+    SlackPollMetadata::class.java
 ) {
-    override val actionID: String = CreationConstant.ActionID.OPTION_ACTION_OVERFLOW
+    override val actionID: String = UIConstant.ActionID.OPTION_ACTION_OVERFLOW
 
-    override fun handle(metadata: CreationMetadata, content: SlackPollCreationSingleChoicePollOverflowData) {
+    override fun handle(metadata: SlackPollMetadata, content: SlackPollCreationSingleChoicePollOverflowData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         val optionIndex = builder.options.indexOfFirst { it.id == content.optionID }
 
@@ -38,7 +38,7 @@ class SlackPollCreationSingleChoicePollOverflowAction(
         val audienceFuture = provider.audienceList()
         audienceFuture.thenAccept { audience ->
             val errors = SlackPollBuilderValidator.validate(builder)
-            val view = ViewFactory.creationView(metadata, builder, audience, errors)
+            val view = SlackUIFactory.creationView(metadata, builder, audience, errors)
             provider.updateView(view, content.viewID)
         }
 

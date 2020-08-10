@@ -4,9 +4,11 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.element.dsl.BlockElementDsl
 import core.model.PollOption
 import core.model.base.Poll
+import core.model.base.PollID
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 
-class CompactOptionsBlockView(private val options: List<PollOption>): SlackBlockUIRepresentable {
+class CompactOptionsBlockView(private val pollID: PollID, private val options: List<PollOption>) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         buildCompactTitle(builder, options)
     }
@@ -15,10 +17,12 @@ class CompactOptionsBlockView(private val options: List<PollOption>): SlackBlock
         fun buildButton(builder: BlockElementDsl, option: PollOption) {
             builder.button {
                 text(option.content, emoji = true)
+                actionId(UIConstant.ActionID.voteAction(option.id))
                 value(option.id)
             }
         }
         builder.actions {
+            blockId(pollID)
             elements {
                 options.forEach { buildButton(this, it) }
             }

@@ -5,6 +5,7 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import slack.model.SlackChannel
 import slack.model.SlackUser
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 
 class CreatePollAudiencePickerBlockView(
     private val users: List<SlackUser>,
@@ -16,10 +17,10 @@ class CreatePollAudiencePickerBlockView(
 
     private fun buildAudienceSelect(builder: LayoutBlockDsl) {
         builder.input {
-            blockId(CreationConstant.BlockID.AUDIENCE)
+            blockId(UIConstant.BlockID.AUDIENCE)
             label(AUDIENCE_HEADER_LABEL)
             multiStaticSelect {
-                actionId(CreationConstant.ActionID.POLL_AUDIENCE)
+                actionId(UIConstant.ActionID.POLL_AUDIENCE)
                 placeholder(AUDIENCE_SELECT_PLACEHOLDER)
                 optionGroups {
                     buildAudienceUserOptionGroup(this)

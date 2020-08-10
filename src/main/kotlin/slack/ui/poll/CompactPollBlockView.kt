@@ -9,7 +9,7 @@ import slack.ui.base.SlackBlockUIRepresentable
 class CompactPollBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
     val delegationBlockView = DelegationBlockView()
     val contextBlockView = PollContextBlockView(poll)
-    val compactPollBlockView = CompactOptionsBlockView(poll.options)
+    val compactPollBlockView = CompactOptionsBlockView(poll.id, poll.options)
 
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
@@ -17,7 +17,6 @@ class CompactPollBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
             compactPollBlockView.representIn(this)
             divider()
             delegationBlockView.representIn(this)
-            divider()
             contextBlockView.representIn(this)
         }
     }
