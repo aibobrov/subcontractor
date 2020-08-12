@@ -17,7 +17,7 @@ class VotingBusinessLogicImpl(
     private val delegationStorage: MutableMap<UserID, UserID> = mutableMapOf()
 
     private fun mutableMapVoters(pollID: PollID): MutableMap<OptionID, Set<Voter>> {
-        val options = VoteResults.empty(pollRepository.get(pollID)?.options ?: listOf())
+        val options = emptyResults(pollID)
         val immutableVoteResults = votesStorage[pollID] ?: options
         return immutableVoteResults.toMutableMap()
     }
@@ -56,8 +56,13 @@ class VotingBusinessLogicImpl(
         delegationStorage[userID] = toUserID
     }
 
+    private fun emptyResults(pollID: PollID): VoteResults {
+        return VoteResults.empty(pollRepository.get(pollID)?.options ?: listOf())
+    }
+
+
     override fun voteResults(pollID: PollID): VoteResults {
         // TODO: edge cases
-        return votesStorage[pollID]!!
+        return votesStorage[pollID] ?: emptyResults(pollID)
     }
 }

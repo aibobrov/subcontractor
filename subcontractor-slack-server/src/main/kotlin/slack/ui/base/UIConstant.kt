@@ -3,7 +3,9 @@ package slack.ui.base
 import com.google.gson.Gson
 import com.slack.api.util.json.GsonFactory
 import core.model.base.OptionID
+import core.model.base.Poll
 import core.model.base.PollID
+import core.model.base.UserID
 import java.time.format.DateTimeFormatter
 
 object UIConstant {
@@ -43,6 +45,20 @@ object UIConstant {
         const val DELEGATE_VOTE = "DELEGATE_VOTE"
         val VOTE = "VOTE#(.*)#(.*)".toPattern()
         fun voteAction(pollID: PollID, optionID: OptionID): String = "VOTE#$pollID#$optionID"
+    }
+
+    object Text {
+        fun delegationInfo(toUserID: UserID): String {
+            return "You gave your vote to <@$toUserID>"
+        }
+
+        fun pollText(poll: Poll): String {
+            return "Vote: ${poll.question}"
+        }
+
+        fun originalMessageText(link: String): String {
+            return "<$link|View original message>"
+        }
     }
 
     val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE

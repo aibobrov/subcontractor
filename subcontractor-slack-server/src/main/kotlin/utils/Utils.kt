@@ -7,4 +7,5 @@ fun <T> MutableList<T>.swap(index1: Int, index2: Int) {
     this[index2] = tmp
 }
 
+// Unreachable logical branch indicator
 fun unreachable(): Nothing = error("Unreachable")

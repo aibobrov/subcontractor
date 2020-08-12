@@ -5,20 +5,22 @@ import core.model.base.Poll
 import slack.model.SlackCompactVoteResults
 import slack.ui.base.SlackBlockUIRepresentable
 import slack.ui.components.PollResultBlockView
+import slack.ui.components.PollTitleBlockView
 
 class CompactPollBlockView(
     private val poll: Poll,
     voteResults: SlackCompactVoteResults,
     private val showResults: Boolean
 ) : SlackBlockUIRepresentable {
-    val delegationBlockView = DelegationBlockView(poll.id)
-    val contextBlockView = PollContextBlockView(poll)
-    val compactPollBlockView = CompactOptionsBlockView(poll.id, poll.options)
-    val voterResultBlockView = PollResultBlockView(poll.options, voteResults, poll.isAnonymous)
+    private val titleBlockView = PollTitleBlockView(poll.question)
+    private val delegationBlockView = DelegationBlockView(poll.id)
+    private val contextBlockView = PollContextBlockView(poll)
+    private val compactPollBlockView = CompactOptionsBlockView(poll.id, poll.options)
+    private val voterResultBlockView = PollResultBlockView(poll.options, voteResults, poll.isAnonymous)
 
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
-            buildTitle(this, poll)
+            titleBlockView.representIn(this)
             compactPollBlockView.representIn(this)
             divider()
             delegationBlockView.representIn(this)
@@ -29,12 +31,5 @@ class CompactPollBlockView(
             }
         }
     }
-
-    private fun buildTitle(builder: LayoutBlockDsl, poll: Poll) {
-        builder.section {
-            plainText(poll.question)
-        }
-    }
-
 
 }

@@ -6,7 +6,7 @@ import slack.server.base.SlackConstant
 import slack.ui.base.SlackBlockUIRepresentable
 import slack.ui.base.UIConstant
 import utils.DateUtils
-import utils.unixTimeStamp
+import utils.unixEpochTimestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -15,9 +15,9 @@ import java.time.LocalTime
 abstract class DateTimePickerBlockView(
     private val selectedDateTime: LocalDateTime? // one of the available times(15 min interval)
 ) : SlackBlockUIRepresentable {
-    abstract val dateActionID: String
-    abstract val timeActionID: String
-    abstract val labelText: String
+    protected abstract val dateActionID: String
+    protected abstract val timeActionID: String
+    protected abstract val labelText: String
 
     override fun representIn(builder: LayoutBlockDsl) {
         val timeSelection =
@@ -57,7 +57,7 @@ abstract class DateTimePickerBlockView(
             options {
                 for (time in times) {
                     option {
-                        plainText(formattedTime(time.unixTimeStamp))
+                        plainText(formattedTime(time.unixEpochTimestamp))
                         val formattedValue = time.format(UIConstant.TIME_VALUE_FORMATTER)
                         value(formattedValue)
                     }
@@ -65,7 +65,7 @@ abstract class DateTimePickerBlockView(
             }
             initialOption {
                 val initialTime = selectedTime?.let { DateUtils.round(it, SlackConstant.TIME_INTERVAL) } ?: times.first()
-                plainText(formattedTime(initialTime.unixTimeStamp))
+                plainText(formattedTime(initialTime.unixEpochTimestamp))
                 val formattedValue = initialTime.format(UIConstant.TIME_VALUE_FORMATTER)
                 value(formattedValue)
             }

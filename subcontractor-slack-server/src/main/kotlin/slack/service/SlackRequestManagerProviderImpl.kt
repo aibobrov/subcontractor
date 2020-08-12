@@ -1,6 +1,8 @@
 package slack.service
 
 import com.slack.api.methods.AsyncMethodsClient
+import com.slack.api.model.Attachment
+import com.slack.api.model.Attachments.attachment
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
@@ -9,7 +11,11 @@ import core.model.base.UserID
 import slack.model.SlackConversation
 import slack.model.SlackUser
 import slack.model.SlackUserProfile
+import utils.unixEpochTimestamp
+import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
+import slack.ui.poll.PreviewPollAttachmentBlockView
+
 
 class SlackRequestManagerProviderImpl : SlackRequestProvider {
     lateinit var methodsClient: AsyncMethodsClient
@@ -50,16 +56,57 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
     }
 
     override fun postChatMessage(
+        text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID
     ): CompletableFuture<Unit> {
         return methodsClient
             .chatPostMessage {
                 it
+                    .text(text)
                     .blocks(blocks.representation())
                     .channel(channelID)
             }
             .thenApply { Unit }
+    }
+
+    override fun postEphemeral(
+        text: String?,
+        attachment: UIRepresentable<Attachment>,
+        channelID: ChannelID,
+        userID: UserID
+    ): CompletableFuture<Unit> {
+        return methodsClient
+            .chatPostEphemeral { builder ->
+                builder
+                    .text(text)
+                    .channel(channelID)
+                    .attachments(listOf(attachment.representation()))
+                    .user(userID)
+            }
+            .thenApply { Unit }
+    }
+
+    override fun scheduleChatMessage(
+        text: String?,
+        blocks: UIRepresentable<List<LayoutBlock>>,
+        channelID: ChannelID,
+        postAt: LocalDateTime
+    ): CompletableFuture<Unit> {
+        return methodsClient
+            .chatScheduleMessage {
+                it
+                    .text(text)
+                    .blocks(blocks.representation())
+                    .channel(channelID)
+                    .postAt(postAt.unixEpochTimestamp.toInt())
+            }
+            .thenCompose {
+                if (it.error == "time_in_past")
+                    return@thenCompose postChatMessage(text, blocks, channelID)
+
+                CompletableFuture.completedFuture(Unit)
+            }
     }
 
     override fun updateChatMessage(
@@ -78,6 +125,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
     }
 
     override fun postDirectMessage(
+        text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         userID: UserID
     ): CompletableFuture<Unit> {
@@ -86,7 +134,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                 it.users(listOf(userID))
             }
             .thenCompose { response ->
-                postChatMessage(blocks, response.channel.id)
+                postChatMessage(text, blocks, response.channel.id)
             }
     }
 
@@ -131,6 +179,18 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                         profile.id to profile
                     }
                     .toMap()
+            }
+    }
+
+    override fun getPermanentMessageURL(channelID: ChannelID, ts: String): CompletableFuture<String> {
+        return methodsClient
+            .chatGetPermalink {
+                it
+                    .channel(channelID)
+                    .messageTs(ts)
+            }
+            .thenApply {
+                it.permalink
             }
     }
 }

@@ -4,7 +4,7 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.base.Poll
 import core.model.base.VotingTime
 import slack.ui.base.SlackBlockUIRepresentable
-import utils.unixTimestamp
+import utils.unixEpochTimestamp
 
 class PollContextBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
@@ -27,8 +27,8 @@ class PollContextBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
             return when (votingTime) {
                 VotingTime.Unlimited -> "Never"
                 is VotingTime.From -> "Never"
-                is VotingTime.Ranged -> format(votingTime.range.endInclusive.unixTimestamp)
-                is VotingTime.UpTo -> format(votingTime.date.unixTimestamp)
+                is VotingTime.Ranged -> format(votingTime.range.endInclusive.unixEpochTimestamp)
+                is VotingTime.UpTo -> format(votingTime.date.unixEpochTimestamp)
             }
         }
 

@@ -1,5 +1,6 @@
 package slack.ui.base
 
+import com.slack.api.model.Attachment
 import com.slack.api.model.kotlin_extension.block.container.MultiLayoutBlockContainer
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.view.View
@@ -20,3 +21,10 @@ interface SlackViewUIRepresentable : BuildableUIRepresentable<View.ViewBuilder, 
     }
 }
 
+interface SlackAttachmentUIRepresentable : BuildableUIRepresentable<Attachment.AttachmentBuilder, Attachment> {
+    override fun representation(): Attachment {
+        val builder = Attachment.builder()
+        representIn(builder)
+        return builder.build()
+    }
+}

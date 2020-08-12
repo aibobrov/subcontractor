@@ -41,14 +41,14 @@ class SlackPollCreationViewSubmission(
 
         liquidPollRepository.put(metadata.pollID, newPoll)
 
-        // TODO: results fetch (business logic + slack api request)
         val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 
         val blocks = SlackUIFactory.createPollBlocks(newPoll, resultInfo)
 
-        // TODO: store audience(conversation identifiers)? separately?
+        val pollText = UIConstant.Text.pollText(newPoll)
+        // TODO: store audience(conversation identifiers/messages)? separately?
         for (conversation in builder.audience) {
-            provider.postChatMessage(blocks, conversation.id)
+            provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
         }
     }
 }

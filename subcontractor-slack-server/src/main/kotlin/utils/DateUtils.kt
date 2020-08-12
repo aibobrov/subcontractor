@@ -1,9 +1,6 @@
 package utils
 
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
+import java.time.*
 
 object DateUtils {
     // interval in minutes
@@ -24,7 +21,7 @@ object DateUtils {
             result.add(nextTime)
         }
 
-        return result
+        return result.take(20)
     }
 
     fun round(time: LocalTime, byInterval: Long): LocalTime {
@@ -45,9 +42,9 @@ object DateUtils {
     }
 }
 
+val LocalDateTime.unixEpochTimestamp: Long
+    // TODO: check timezone issue
+    get() = atZone(ZoneId.systemDefault()).toEpochSecond()
 
-val LocalDateTime.unixTimestamp: Long
-    get() = atZone(ZoneOffset.UTC).toEpochSecond()
-
-val LocalTime.unixTimeStamp: Long
-    get() = LocalDateTime.of(LocalDate.now(), this).unixTimestamp
+val LocalTime.unixEpochTimestamp: Long
+    get() = LocalDateTime.of(LocalDate.now(), this).unixEpochTimestamp

@@ -5,9 +5,15 @@ import java.time.LocalDateTime
 sealed class VotingTime {
     object Unlimited : VotingTime()
 
-    class Ranged(val range: ClosedRange<LocalDateTime>) : VotingTime()
+    class Ranged(val range: ClosedRange<LocalDateTime>) : VotingTime(), ScheduledTime {
+        override val startDateTime: LocalDateTime get() = range.start
+    }
 
-    class From(val date: LocalDateTime) : VotingTime()
+    class From(override val startDateTime: LocalDateTime) : VotingTime(), ScheduledTime
 
     class UpTo(val date: LocalDateTime) : VotingTime()
+
+    interface ScheduledTime {
+        abstract val startDateTime: LocalDateTime
+    }
 }
