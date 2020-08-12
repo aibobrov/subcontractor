@@ -1,6 +1,6 @@
 package core.logic
 
-open class DispatcherImpl(private val database : Database) : Dispatcher {
+open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
 
     protected fun unitReports(reports : List<Report>) : Report? {
         return if (reports.isEmpty()) {
@@ -30,11 +30,11 @@ open class DispatcherImpl(private val database : Database) : Dispatcher {
     }
 
 
-    override fun createOrder(userId: UserId, order : Order) : DispatcherResponse {
-        return database.addOrder(userId, order)
+    override fun createOrder(orderId: OrderId, userId: UserId, order : Order) : DispatcherError {
+        return database.addOrder(orderId, userId, order)
     }
 
-    override fun deleteOrder(orderId: OrderId) : DispatcherResponse {
+    override fun deleteOrder(orderId: OrderId) : DispatcherError {
         return database.deleteOrder(orderId)
     }
 
@@ -42,11 +42,11 @@ open class DispatcherImpl(private val database : Database) : Dispatcher {
         return database.getOrder(orderId)
     }
 
-    override fun delegateOrder(srcId: UserId, dstId: List<UserId>, orderId: OrderId): DispatcherResponse {
-        val node : Node = database.getNode(orderId, srcId) ?: return DispatcherResponse(false, "this node doesn't exist")
+    override fun delegateOrder(srcId: UserId, dstId: List<UserId>, orderId: OrderId): DispatcherError {
+        val node : Node = database.getNode(orderId, srcId) ?: return DispatcherError.NODE_DOES_NOT_EXIST
         for (id in dstId) {
             if (isContainsLoop(id, node)) {
-                return DispatcherResponse(false, "loop is found")
+                return DispatcherError.LOOP_IS_FOUND
             }
         }
         for (id in dstId) {
@@ -62,11 +62,11 @@ open class DispatcherImpl(private val database : Database) : Dispatcher {
             }
         }
         database.modifyNode(orderId, node)
-        return DispatcherResponse(true, "order delegated successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
-    override fun executeOrder(orderId: OrderId, executor: UserId, report: Report): DispatcherResponse {
-        val node = database.getNode(orderId, executor) ?: return DispatcherResponse(false, "this node doesn't exist")
+    override fun executeOrder(orderId: OrderId, executor: UserId, report: Report): DispatcherError {
+        val node = database.getNode(orderId, executor) ?: return DispatcherError.NODE_DOES_NOT_EXIST
 
         if (node.getReport() == null) {
             node.setReport(report)
@@ -77,17 +77,17 @@ open class DispatcherImpl(private val database : Database) : Dispatcher {
             deleteNodesRecursively(orderId, node)
         }
 
-        return DispatcherResponse(true, "order executed successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
-    override fun confirmExecution(orderId: OrderId, executor: UserId, report: Report): DispatcherResponse {
-        val node = database.getNode(orderId, executor) ?: return DispatcherResponse(false, "order delegated successfully")
+    override fun confirmExecution(orderId: OrderId, executor: UserId, report: Report): DispatcherError {
+        val node = database.getNode(orderId, executor) ?: return DispatcherError.NODE_DOES_NOT_EXIST
         node.setConfirm(true)
         return database.modifyNode(orderId, node)
     }
 
-    override fun cancelExecution(orderId: OrderId, executor: UserId): DispatcherResponse {
-        val node = database.getNode(orderId, executor) ?: return DispatcherResponse(false, "order delegated successfully")
+    override fun cancelExecution(orderId: OrderId, executor: UserId): DispatcherError {
+        val node = database.getNode(orderId, executor) ?: return DispatcherError.NODE_DOES_NOT_EXIST
         node.setReport(null)
         node.setConfirm(false)
         return database.modifyNode(orderId, node)

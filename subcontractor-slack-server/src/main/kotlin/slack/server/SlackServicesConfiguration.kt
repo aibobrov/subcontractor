@@ -1,5 +1,7 @@
 package slack.server
 
+import core.logic.DataStorage
+import core.logic.DataStorageTestVersion
 import core.model.storage.LiquidPollRepository
 import core.model.storage.LiquidPollRepositoryImpl
 import org.springframework.context.annotation.Bean
@@ -8,8 +10,12 @@ import service.VotingBusinessLogic
 import service.VotingBusinessLogicImpl
 import slack.service.*
 
+typealias DataBase = DataStorageTestVersion
+
 @Configuration
 open class SlackServicesConfiguration {
+
+    val storage : DataStorage = DataBase()
 
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {
@@ -23,11 +29,11 @@ open class SlackServicesConfiguration {
 
     @Bean
     open fun createLiquidPollRepository(): LiquidPollRepository {
-        return LiquidPollRepositoryImpl()
+        return LiquidPollRepositoryImpl(storage)
     }
 
     @Bean
     open fun createBusinessLogic(): VotingBusinessLogic {
-        return VotingBusinessLogicImpl(createLiquidPollRepository())
+        return VotingBusinessLogicImpl(storage)
     }
 }

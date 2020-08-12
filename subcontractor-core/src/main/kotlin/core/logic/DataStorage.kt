@@ -1,7 +1,7 @@
 package core.logic
 
 interface DataStorage {
-    fun addOrder(userId: UserId, order: Order) : DispatcherResponse
+    fun addOrder(orderId: OrderId, userId: UserId, order: Order) : DispatcherResponse
     fun deleteOrder(orderId: OrderId) :DispatcherResponse
     fun getOrder(orderId: OrderId) : Order?
     fun addNode(orderId: OrderId, node : Node) : DispatcherResponse

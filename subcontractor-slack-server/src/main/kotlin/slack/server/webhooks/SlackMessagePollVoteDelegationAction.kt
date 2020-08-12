@@ -26,7 +26,7 @@ class SlackMessagePollVoteDelegationAction(
     override val actionID: String = UIConstant.ActionID.DELEGATE_VOTE
 
     override fun handle(content: SlackMessagePollVoteDelegationData) {
-        businessLogic.delegate(content.delegatorID, content.userID)
+        businessLogic.delegate(content.pollID, content.delegatorID, content.userID)
         val poll = liquidPollRepository.get(content.pollID) ?: throw IllegalArgumentException()
 //        // TODO: delegation business logic
 //        val newView = VerbosePollBlockView(

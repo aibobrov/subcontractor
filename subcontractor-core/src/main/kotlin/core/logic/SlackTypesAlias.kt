@@ -7,4 +7,4 @@ typealias UserId = core.model.base.UserID
 typealias OrderId = PollID
 typealias Report = OptionID
 typealias Order = Poll
-typealias Database = DataStorageTestVersion
+

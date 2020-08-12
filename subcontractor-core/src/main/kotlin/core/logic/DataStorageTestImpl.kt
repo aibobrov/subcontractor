@@ -6,62 +6,61 @@ class DataStorageTestVersion : DataStorage {
     private val orders = mutableMapOf<OrderId, Order>()
     private val nodes = mutableMapOf<OrderId, MutableMap<UserId, Node>>()
 
-    override fun addOrder(userId : UserId, order: Order) : DispatcherResponse {
-        val orderId = order.id
+    override fun addOrder(orderId: OrderId, userId : UserId, order: Order) : DispatcherError {
         if (orders.containsKey(orderId)) {
-            return DispatcherResponse(false, "this order already exist")
+            return DispatcherError.ORDER_ALREADY_EXIST
         }
         orders[orderId] = order
         nodes[orderId] = mutableMapOf(userId to Node(userId))
         customers[orderId] = userId
-        return DispatcherResponse(true, "order added successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
-    override fun deleteOrder(orderId: OrderId) : DispatcherResponse {
+    override fun deleteOrder(orderId: OrderId) : DispatcherError {
         if (!orders.containsKey(orderId)) {
-            return DispatcherResponse(false, "this order already exist")
+            return DispatcherError.ORDER_ALREADY_EXIST
         }
         orders.remove(orderId)
         nodes.remove(orderId)
-        return DispatcherResponse(true, "order deleted successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
     override fun getOrder(orderId: OrderId): Order? {
         return orders[orderId]
     }
 
-    override fun addNode(orderId: OrderId, node: Node): DispatcherResponse {
+    override fun addNode(orderId: OrderId, node: Node): DispatcherError {
         if (!nodes.containsKey(orderId)) {
-            return DispatcherResponse(false, "this order doesn't exist")
+            return DispatcherError.ORDER_DOES_NOT_EXIST
         }
         if (nodes[orderId]?.get(node.getUserId()) != null) {
-            return DispatcherResponse(false, "this node already exist")
+           return DispatcherError.NODE_AlREADY_EXIST
         }
         nodes[orderId]?.set(node.getUserId(), node)
-        return DispatcherResponse(true, "node added successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
-    override fun modifyNode(orderId: OrderId, node: Node): DispatcherResponse {
+    override fun modifyNode(orderId: OrderId, node: Node): DispatcherError {
         if (!nodes.containsKey(orderId)) {
-            return DispatcherResponse(false, "this order doesn't exist")
+            return DispatcherError.ORDER_DOES_NOT_EXIST
         }
         if (nodes[orderId]?.get(node.getUserId()) == null) {
-            return DispatcherResponse(false, "this node doesn't exist")
+            return DispatcherError.NODE_DOES_NOT_EXIST
         }
         nodes[orderId]?.set(node.getUserId(), node)
-        return DispatcherResponse(true, "node modified successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
     override fun getNode(orderId: OrderId, userId: UserId): Node? {
         return nodes[orderId]?.get(userId)
     }
 
-    override fun deleteNode(orderId: OrderId, userId: UserId) : DispatcherResponse {
+    override fun deleteNode(orderId: OrderId, userId: UserId) : DispatcherError {
         if (nodes[orderId]?.get(userId) == null) {
-            return DispatcherResponse(false, "this node doesn't exist")
+            return DispatcherError.NODE_DOES_NOT_EXIST
         }
         nodes[orderId]?.remove(userId)
-        return DispatcherResponse(true, "node deleted successfully")
+        return DispatcherError.EMPTY_ERROR
     }
 
     override fun getCustomer(orderId : OrderId) : UserId? {

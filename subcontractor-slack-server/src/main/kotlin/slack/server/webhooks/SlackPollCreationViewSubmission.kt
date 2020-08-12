@@ -39,7 +39,7 @@ class SlackPollCreationViewSubmission(
 
         creationRepository.remove(metadata.pollID)
 
-        liquidPollRepository.put(metadata.pollID, newPoll)
+        liquidPollRepository.put(metadata.pollID, newPoll.author.id, newPoll)
 
         val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 
