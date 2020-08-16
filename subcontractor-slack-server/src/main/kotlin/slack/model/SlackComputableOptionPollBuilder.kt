@@ -3,6 +3,7 @@ package slack.model
 import core.model.PollAuthor
 import core.model.PollOption
 import core.model.PollType
+import core.model.SlackAudience
 import core.model.base.PollTag
 import java.time.LocalDateTime
 

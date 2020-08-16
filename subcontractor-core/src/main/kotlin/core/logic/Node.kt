@@ -2,33 +2,34 @@ package core.logic
 
 class Node(private val userId: UserId) {
 
-    private var parents = mutableListOf<Node>()
-    private var children  = mutableListOf<Node>()
-    private var report : Report? = null
+    private val parents = mutableListOf<Node>()
+    private val children = mutableListOf<Node>()
+    private var report: Report? = null
     private var isConfirmReport = false
 
-    fun getUserId() : UserId {
+    fun getUserId(): UserId {
         return userId
     }
 
-    fun addChild(node : Node) {
+    fun addChild(node: Node) {
         children.add(node)
     }
 
-    fun addChildren(node : List<Node>) {
+    fun addChildren(node: List<Node>) {
         children.addAll(node)
     }
 
-    fun addParent(node : Node) {
+    fun addParent(node: Node) {
         parents.add(node)
     }
 
-    fun addParents(nodes : List<Node>) {
+    fun addParents(nodes: List<Node>) {
         parents.addAll(nodes)
     }
 
     fun setReport(report: Report?) {
         this.report = report
+        isConfirmReport = false
     }
 
     fun getChildren(): MutableList<Node> {
@@ -39,12 +40,16 @@ class Node(private val userId: UserId) {
         return parents
     }
 
-    fun getReport() : Report? {
+    fun getReport(): Report? {
         return report
     }
 
-    fun setConfirm(isConfirm : Boolean) {
-        isConfirmReport = isConfirm
+    fun setConfirm(isConfirm: Boolean) {
+        if (isConfirm) {
+            report?.let { isConfirmReport = true }
+        } else {
+            isConfirmReport = false
+        }
     }
 
     fun isConfirmReport(): Boolean {
@@ -53,13 +58,6 @@ class Node(private val userId: UserId) {
 
     fun isRoot() = parents.isEmpty()
 
-    override fun equals(other : Any?) : Boolean = (other is Node) && userId == other.userId
-
-    override fun hashCode(): Int {
-        var result = userId.hashCode()
-        result = 31 * result + parents.hashCode()
-        result = 31 * result + children.hashCode()
-        return result
-    }
+    override fun equals(other: Any?): Boolean = (other is Node) && userId == other.userId
 
 }

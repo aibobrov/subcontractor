@@ -10,25 +10,32 @@ import core.model.base.UserID
 import core.logic.DispatcherImpl
 
 
-
 class VotingBusinessLogicImpl(private val storage : DataStorage) : VotingBusinessLogic {
 
     private val dispatcher = DispatcherImpl(storage)
 
     override fun vote(userID: UserID, pollID: PollID, optionID: OptionID) {
         dispatcher.executeOrder(pollID, userID, optionID)
+        dispatcher.confirmExecution(pollID, userID)
+    }
+
+    override fun addVoters(pollID: PollID, usersId: List<UserID>) {
+        dispatcher.addExecutors(pollID, usersId)
     }
 
     override fun delegate(pollId : PollID, userId : UserID, toUserID: UserID) {
-        dispatcher.delegateOrder(pollId, listOf(userId), toUserID)
+        dispatcher.delegateOrder(pollId, userId, listOf(toUserID))
     }
 
     override fun voteResults(pollID: PollID): VoteResults {
-        val voteResults : MutableMap<OptionID, Voter> = mutableMapOf()
-        val customerId : UserID = dispatcher.getCustomer(pollID) ?: return VoteResults(voteResults)
-        val results : Map<UserID, OptionID> = dispatcher.getConfirmReportsWithUsers(pollID, customerId) ?: return VoteResults(voteResults)
+        val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
+        val results: Map<UserID, OptionID> = dispatcher.getConfirmReportsWithExecutors(pollID) ?: return VoteResults(voteResults)
         for (entry in results.entries) {
-            voteResults[entry.key] = Voter(entry.value, VoteWork.Vote(pollID, entry.value))
+            if (voteResults[entry.value] == null) {
+                voteResults[entry.value] = mutableListOf(Voter(entry.key, VoteWork.Vote(pollID, entry.value)))
+            } else {
+                voteResults[entry.value]?.add(Voter(entry.key, VoteWork.Vote(pollID, entry.value)))
+            }
         }
         return VoteResults(voteResults)
     }

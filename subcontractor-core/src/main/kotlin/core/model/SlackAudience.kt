@@ -1,4 +1,4 @@
-package slack.model
+package core.model
 
 data class SlackAudience(
     val conversations: List<SlackConversation>
@@ -7,4 +7,3 @@ data class SlackAudience(
         val EMPTY = SlackAudience(listOf())
     }
 }
-

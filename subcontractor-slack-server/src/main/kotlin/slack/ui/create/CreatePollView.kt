@@ -6,6 +6,7 @@ import com.slack.api.model.view.View
 import com.slack.api.model.view.Views.*
 import core.model.PollOption
 import core.model.PollType
+import core.model.SlackAudience
 import slack.model.*
 import slack.ui.base.SlackViewUIRepresentable
 import slack.ui.base.UIConstant

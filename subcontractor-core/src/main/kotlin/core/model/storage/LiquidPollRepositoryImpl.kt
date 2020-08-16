@@ -10,6 +10,7 @@ class LiquidPollRepositoryImpl(private val storage : DataStorage) : LiquidPollRe
     override fun put(pollID: PollID, userID: UserID, poll: Poll) {
         storage.addOrder(pollID, userID, poll)
     }
+
     override fun get(pollID: PollID): Poll? {
         return storage.getOrder(pollID)
     }

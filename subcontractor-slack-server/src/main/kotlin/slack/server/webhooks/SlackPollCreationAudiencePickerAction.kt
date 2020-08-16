@@ -2,8 +2,8 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import slack.model.SlackAudience
-import slack.model.SlackConversation
+import core.model.SlackAudience
+import core.model.SlackConversation
 import slack.model.SlackPollMetadata
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackViewBlockActionWebhook

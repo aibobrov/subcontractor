@@ -2,6 +2,7 @@ package slack.model
 
 import core.model.PollType
 import core.model.VoteResults
+import core.model.base.OptionID
 import core.model.base.Poll
 import slack.service.SlackRequestProvider
 import utils.unreachable
@@ -40,10 +41,7 @@ object SlackVoteResultsFactory {
     }
 
     fun compactVoteResults(voteResults: VoteResults): SlackCompactVoteResults {
-        return SlackCompactVoteResults(
-            voteResults.results.mapValues { entry ->
-                entry.value.map { SlackUser(it.userID) }
-            }
-        )
+        val list : Map<OptionID, List<SlackUser>> = voteResults.results.mapValues { entry -> entry.value.map { voter -> SlackUser(voter.userID)}}
+        return SlackCompactVoteResults(list)
     }
 }

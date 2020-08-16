@@ -2,7 +2,7 @@ package slack.ui.create
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.element.ConversationType
-import slack.model.SlackAudience
+import core.model.SlackAudience
 import slack.ui.base.SlackBlockUIRepresentable
 import slack.ui.base.UIConstant
 import kotlin.collections.toTypedArray

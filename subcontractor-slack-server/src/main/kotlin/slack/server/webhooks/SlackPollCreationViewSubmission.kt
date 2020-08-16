@@ -3,6 +3,7 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
+import core.model.base.UserID
 import core.model.storage.LiquidPollRepository
 import service.VotingBusinessLogic
 import slack.model.*
@@ -40,6 +41,19 @@ class SlackPollCreationViewSubmission(
         creationRepository.remove(metadata.pollID)
 
         liquidPollRepository.put(metadata.pollID, newPoll.author.id, newPoll)
+
+        val slackUsers = mutableListOf<UserID>()
+
+        for (conversation in builder.audience) {
+            val users = provider
+                .usersList(conversation.id)
+                .thenApply { usersList ->
+                    usersList?.map { user : SlackUser -> user.id }
+                }
+            users.get()?.let { slackUsers.addAll(it) } ?: run { slackUsers.add(conversation.id) }
+        }
+
+        businessLogic.addVoters(metadata.pollID, slackUsers)
 
         val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 

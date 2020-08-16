@@ -8,7 +8,7 @@ import core.UIRepresentable
 import core.model.base.ChannelID
 import core.model.base.UserID
 import core.model.base.VotingTime
-import slack.model.SlackConversation
+import core.model.SlackConversation
 import slack.model.SlackUserProfile
 import slack.model.SlackUser
 import slack.ui.poll.PreviewPollAttachmentBlockView
@@ -62,6 +62,8 @@ interface SlackRequestProvider {
 
     fun usersList(): CompletableFuture<List<SlackUser>>
 
+    fun usersList(channelID: ChannelID): CompletableFuture<List<SlackUser>?>
+
     fun userProfile(userID: UserID): CompletableFuture<SlackUserProfile>
 
     fun userProfiles(userIDs: Set<String>): CompletableFuture<Map<UserID, SlackUserProfile>>
@@ -83,4 +85,5 @@ interface SlackRequestProvider {
         channelID: ChannelID,
         ts: String
     ): CompletableFuture<String>
+
 }

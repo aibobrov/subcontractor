@@ -8,7 +8,7 @@ import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.base.ChannelID
 import core.model.base.UserID
-import slack.model.SlackConversation
+import core.model.SlackConversation
 import slack.model.SlackUser
 import slack.model.SlackUserProfile
 import utils.unixEpochTimestamp
@@ -160,6 +160,14 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             }
     }
 
+    override fun usersList(channelID: ChannelID): CompletableFuture<List<SlackUser>?> {
+        return methodsClient
+            .conversationsMembers { it.channel(channelID) }
+            .thenApply { response ->
+                response.members?.map { SlackUser(it) }
+            }
+    }
+
     override fun userProfile(userID: UserID): CompletableFuture<SlackUserProfile> {
         return methodsClient
             .usersProfileGet { it.user(userID) }
@@ -193,4 +201,5 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                 it.permalink
             }
     }
+
 }

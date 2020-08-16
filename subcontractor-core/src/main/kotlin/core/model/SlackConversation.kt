@@ -1,4 +1,4 @@
-package slack.model
+package core.model
 
 data class SlackConversation(
     val id: String

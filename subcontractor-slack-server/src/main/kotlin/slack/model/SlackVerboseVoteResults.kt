@@ -1,5 +1,6 @@
 package slack.model
 
+import core.model.Voter
 import core.model.base.OptionID
 
 data class SlackVerboseVoteResults(
@@ -18,6 +19,6 @@ data class SlackCompactVoteResults(
 ) : Map<OptionID, List<SlackUser>> by results {
     val totalVoters: Int = results.values.fold(0) { acc, list -> acc + list.size }
     companion object {
-        val EMPTY = SlackCompactVoteResults(mapOf())
+        val EMPTY = SlackCompactVoteResults(mutableMapOf())
     }
 }

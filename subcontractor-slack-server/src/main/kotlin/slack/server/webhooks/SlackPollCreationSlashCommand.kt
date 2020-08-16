@@ -4,6 +4,8 @@ import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.PollAuthor
 import core.model.PollType
+import core.model.SlackAudience
+import core.model.SlackConversation
 import core.model.base.ChannelID
 import core.model.base.UserID
 import slack.model.*

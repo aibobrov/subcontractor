@@ -1,8 +1,8 @@
 package core.logic
 
-open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
+open class DispatcherImpl(private val database: DataStorage) : Dispatcher {
 
-    protected fun unitReports(reports : List<Report>) : Report? {
+    protected fun unitReports(reports: List<Report>): Report? {
         return if (reports.isEmpty()) {
             null
         } else {
@@ -10,7 +10,7 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
         }
     }
 
-    private fun isContainsLoop(id: UserId, node : Node) : Boolean {
+    private fun isContainsLoop(id: UserId, node: Node): Boolean {
         if (id == node.getUserId()) {
             return true
         }
@@ -22,7 +22,7 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
         return false
     }
 
-    private fun deleteNodesRecursively(orderId: OrderId, node : Node) {
+    private fun deleteNodesRecursively(orderId: OrderId, node: Node) {
         database.deleteNode(orderId, node.getUserId())
         for (child in node.getChildren()) {
             deleteNodesRecursively(orderId, child)
@@ -30,11 +30,11 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
     }
 
 
-    override fun createOrder(orderId: OrderId, userId: UserId, order : Order) : DispatcherError {
+    override fun createOrder(orderId: OrderId, userId: UserId, order: Order): DispatcherError {
         return database.addOrder(orderId, userId, order)
     }
 
-    override fun deleteOrder(orderId: OrderId) : DispatcherError {
+    override fun deleteOrder(orderId: OrderId): DispatcherError {
         return database.deleteOrder(orderId)
     }
 
@@ -42,15 +42,30 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
         return database.getOrder(orderId)
     }
 
-    override fun delegateOrder(srcId: UserId, dstId: List<UserId>, orderId: OrderId): DispatcherError {
-        val node : Node = database.getNode(orderId, srcId) ?: return DispatcherError.NODE_DOES_NOT_EXIST
+    override fun addExecutors(orderId: OrderId, executors: List<UserId>): DispatcherError {
+        val root: Node = database.getRoot(orderId) ?: return DispatcherError.ORDER_DOES_NOT_EXIST
+        if (root.getChildren().isNotEmpty()) {
+            return DispatcherError.ORDER_ALREADY_HAS_EXECUTORS
+        }
+        for (id in executors) {
+            val node = Node(id)
+            node.addParent(root)
+            if (database.addNode(orderId, node) == DispatcherError.EMPTY_ERROR) {
+                root.addChild(node)
+            }
+        }
+        return DispatcherError.EMPTY_ERROR
+    }
+
+    override fun delegateOrder(orderId: OrderId, srcId: UserId, dstId: List<UserId>): DispatcherError {
+        val node: Node = database.getNode(orderId, srcId) ?: return  DispatcherError.NODE_DOES_NOT_EXIST
         for (id in dstId) {
             if (isContainsLoop(id, node)) {
                 return DispatcherError.LOOP_IS_FOUND
             }
         }
         for (id in dstId) {
-            val maybeExist = database.getNode(orderId, node.getUserId())
+            val maybeExist = database.getNode(orderId, id)
             if (maybeExist == null) {
                 val newNode = Node(id)
                 node.addChild(newNode)
@@ -65,10 +80,11 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
         return DispatcherError.EMPTY_ERROR
     }
 
+
     override fun executeOrder(orderId: OrderId, executor: UserId, report: Report): DispatcherError {
         val node = database.getNode(orderId, executor) ?: return DispatcherError.NODE_DOES_NOT_EXIST
 
-        if (node.getReport() == null) {
+        if (node.getChildren().isEmpty()) {
             node.setReport(report)
             return database.modifyNode(orderId, node)
         }
@@ -80,7 +96,7 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
         return DispatcherError.EMPTY_ERROR
     }
 
-    override fun confirmExecution(orderId: OrderId, executor: UserId, report: Report): DispatcherError {
+    override fun confirmExecution(orderId: OrderId, executor: UserId): DispatcherError {
         val node = database.getNode(orderId, executor) ?: return DispatcherError.NODE_DOES_NOT_EXIST
         node.setConfirm(true)
         return database.modifyNode(orderId, node)
@@ -93,54 +109,62 @@ open class DispatcherImpl(private val database : DataStorage) : Dispatcher {
         return database.modifyNode(orderId, node)
     }
 
-    override fun getConfirmReports(orderId : OrderId, userId: UserId) : List<Report>? {
-        database.getNode(orderId, userId) ?: return null
-        val map = getConfirmReportsWithUsers(orderId, userId)
-        return map?.values?.toList()
+    private fun getConfirmReport(orderId: OrderId, node: Node): Report? {
+        return if (node.isConfirmReport()) {
+            node.getReport()
+        } else {
+            val reports = mutableListOf<Report>()
+            for (child in node.getChildren()) {
+                getConfirmReport(orderId, child)?.let{reports.add(it)}
+            }
+            unitReports(reports)
+        }
     }
 
-    override fun getConfirmReportsWithUsers(orderId : OrderId, userId: UserId) : Map<UserId, Report>? {
-        val node = database.getNode(orderId, userId) ?: return null
+    override fun getConfirmReportsWithExecutors(orderId: OrderId): Map<UserId, Report>? {
+        val root = database.getRoot(orderId) ?: return null
         val reports = mutableMapOf<UserId, Report>()
-        for (child in node.getChildren()) {
-            if (node.isConfirmReport()) {
-                node.getReport()?.let {reports[userId] = it }
-            } else {
-                val childReports = getConfirmReports(orderId, child.getUserId())
-                val report = childReports?.let { unitReports(it) }
-                report?.let { reports[userId] = it }
-            }
+        for (child in root.getChildren()) {
+            getConfirmReport(orderId, child)?.let{ reports[child.getUserId()] = it }
         }
         return reports
     }
 
-    override fun getExecutors(orderId: OrderId, userId: UserId) : List<UserId>? {
-        val node = database.getNode(orderId, userId) ?: return null
+    override fun getExecutors(orderId: OrderId): List<UserId>? {
+        val root = database.getRoot(orderId) ?: return null
         val executors = mutableListOf<UserId>()
-        for (child in node.getChildren()) {
+        for (child in root.getChildren()) {
             executors.add(child.getUserId())
         }
         return executors
     }
 
-    override fun getRealExecutors(orderId: OrderId, userId: UserId): List<UserId>? {
-        val node = database.getNode(orderId, userId) ?: return null
+    private fun getRealExecutors(orderId: OrderId, node: Node): List<UserId>? {
         val realExecutors = mutableListOf<UserId>()
         for (child in node.getChildren()) {
             if (child.isConfirmReport()) {
                 realExecutors.add(child.getUserId())
             } else {
-                getRealExecutors(orderId, child.getUserId())?.let { realExecutors.addAll(it) }
+                getRealExecutors(orderId, child)?.let { realExecutors.addAll(it) }
             }
         }
         return realExecutors
     }
 
-    override fun getReportsTree(orderId: OrderId, userId: UserId): Node? {
+    override fun getRealExecutors(orderId: OrderId): List<UserId>? {
+        val root = database.getRoot(orderId) ?: return null
+        return getRealExecutors(orderId, root)
+    }
+
+    override fun getOrderTree(orderId: OrderId): Node? {
+        return database.getRoot(orderId)
+    }
+
+    override fun getOrderTree(orderId: OrderId, userId: UserId): Node? {
         return database.getNode(orderId, userId)
     }
 
-    override fun getCustomer(orderId : OrderId) : UserId? {
+    override fun getCustomer(orderId: OrderId): UserId? {
         return database.getCustomer(orderId)
     }
 
