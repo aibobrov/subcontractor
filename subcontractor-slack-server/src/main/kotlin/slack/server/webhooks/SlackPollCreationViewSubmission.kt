@@ -3,6 +3,8 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
+import core.model.PollCreationTime
+import core.model.SlackConversation
 import core.model.base.UserID
 import core.model.storage.LiquidPollRepository
 import service.VotingBusinessLogic
@@ -60,10 +62,17 @@ class SlackPollCreationViewSubmission(
         val blocks = SlackUIFactory.createPollBlocks(newPoll, resultInfo)
 
         val pollText = UIConstant.Text.pollText(newPoll)
+
+        val creationTimes = mutableMapOf<SlackConversation, PollCreationTime>()
+
         // TODO: store audience(conversation identifiers/messages)? separately?
         for (conversation in builder.audience) {
-            provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
+            val pair = provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
+            pair.get()?.let { creationTimes[SlackConversation(it.first)] = PollCreationTime(it.second) }
         }
+
+        liquidPollRepository.putPollTime(metadata.pollID, creationTimes)
+
     }
 }
 

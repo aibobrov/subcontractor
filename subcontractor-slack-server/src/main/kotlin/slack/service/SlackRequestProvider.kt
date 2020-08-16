@@ -29,7 +29,7 @@ interface SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<Pair<String, String>?>
 
 
     fun postEphemeral(
@@ -44,7 +44,7 @@ interface SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         postAt: LocalDateTime
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<Pair<String, String>?>
 
     fun updateChatMessage(
         blocks: UIRepresentable<List<LayoutBlock>>,
@@ -56,7 +56,7 @@ interface SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         userID: UserID
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<Pair<String, String>?>
 
     fun conversationsList(): CompletableFuture<List<SlackConversation>>
 
@@ -73,7 +73,7 @@ interface SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         votingTime: VotingTime
-    ): CompletableFuture<Unit> {
+    ): CompletableFuture<Pair<String, String>?> {
         return when (votingTime) {
             VotingTime.Unlimited, is VotingTime.UpTo -> postChatMessage(text, blocks, channelID)
             is VotingTime.ScheduledTime -> scheduleChatMessage(text, blocks, channelID, votingTime.startDateTime)

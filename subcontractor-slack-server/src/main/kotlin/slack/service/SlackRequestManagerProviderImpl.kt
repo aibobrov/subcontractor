@@ -59,7 +59,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID
-    ): CompletableFuture<Unit> {
+    ): CompletableFuture<Pair<String, String>?> {
         return methodsClient
             .chatPostMessage {
                 it
@@ -67,7 +67,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                     .blocks(blocks.representation())
                     .channel(channelID)
             }
-            .thenApply { Unit }
+            .thenApply {response -> Pair(response.channel, response.ts)}
     }
 
     override fun postEphemeral(
@@ -92,7 +92,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         postAt: LocalDateTime
-    ): CompletableFuture<Unit> {
+    ): CompletableFuture<Pair<String, String>?> {
         return methodsClient
             .chatScheduleMessage {
                 it
@@ -105,7 +105,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                 if (it.error == "time_in_past")
                     return@thenCompose postChatMessage(text, blocks, channelID)
 
-                CompletableFuture.completedFuture(Unit)
+                CompletableFuture.completedFuture(Pair("", ""))
             }
     }
 
@@ -128,7 +128,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         userID: UserID
-    ): CompletableFuture<Unit> {
+    ): CompletableFuture<Pair<String, String>?> {
         return methodsClient
             .conversationsOpen {
                 it.users(listOf(userID))

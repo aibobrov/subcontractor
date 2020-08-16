@@ -4,6 +4,8 @@ import core.logic.DataStorage
 import core.logic.DataStorageTestVersion
 import core.model.storage.LiquidPollRepository
 import core.model.storage.LiquidPollRepositoryImpl
+import core.model.storage.PollCreationTimesStorage
+import core.model.storage.PollCreationTimesStorageImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -29,7 +31,7 @@ open class SlackServicesConfiguration {
 
     @Bean
     open fun createLiquidPollRepository(): LiquidPollRepository {
-        return LiquidPollRepositoryImpl(storage)
+        return LiquidPollRepositoryImpl(storage, PollCreationTimesStorageImpl())
     }
 
     @Bean

@@ -1,9 +1,6 @@
 package core.model.base
 
-import core.model.PollAuthor
-import core.model.PollOption
-import core.model.PollType
-import core.model.SlackAudience
+import core.model.*
 
 interface Poll {
     val id: PollID

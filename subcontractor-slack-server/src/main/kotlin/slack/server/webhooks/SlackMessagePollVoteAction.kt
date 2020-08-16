@@ -38,8 +38,13 @@ class SlackMessagePollVoteAction(
         val voteInfo = SlackVoteResultsFactory.voteResults(poll, compactVoteResults, provider)
 
         val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
-        for (conversation in poll.audience) {
-            provider.updateChatMessage(blocks, conversation.id, content.ts)
+
+        val times = liquidPollRepository.getPollTime(poll.id)
+
+        if (times != null) {
+            for (entry in times.entries) {
+                 provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+            }
         }
     }
 }
