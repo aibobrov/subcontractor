@@ -43,7 +43,7 @@ class SlackMessagePollVoteAction(
 
         if (times != null) {
             for (entry in times.entries) {
-                 provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+                provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
             }
         }
     }

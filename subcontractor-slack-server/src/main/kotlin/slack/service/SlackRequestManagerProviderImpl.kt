@@ -6,6 +6,7 @@ import com.slack.api.model.Attachments.attachment
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
+import core.model.PollCreationTime
 import core.model.base.ChannelID
 import core.model.base.UserID
 import core.model.SlackConversation
@@ -59,7 +60,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID
-    ): CompletableFuture<Pair<String, String>?> {
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?> {
         return methodsClient
             .chatPostMessage {
                 it
@@ -67,7 +68,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
                     .blocks(blocks.representation())
                     .channel(channelID)
             }
-            .thenApply {response -> Pair(response.channel, response.ts)}
+            .thenApply {response -> Pair(SlackConversation(response.channel), PollCreationTime(response.ts))}
     }
 
     override fun postEphemeral(
@@ -92,7 +93,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         postAt: LocalDateTime
-    ): CompletableFuture<Pair<String, String>?> {
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?> {
         return methodsClient
             .chatScheduleMessage {
                 it
@@ -104,8 +105,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             .thenCompose {
                 if (it.error == "time_in_past")
                     return@thenCompose postChatMessage(text, blocks, channelID)
-
-                CompletableFuture.completedFuture(Pair("", ""))
+                CompletableFuture.completedFuture(Pair(SlackConversation(it.channel), PollCreationTime(it.postAt.toString())))
             }
     }
 
@@ -128,7 +128,7 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         userID: UserID
-    ): CompletableFuture<Pair<String, String>?> {
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?> {
         return methodsClient
             .conversationsOpen {
                 it.users(listOf(userID))

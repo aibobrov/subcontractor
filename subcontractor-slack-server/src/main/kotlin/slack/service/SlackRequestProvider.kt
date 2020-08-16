@@ -5,6 +5,7 @@ import com.slack.api.model.Attachment
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
+import core.model.PollCreationTime
 import core.model.base.ChannelID
 import core.model.base.UserID
 import core.model.base.VotingTime
@@ -29,7 +30,7 @@ interface SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID
-    ): CompletableFuture<Pair<String, String>?>
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?>
 
 
     fun postEphemeral(
@@ -44,7 +45,7 @@ interface SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         postAt: LocalDateTime
-    ): CompletableFuture<Pair<String, String>?>
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?>
 
     fun updateChatMessage(
         blocks: UIRepresentable<List<LayoutBlock>>,
@@ -56,7 +57,7 @@ interface SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         userID: UserID
-    ): CompletableFuture<Pair<String, String>?>
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?>
 
     fun conversationsList(): CompletableFuture<List<SlackConversation>>
 
@@ -73,7 +74,7 @@ interface SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         votingTime: VotingTime
-    ): CompletableFuture<Pair<String, String>?> {
+    ): CompletableFuture<Pair<SlackConversation, PollCreationTime>?> {
         return when (votingTime) {
             VotingTime.Unlimited, is VotingTime.UpTo -> postChatMessage(text, blocks, channelID)
             is VotingTime.ScheduledTime -> scheduleChatMessage(text, blocks, channelID, votingTime.startDateTime)

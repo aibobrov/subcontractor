@@ -65,10 +65,9 @@ class SlackPollCreationViewSubmission(
 
         val creationTimes = mutableMapOf<SlackConversation, PollCreationTime>()
 
-        // TODO: store audience(conversation identifiers/messages)? separately?
         for (conversation in builder.audience) {
             val pair = provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
-            pair.get()?.let { creationTimes[SlackConversation(it.first)] = PollCreationTime(it.second) }
+            pair.get()?.let { creationTimes[it.first] = it.second }
         }
 
         liquidPollRepository.putPollTime(metadata.pollID, creationTimes)
