@@ -21,5 +21,5 @@ interface Poll {
 
     val options: List<PollOption>
 
-    val audience: SlackAudience
+    val audience: PollAudience
 }

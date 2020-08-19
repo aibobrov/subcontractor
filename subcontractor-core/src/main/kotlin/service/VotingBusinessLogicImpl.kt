@@ -8,11 +8,22 @@ import core.model.base.OptionID
 import core.model.base.PollID
 import core.model.base.UserID
 import core.logic.DispatcherImpl
+import core.model.base.Poll
+import java.lang.annotation.RetentionPolicy
+import javax.xml.stream.XMLReporter
 
 
-class VotingBusinessLogicImpl(private val storage : DataStorage) : VotingBusinessLogic {
+class VotingBusinessLogicImpl(private val storage : DataStorage<Poll, OptionID>) : VotingBusinessLogic {
 
-    private val dispatcher = DispatcherImpl(storage)
+    private val dispatcher = DispatcherImpl(storage) { reports : List<OptionID> -> if (reports.isEmpty()) null else reports[0] }
+
+    override fun registerPoll(pollID: PollID, author: UserID, poll: Poll) {
+        dispatcher.registerOrder(pollID, author, poll)
+    }
+
+    override fun getPoll(pollID: PollID): Poll? {
+        return dispatcher.getOrder(pollID)
+    }
 
     override fun vote(userID: UserID, pollID: PollID, optionID: OptionID) {
         dispatcher.executeOrder(pollID, userID, optionID)

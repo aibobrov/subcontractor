@@ -5,19 +5,16 @@ import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.base.ChannelID
 import core.model.base.PollID
 import core.model.base.UserID
-import core.model.storage.LiquidPollRepository
 import service.VotingBusinessLogic
 import slack.server.base.SlackBlockActionDataFactory
 import slack.service.SlackRequestProvider
 import slack.server.base.SlackMessageBlockActionWebhook
 import slack.ui.base.UIConstant
 import slack.ui.poll.PreviewPollAttachment
-import slack.ui.poll.PreviewPollAttachmentBlockView
 import java.lang.IllegalArgumentException
 
 class SlackMessagePollVoteDelegationAction(
     provider: SlackRequestProvider,
-    private val liquidPollRepository: LiquidPollRepository,
     private val businessLogic: VotingBusinessLogic
 ) : SlackMessageBlockActionWebhook<SlackMessagePollVoteDelegationData>(
     provider,
@@ -27,7 +24,7 @@ class SlackMessagePollVoteDelegationAction(
 
     override fun handle(content: SlackMessagePollVoteDelegationData) {
         businessLogic.delegate(content.pollID, content.delegatorID, content.userID)
-        val poll = liquidPollRepository.get(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
 //        // TODO: delegation business logic
 //        val newView = VerbosePollBlockView(
 //            poll = SingleChoicePoll(

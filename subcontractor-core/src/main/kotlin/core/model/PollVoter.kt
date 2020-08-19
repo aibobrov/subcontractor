@@ -1,5 +1,5 @@
 package core.model
 
-data class SlackConversation(
+data class PollVoter(
     val id: String
 )

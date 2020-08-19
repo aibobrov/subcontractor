@@ -1,9 +1,9 @@
 package core.logic
 
-class Node(private val userId: UserId) {
+class Node<Report>(private val userId: UserId) {
 
-    private val parents = mutableListOf<Node>()
-    private val children = mutableListOf<Node>()
+    private val parents = mutableListOf<Node<Report>>()
+    private val children = mutableListOf<Node<Report>>()
     private var report: Report? = null
     private var isConfirmReport = false
 
@@ -11,19 +11,19 @@ class Node(private val userId: UserId) {
         return userId
     }
 
-    fun addChild(node: Node) {
+    fun addChild(node: Node<Report>) {
         children.add(node)
     }
 
-    fun addChildren(node: List<Node>) {
+    fun addChildren(node: List<Node<Report>>) {
         children.addAll(node)
     }
 
-    fun addParent(node: Node) {
+    fun addParent(node: Node<Report>) {
         parents.add(node)
     }
 
-    fun addParents(nodes: List<Node>) {
+    fun addParents(nodes: List<Node<Report>>) {
         parents.addAll(nodes)
     }
 
@@ -32,11 +32,11 @@ class Node(private val userId: UserId) {
         isConfirmReport = false
     }
 
-    fun getChildren(): MutableList<Node> {
+    fun getChildren(): MutableList<Node<Report>> {
         return children
     }
 
-    fun getParents(): MutableList<Node> {
+    fun getParents(): MutableList<Node<Report>> {
         return parents
     }
 
@@ -58,6 +58,6 @@ class Node(private val userId: UserId) {
 
     fun isRoot() = parents.isEmpty()
 
-    override fun equals(other: Any?): Boolean = (other is Node) && userId == other.userId
+    override fun equals(other: Any?): Boolean = (other is Node<*>) && userId == other.userId
 
 }

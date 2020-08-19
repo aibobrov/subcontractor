@@ -13,7 +13,7 @@ data class OneToNPoll(
     override val showResponses: Boolean,
     override val isAnonymous: Boolean,
     override val isFinished: Boolean,
-    override val audience: SlackAudience,
+    override val audience: PollAudience,
     val number: Int
 ) : Poll {
     override val type: PollType = PollType.ONE_TO_N

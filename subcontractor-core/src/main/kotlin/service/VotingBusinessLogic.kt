@@ -8,6 +8,10 @@ import core.model.base.UserID
 
 interface VotingBusinessLogic {
 
+    fun registerPoll(pollID: PollID, author: UserID, poll: Poll)
+
+    fun getPoll(pollID: PollID): Poll?
+
     fun vote(userID: UserID, pollID: PollID, optionID: OptionID)
 
     fun addVoters(pollID: PollID, usersId : List<UserID>)

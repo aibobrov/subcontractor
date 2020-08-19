@@ -2,12 +2,11 @@ package slack.ui.create
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.element.ConversationType
-import core.model.SlackAudience
+import core.model.PollAudience
 import slack.ui.base.SlackBlockUIRepresentable
 import slack.ui.base.UIConstant
-import kotlin.collections.toTypedArray
 
-class CreatePollAudiencePickerBlockView(private val audience: SlackAudience) : SlackBlockUIRepresentable {
+class CreatePollAudiencePickerBlockView(private val audience: PollAudience) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         buildAudienceSelect(builder)
     }

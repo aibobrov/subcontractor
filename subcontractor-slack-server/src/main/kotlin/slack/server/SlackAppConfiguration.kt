@@ -1,7 +1,7 @@
 package slack.server
 
 import com.slack.api.bolt.App
-import core.model.storage.LiquidPollRepository
+import core.model.storage.PollCreationTimesStorageImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -15,13 +15,13 @@ import slack.ui.base.UIConstant
 open class SlackAppConfiguration(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository,
-    liquidPollRepository: LiquidPollRepository,
+    pollCreationTimesStorage: PollCreationTimesStorageImpl,
     businessLogic: VotingBusinessLogic
 ) {
     // Poll creation
     val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
     val creationSubmission =
-        SlackPollCreationViewSubmission(provider, creationRepository, liquidPollRepository, businessLogic)
+        SlackPollCreationViewSubmission(provider, creationRepository, pollCreationTimesStorage, businessLogic)
     val editOptionsSubmission = SlackPollEditOptionsViewSubmission(provider, creationRepository)
     val editOptionAction = SlackViewPollSingleChoiceEditOptionAction(provider, creationRepository)
     val editOptionAddOptionAction = SlackViewPollEditOptionAddOptionAction(provider, creationRepository)
@@ -49,8 +49,8 @@ open class SlackAppConfiguration(
     val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
 
     // Voting
-    val delegationAction = SlackMessagePollVoteDelegationAction(provider, liquidPollRepository, businessLogic)
-    val voteAction = SlackMessagePollVoteAction(provider, liquidPollRepository, businessLogic)
+    val delegationAction = SlackMessagePollVoteDelegationAction(provider, businessLogic)
+    val voteAction = SlackMessagePollVoteAction(provider, pollCreationTimesStorage, businessLogic)
 
     @Bean
     open fun initSlackApp(): App {

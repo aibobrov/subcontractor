@@ -1,11 +1,10 @@
 package core.logic
 
-enum class DispatcherError {
-    EMPTY_ERROR,
-    ORDER_ALREADY_EXIST,
-    NODE_AlREADY_EXIST,
-    ORDER_DOES_NOT_EXIST,
-    NODE_DOES_NOT_EXIST,
-    LOOP_IS_FOUND,
-    ORDER_ALREADY_HAS_EXECUTORS
+sealed class DispatcherError(message: String) : Error(message) {
+    object OrderAlreadyExists : DispatcherError("Order already exists")
+    object NodeAlreadyExists : DispatcherError("Node already exists")
+    object OrderNotFound : DispatcherError("Order does not exist")
+    object NodeNotFound : DispatcherError("Node does not exist")
+    object CycleFound : DispatcherError("Delegation cycle found")
+    object OrderAlreadyHasExecutors : DispatcherError("Order already has executors")
 }

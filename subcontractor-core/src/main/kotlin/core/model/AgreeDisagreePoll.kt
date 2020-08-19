@@ -13,7 +13,7 @@ data class AgreeDisagreePoll(
     override val showResponses: Boolean,
     override val isAnonymous: Boolean,
     override val isFinished: Boolean,
-    override val audience: SlackAudience
+    override val audience: PollAudience
 ) : Poll {
     override val type: PollType = PollType.AGREE_DISAGREE
 

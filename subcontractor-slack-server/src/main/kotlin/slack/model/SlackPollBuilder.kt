@@ -20,7 +20,7 @@ abstract class SlackPollBuilder(
     abstract var tags: List<PollTag>
     abstract var isFinished: Boolean
     abstract var advancedOption: PollAdvancedOption
-    abstract var audience: SlackAudience
+    abstract var audience: PollAudience
     abstract var number: Int
 
     fun with(builder: SlackPollBuilder) {
