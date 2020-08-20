@@ -2,6 +2,7 @@ package slack.server
 
 import core.logic.DataStorage
 import core.logic.DataStorageTestVersion
+import core.model.PollResults
 import core.model.base.OptionID
 import core.model.base.Poll
 import core.model.storage.PollCreationTimesStorageImpl
@@ -11,12 +12,12 @@ import service.VotingBusinessLogic
 import service.VotingBusinessLogicImpl
 import slack.service.*
 
-typealias DataBase = DataStorageTestVersion<Poll, OptionID>
+typealias DataBase = DataStorageTestVersion<Poll, PollResults>
 
 @Configuration
 open class SlackServicesConfiguration {
 
-    val storage : DataStorage<Poll, OptionID> = DataBase()
+    val storage : DataStorage<Poll, PollResults> = DataBase()
 
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {

@@ -1,13 +1,13 @@
 package core.logic
 
-interface DataStorage<Order, Report> {
-    fun addOrder(orderId: OrderId, userId: UserId, order: Order): DispatcherError?
+interface DataStorage<Order, WorkReport> {
+    fun addOrder(orderId: OrderId, customer: Customer<WorkReport>, order: Order): DispatcherError?
     fun deleteOrder(orderId: OrderId): DispatcherError?
     fun getOrder(orderId: OrderId): Order?
-    fun addNode(orderId: OrderId, node: Node<Report>): DispatcherError?
-    fun modifyNode(orderId: OrderId, node: Node<Report>): DispatcherError?
-    fun deleteNode(orderId: OrderId, userId: UserId): DispatcherError?
-    fun getNode(orderId: OrderId, userId: UserId): Node<Report>?
-    fun getCustomer(orderId: OrderId): UserId?
-    fun getRoot(orderId: OrderId): Node<Report>?
+    fun addWorker(orderId: OrderId, worker: Worker<WorkReport>): DispatcherError?
+    fun modifyWorker(orderId: OrderId, worker: Worker<WorkReport>): DispatcherError?
+    fun deleteWorker(orderId: OrderId, workerId: UserId): DispatcherError?
+    fun getWorker(orderId: OrderId, workerId: UserId): Worker<WorkReport>?
+    fun modifyCustomer(orderId: OrderId, customer: Customer<WorkReport>): DispatcherError?
+    fun getCustomer(orderId: OrderId): Customer<WorkReport>?
 }

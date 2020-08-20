@@ -1,18 +1,17 @@
 package core.logic
 
-interface Dispatcher<Order, Report> {
-    fun registerOrder(orderId: OrderId, userId: UserId, order: Order): DispatcherError?
+interface Dispatcher<Order, WorkReport> {
+    fun registerOrder(orderId: OrderId, customerId: UserId, order: Order): DispatcherError?
     fun deleteOrder(orderId: OrderId): DispatcherError?
     fun getOrder(orderId: OrderId): Order?
-    fun addExecutors(orderId: OrderId, executors: List<UserId>): DispatcherError?
-    fun delegateOrder(orderId: OrderId, srcId: UserId, dstId: List<UserId>): DispatcherError?
-    fun executeOrder(orderId: OrderId, executor: UserId, report: Report): DispatcherError?
-    fun confirmExecution(orderId: OrderId, executor: UserId): DispatcherError?
-    fun cancelExecution(orderId: OrderId, executor: UserId): DispatcherError?
-    fun getOrderTree(orderId: OrderId, userId: UserId): Node<Report>?
-    fun getOrderTree(orderId: OrderId): Node<Report>?
-    fun getConfirmReportsWithExecutors(orderId: OrderId): Map<UserId, Report>?
+    fun addExecutors(orderId: OrderId, executorsId: List<UserId>, unitWorksResult: (List<WorkReport?>) -> WorkReport?): DispatcherError?
+    fun delegateOrder(orderId: OrderId, srcId: UserId, dstId: List<UserId>, unitWorksResults: (List<WorkReport?>) -> WorkReport?): DispatcherError?
+    fun executeOrder(orderId: OrderId, executorId: UserId, report: WorkReport): DispatcherError?
+    fun confirmExecution(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError?
+    fun confirmExecution(orderId: OrderId, executorId: UserId): DispatcherError?
+    fun cancelExecution(orderId: OrderId, executorId: UserId): DispatcherError?
+    fun getWorkResults(orderId: OrderId): WorkReport?
     fun getExecutors(orderId: OrderId): List<UserId>?
-    fun getRealExecutors(orderId: OrderId): List<UserId>?
-    fun getCustomer(orderId: OrderId): UserId?
+    fun getTheMostActiveRealExecutors(orderId: OrderId, count: Int): Map<UserId, Int>?
+    fun getCustomerId(orderId: OrderId): UserId?
 }
