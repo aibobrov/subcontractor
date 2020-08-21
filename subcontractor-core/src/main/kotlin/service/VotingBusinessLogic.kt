@@ -14,7 +14,7 @@ interface VotingBusinessLogic {
 
     fun vote(userID: UserID, pollID: PollID, optionID: OptionID)
 
-    fun addVoters(pollID: PollID, usersId : List<UserID>)
+    fun addVoters(pollID: PollID, usersId: List<UserID>)
 
     fun delegate(pollId: PollID, userId: UserID, toUserID: UserID)
 

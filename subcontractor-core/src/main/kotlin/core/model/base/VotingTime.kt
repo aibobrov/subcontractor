@@ -14,6 +14,6 @@ sealed class VotingTime {
     class UpTo(val date: LocalDateTime) : VotingTime()
 
     interface ScheduledTime {
-        abstract val startDateTime: LocalDateTime
+        val startDateTime: LocalDateTime
     }
 }

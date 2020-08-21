@@ -7,10 +7,10 @@ data class VoteResults(val results: MutableMap<OptionID, MutableList<Voter>>) : 
 
     companion object {
         val EMPTY = VoteResults(mutableMapOf())
-       /* fun empty(options: List<PollOption>): VoteResults {
-            return VoteResults(
-                options.map { it.id to setOf<Voter>() }.toMap()
-            )
-       }*/
+        /* fun empty(options: List<PollOption>): VoteResults {
+             return VoteResults(
+                 options.map { it.id to setOf<Voter>() }.toMap()
+             )
+        }*/
     }
 }

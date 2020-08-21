@@ -1,19 +1,18 @@
 package service
 
 import core.logic.DataStorage
+import core.logic.DispatcherImpl
+import core.model.PollResults
 import core.model.VoteResults
 import core.model.VoteWork
 import core.model.Voter
 import core.model.base.OptionID
+import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.UserID
-import core.logic.DispatcherImpl
-import core.model.PollResults
-import core.model.base.Poll
 
 
-
-class VotingBusinessLogicImpl(val storage : DataStorage<Poll, PollResults>) : VotingBusinessLogic {
+class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : VotingBusinessLogic {
 
     private val dispatcher = DispatcherImpl(storage)
 
@@ -31,17 +30,26 @@ class VotingBusinessLogicImpl(val storage : DataStorage<Poll, PollResults>) : Vo
     }
 
     override fun addVoters(pollID: PollID, usersId: List<UserID>) {
-        dispatcher.addExecutors(pollID, usersId){ resultsList : List<PollResults?> -> PollResults.OptionsList(resultsList) }
+        dispatcher.addExecutors(pollID, usersId) { resultsList: List<PollResults?> ->
+            PollResults.OptionsList(
+                resultsList
+            )
+        }
     }
 
-    override fun delegate(pollId : PollID, userId : UserID, toUserID: UserID) {
-        dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { results : List<PollResults?> -> results.last() }
+    override fun delegate(pollId: PollID, userId: UserID, toUserID: UserID) {
+        dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { results: List<PollResults?> -> results.last() }
     }
 
     override fun voteResults(pollID: PollID): VoteResults {
+
         val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
-        val results: PollResults.OptionsList = dispatcher.getWorkResults(pollID) as PollResults.OptionsList? ?: return VoteResults(voteResults)
+
         val executors = dispatcher.getExecutors(pollID) ?: return VoteResults(voteResults)
+
+        val results: PollResults.OptionsList =
+            dispatcher.getWorkResults(pollID) as PollResults.OptionsList? ?: return VoteResults(voteResults)
+
         if (results.list.size != executors.size) {
             return VoteResults(voteResults)
         }

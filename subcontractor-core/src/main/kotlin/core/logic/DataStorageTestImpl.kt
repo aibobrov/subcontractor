@@ -82,5 +82,4 @@ class DataStorageTestVersion<Order, WorkReport> : DataStorage<Order, WorkReport>
     }
 
 
-
 }

@@ -4,9 +4,9 @@ import core.model.PollCreationTime
 import core.model.PollVoter
 import core.model.base.PollID
 
-class PollCreationTimesStorageImpl(): PollCreationTimesStorage {
+class PollCreationTimesStorageImpl : PollCreationTimesStorage {
 
-    private val creationTimes = mutableMapOf<PollID, Map<PollVoter, PollCreationTime>> ()
+    private val creationTimes = mutableMapOf<PollID, Map<PollVoter, PollCreationTime>>()
 
     override fun put(pollId: PollID, times: Map<PollVoter, PollCreationTime>) {
         creationTimes[pollId] = times

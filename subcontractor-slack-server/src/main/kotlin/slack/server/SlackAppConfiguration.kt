@@ -49,7 +49,7 @@ open class SlackAppConfiguration(
     val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
 
     // Voting
-    val delegationAction = SlackMessagePollVoteDelegationAction(provider, businessLogic)
+    val delegationAction = SlackMessagePollVoteDelegationAction(provider, pollCreationTimesStorage, businessLogic)
     val voteAction = SlackMessagePollVoteAction(provider, pollCreationTimesStorage, businessLogic)
 
     @Bean

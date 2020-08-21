@@ -1,6 +1,9 @@
 package core.model
 
-import core.model.base.*
+import core.model.base.Poll
+import core.model.base.PollID
+import core.model.base.PollTag
+import core.model.base.VotingTime
 
 data class SingleChoicePoll(
     override val id: PollID,

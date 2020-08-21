@@ -5,7 +5,7 @@ open class DispatcherImpl<Order, WorkReport>(
 ) : Dispatcher<Order, WorkReport> {
 
     override fun registerOrder(orderId: OrderId, customerId: UserId, order: Order): DispatcherError? {
-        return database.addOrder(orderId, Worker<WorkReport>(orderId), order)
+        return database.addOrder(orderId, Worker(orderId), order)
     }
 
     override fun deleteOrder(orderId: OrderId): DispatcherError? {
@@ -16,7 +16,11 @@ open class DispatcherImpl<Order, WorkReport>(
         return database.getOrder(orderId)
     }
 
-    override fun addExecutors(orderId: OrderId, executorsId: List<UserId>, unitWorksResult: (List<WorkReport?>) -> WorkReport?): DispatcherError? {
+    override fun addExecutors(
+        orderId: OrderId,
+        executorsId: List<UserId>,
+        unitWorksResult: (List<WorkReport?>) -> WorkReport?
+    ): DispatcherError? {
         val customer: Customer<WorkReport> = database.getCustomer(orderId) ?: return DispatcherError.OrderNotFound
         for (id in executorsId) {
             val executor = Worker<WorkReport>(id)
@@ -30,7 +34,12 @@ open class DispatcherImpl<Order, WorkReport>(
         return null
     }
 
-    override fun delegateOrder(orderId: OrderId, srcId: UserId, dstId: List<UserId>, unitWorksResults: (List<WorkReport?>) -> WorkReport?): DispatcherError? {
+    override fun delegateOrder(
+        orderId: OrderId,
+        srcId: UserId,
+        dstId: List<UserId>,
+        unitWorksResults: (List<WorkReport?>) -> WorkReport?
+    ): DispatcherError? {
         val customer = database.getWorker(orderId, srcId) ?: return DispatcherError.WorkerNotFound
         for (id in dstId) {
             if (isContainsCycle(id, customer)) {
@@ -79,7 +88,7 @@ open class DispatcherImpl<Order, WorkReport>(
 
     override fun getExecutors(orderId: OrderId): List<UserId>? {
         val customer = database.getCustomer(orderId) ?: return null
-        return customer.getExecutors().map{ executor -> executor.userId }
+        return customer.getExecutors().map { executor -> executor.userId }
     }
 
 
@@ -94,7 +103,7 @@ open class DispatcherImpl<Order, WorkReport>(
         for (parent in customer.getCustomers()) {
             if (parent is Worker<WorkReport> && parent.getCustomers().isNotEmpty()) {
                 if (isContainsCycle(dstId, parent)) {
-                   return true
+                    return true
                 }
             }
         }
@@ -108,21 +117,19 @@ open class DispatcherImpl<Order, WorkReport>(
 
     override fun getTheMostActiveRealExecutors(orderId: OrderId, count: Int): Map<UserId, Int>? {
         val customer = database.getCustomer(orderId) ?: return null
-        val realExecutors= customer.getRealExecutors()
+        val realExecutors = customer.getRealExecutors()
         val countsOfWork = realExecutors.values.sorted()
         val topCounts = countsOfWork.subList(0, count)
-        return realExecutors.filter { entry -> entry.value >= topCounts.last()}
+        return realExecutors.filter { entry -> entry.value >= topCounts.last() }
     }
 
     override fun confirmExecution(orderId: OrderId, executorId: UserId): DispatcherError? {
         val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
         for (customer in executor.getCustomers()) {
             customer.confirmWorkReport(executor)
-            database.modifyCustomer(orderId, customer)
         }
         database.modifyWorker(orderId, executor)
         return null
     }
-
 
 }

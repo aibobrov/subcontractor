@@ -4,8 +4,19 @@ interface Dispatcher<Order, WorkReport> {
     fun registerOrder(orderId: OrderId, customerId: UserId, order: Order): DispatcherError?
     fun deleteOrder(orderId: OrderId): DispatcherError?
     fun getOrder(orderId: OrderId): Order?
-    fun addExecutors(orderId: OrderId, executorsId: List<UserId>, unitWorksResult: (List<WorkReport?>) -> WorkReport?): DispatcherError?
-    fun delegateOrder(orderId: OrderId, srcId: UserId, dstId: List<UserId>, unitWorksResults: (List<WorkReport?>) -> WorkReport?): DispatcherError?
+    fun addExecutors(
+        orderId: OrderId,
+        executorsId: List<UserId>,
+        unitWorksResult: (List<WorkReport?>) -> WorkReport?
+    ): DispatcherError?
+
+    fun delegateOrder(
+        orderId: OrderId,
+        srcId: UserId,
+        dstId: List<UserId>,
+        unitWorksResults: (List<WorkReport?>) -> WorkReport?
+    ): DispatcherError?
+
     fun executeOrder(orderId: OrderId, executorId: UserId, report: WorkReport): DispatcherError?
     fun confirmExecution(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError?
     fun confirmExecution(orderId: OrderId, executorId: UserId): DispatcherError?
