@@ -2,9 +2,7 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import core.model.AgreeDisagreePoll
-import core.model.PollAuthor
-import core.model.SingleChoicePoll
+import core.model.*
 import core.model.base.ChannelID
 import core.model.storage.PollCreationTimesStorageImpl
 import core.model.base.PollID
@@ -56,7 +54,13 @@ class SlackMessagePollVoteDelegationAction(
 
         val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
 
-        provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
+        val creationTimes = pollCreationTimesStorage.get(poll.id)
+
+        val pair = provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
+
+        pair.get()?.let { creationTimes?.set(it.first, it.second) }
+
+        pollCreationTimesStorage.put(poll.id, creationTimes)
     }
 }
 

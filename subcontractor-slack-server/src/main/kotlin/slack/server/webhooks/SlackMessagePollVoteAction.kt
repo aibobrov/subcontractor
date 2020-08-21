@@ -38,13 +38,10 @@ class SlackMessagePollVoteAction(
 
         val times = pollCreationTimesStorage.get(poll.id)
 
-        provider.updateChatMessage(blocks, content.channelID, content.ts)
-
-        if (times != null) {
-            for (entry in times.entries) {
-                provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
-            }
+        for (entry in times.entries) {
+            provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
         }
+
     }
 }
 
