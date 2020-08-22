@@ -1,9 +1,7 @@
 package slack.ui.poll
 
 import com.slack.api.model.Attachment
-import core.model.PollAuthor
 import core.model.base.Poll
-import core.model.base.VotingTime
 import slack.ui.base.SlackAttachmentUIRepresentable
 
 class PreviewPollAttachment(

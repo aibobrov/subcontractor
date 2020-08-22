@@ -43,6 +43,8 @@ object UIConstant {
 
         // Message interactivity
         const val DELEGATE_VOTE = "DELEGATE_VOTE"
+        const val CANCEL_VOTE = "CANCEL_VOTE"
+        const val CANCEL_DELEGATION = "CANCEL_DELEGATION"
         val VOTE = "VOTE#(.*)#(.*)".toPattern()
         fun voteAction(pollID: PollID, optionID: OptionID): String = "VOTE#$pollID#$optionID"
     }

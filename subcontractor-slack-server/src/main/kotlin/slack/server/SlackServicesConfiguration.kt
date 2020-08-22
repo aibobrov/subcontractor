@@ -3,14 +3,16 @@ package slack.server
 import core.logic.DataStorage
 import core.logic.DataStorageTestVersion
 import core.model.PollResults
-import core.model.base.OptionID
 import core.model.base.Poll
 import core.model.storage.PollCreationTimesStorageImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
 import service.VotingBusinessLogicImpl
-import slack.service.*
+import slack.service.SlackPollCreationRepository
+import slack.service.SlackPollCreationRepositoryImpl
+import slack.service.SlackRequestManagerProviderImpl
+import slack.service.SlackRequestProvider
 
 typealias DataBase = DataStorageTestVersion<Poll, PollResults>
 

@@ -1,6 +1,5 @@
 package slack.model
 
-import core.model.Voter
 import core.model.base.OptionID
 
 data class SlackVerboseVoteResults(

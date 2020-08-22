@@ -51,6 +51,9 @@ open class SlackAppConfiguration(
     // Voting
     val delegationAction = SlackMessagePollVoteDelegationAction(provider, pollCreationTimesStorage, businessLogic)
     val voteAction = SlackMessagePollVoteAction(provider, pollCreationTimesStorage, businessLogic)
+    val cancelVoteAction = SlackMessagePollVoteCancelAction(provider, pollCreationTimesStorage, businessLogic)
+    val cancelDelegationAction =
+        SlackMessagePollDelegationCancelAction(provider, pollCreationTimesStorage, businessLogic)
 
     @Bean
     open fun initSlackApp(): App {
@@ -77,7 +80,9 @@ open class SlackAppConfiguration(
             audiencePickerAction,
             emptyAction,
             delegationAction,
-            voteAction
+            voteAction,
+            cancelVoteAction,
+            cancelDelegationAction
         )
 
         for (webhook in webhooks) {
