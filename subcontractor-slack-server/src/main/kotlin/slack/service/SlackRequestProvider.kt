@@ -39,6 +39,12 @@ interface SlackRequestProvider {
         userID: UserID
     ): CompletableFuture<Unit>
 
+    fun postEphemeral(
+        text: String?,
+        channelID: ChannelID,
+        userID: UserID
+    ): CompletableFuture<Unit>
+
     fun scheduleChatMessage(
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,

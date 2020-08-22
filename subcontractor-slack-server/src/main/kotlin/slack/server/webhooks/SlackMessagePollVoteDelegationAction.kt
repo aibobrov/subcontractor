@@ -2,23 +2,19 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import core.model.*
 import core.model.base.ChannelID
-import core.model.storage.PollCreationTimesStorageImpl
 import core.model.base.PollID
 import core.model.base.UserID
-import core.model.base.VotingTime
+import core.model.errors.VotingError
+import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
-import slack.model.SlackVerboseVoteResults
 import slack.model.SlackVoteResultsFactory
 import slack.server.base.SlackBlockActionDataFactory
-import slack.service.SlackRequestProvider
 import slack.server.base.SlackMessageBlockActionWebhook
+import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
 import slack.ui.poll.PreviewPollAttachment
-import slack.ui.poll.VerbosePollBlockView
-import java.lang.IllegalArgumentException
 
 class SlackMessagePollVoteDelegationAction(
     provider: SlackRequestProvider,
@@ -32,7 +28,17 @@ class SlackMessagePollVoteDelegationAction(
 
     override fun handle(content: SlackMessagePollVoteDelegationData) {
 
-        businessLogic.delegate(content.pollID, content.delegatorID, content.userID)
+        val maybeError = businessLogic.delegate(content.pollID, content.delegatorID, content.userID)
+
+        // Post error about delegation
+        if (maybeError == VotingError.CycleFound) {
+            provider.postEphemeral(
+                UIConstant.Text.delegationError(content.userID),
+                content.channelID,
+                content.delegatorID
+            )
+            return
+        }
 
         val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
@@ -58,7 +64,7 @@ class SlackMessagePollVoteDelegationAction(
 
         val pair = provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
 
-        pair.get()?.let { creationTimes?.set(it.first, it.second) }
+        pair.get()?.let { creationTimes[it.first] = it.second }
 
         pollCreationTimesStorage.put(poll.id, creationTimes)
     }

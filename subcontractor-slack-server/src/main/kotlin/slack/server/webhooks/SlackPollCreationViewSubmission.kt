@@ -42,7 +42,7 @@ class SlackPollCreationViewSubmission(
 
         creationRepository.remove(metadata.pollID)
 
-        businessLogic.registerPoll(metadata.pollID, newPoll.author.id, newPoll)
+        businessLogic.registerPoll(newPoll)
 
         val slackUsers = mutableListOf<UserID>()
 

@@ -86,6 +86,21 @@ class SlackRequestManagerProviderImpl : SlackRequestProvider {
             .thenApply { Unit }
     }
 
+    override fun postEphemeral(
+        text: String?,
+        channelID: ChannelID,
+        userID: UserID
+    ): CompletableFuture<Unit> {
+        return methodsClient
+            .chatPostEphemeral { builder ->
+                builder
+                    .text(text)
+                    .channel(channelID)
+                    .user(userID)
+            }
+            .thenApply { Unit }
+    }
+
     override fun scheduleChatMessage(
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,

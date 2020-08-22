@@ -5,10 +5,11 @@ import core.model.base.OptionID
 import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.UserID
+import core.model.errors.VotingError
 
 interface VotingBusinessLogic {
 
-    fun registerPoll(pollID: PollID, author: UserID, poll: Poll)
+    fun registerPoll(poll: Poll)
 
     fun getPoll(pollID: PollID): Poll?
 
@@ -16,7 +17,7 @@ interface VotingBusinessLogic {
 
     fun addVoters(pollID: PollID, usersId: List<UserID>)
 
-    fun delegate(pollId: PollID, userId: UserID, toUserID: UserID)
+    fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError?
 
     fun voteResults(pollID: PollID): VoteResults
 }

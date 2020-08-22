@@ -1,6 +1,7 @@
 package service
 
 import core.logic.DataStorage
+import core.logic.DispatcherError
 import core.logic.DispatcherImpl
 import core.model.PollResults
 import core.model.VoteResults
@@ -10,14 +11,15 @@ import core.model.base.OptionID
 import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.UserID
+import core.model.errors.VotingError
 
 
 class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : VotingBusinessLogic {
 
     private val dispatcher = DispatcherImpl(storage)
 
-    override fun registerPoll(pollID: PollID, author: UserID, poll: Poll) {
-        dispatcher.registerOrder(pollID, author, poll)
+    override fun registerPoll(poll: Poll) {
+        dispatcher.registerOrder(poll.id, poll.author.id, poll)
     }
 
     override fun getPoll(pollID: PollID): Poll? {
@@ -37,8 +39,13 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
         }
     }
 
-    override fun delegate(pollId: PollID, userId: UserID, toUserID: UserID) {
-        dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { results: List<PollResults?> -> results.last() }
+    override fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError? {
+        val maybeError =
+            dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { results: List<PollResults?> -> results.last() }
+        if (maybeError == DispatcherError.CycleFound) {
+            return VotingError.CycleFound
+        }
+        return null
     }
 
     override fun voteResults(pollID: PollID): VoteResults {

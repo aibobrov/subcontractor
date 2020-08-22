@@ -52,6 +52,10 @@ object UIConstant {
             return "You gave your vote to <@$toUserID>"
         }
 
+        fun delegationError(toUserID: UserID): String {
+            return "Error! You can't delegate vote to <@$toUserID>. Delegation cycle is found."
+        }
+
         fun pollText(poll: Poll): String {
             return "Vote: ${poll.question}"
         }
