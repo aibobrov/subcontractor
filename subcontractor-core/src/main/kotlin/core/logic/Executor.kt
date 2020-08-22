@@ -9,6 +9,8 @@ interface Executor<WorkReport> {
 
     fun addCustomer(customer: Customer<WorkReport>)
 
+    fun deleteCustomer(customer: Customer<WorkReport>)
+
     fun executeWork(report: WorkReport)
 
     fun deleteWork()

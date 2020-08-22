@@ -10,6 +10,8 @@ interface Customer<WorkReport> {
 
     fun addExecutors(executors: List<Executor<WorkReport>>)
 
+    fun deleteExecutor(executor: Executor<WorkReport>)
+
     fun getExecutors(): List<Executor<WorkReport>>
 
     fun confirmWorkReport(executor: Executor<WorkReport>)

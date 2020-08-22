@@ -21,6 +21,7 @@ interface Dispatcher<Order, WorkReport> {
     fun confirmExecution(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError?
     fun confirmExecution(orderId: OrderId, executorId: UserId): DispatcherError?
     fun cancelExecution(orderId: OrderId, executorId: UserId): DispatcherError?
+    fun cancelDelegation(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError?
     fun getWorkResults(orderId: OrderId): WorkReport?
     fun getExecutors(orderId: OrderId): List<UserId>?
     fun getTheMostActiveRealExecutors(orderId: OrderId, count: Int): Map<UserId, Int>?

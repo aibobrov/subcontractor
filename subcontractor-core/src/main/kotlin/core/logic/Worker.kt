@@ -119,4 +119,12 @@ class Worker<WorkReport>(
             reportsConfirms[customer] = isConfirm
         }
     }
+
+    override fun deleteExecutor(executor: Executor<WorkReport>) {
+        executors.remove(executor)
+    }
+
+    override fun deleteCustomer(customer: Customer<WorkReport>) {
+        customers.remove(customer)
+    }
 }
