@@ -52,7 +52,14 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
 
         val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
 
+        val options = getPoll(pollID)?.options ?: return VoteResults(voteResults)
+
+        for (option in options) {
+            voteResults[option.id] = mutableListOf()
+        }
+
         val executors = dispatcher.getExecutors(pollID) ?: return VoteResults(voteResults)
+
 
         val results: PollResults.OptionsList =
             dispatcher.getWorkResults(pollID) as PollResults.OptionsList? ?: return VoteResults(voteResults)
