@@ -25,7 +25,7 @@ class PollResultBlockView(
     ) {
         val totalVotes = results.totalVoters.toDouble()
         for (option in options) {
-            val voters = results[option.id] ?: continue
+            val voters = results[option.id] ?: listOf()
             val ratio = voters.size / totalVotes
             buildOptionResult(builder, voters, option, ratio, voters.size)
         }

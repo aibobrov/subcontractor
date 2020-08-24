@@ -2,12 +2,11 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import core.model.*
 import core.model.base.ChannelID
 import core.model.base.OptionID
 import core.model.base.PollID
 import core.model.base.UserID
-import core.model.storage.LiquidPollRepository
+import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
 import slack.server.base.SlackBlockActionDataFactory
@@ -16,12 +15,10 @@ import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
 import java.lang.IllegalArgumentException
 import java.util.regex.Pattern
-import kotlin.math.min
-import kotlin.random.Random
 
 class SlackMessagePollVoteAction(
     provider: SlackRequestProvider,
-    private val liquidPollRepository: LiquidPollRepository,
+    private val pollCreationTimesStorage: PollCreationTimesStorageImpl,
     private val businessLogic: VotingBusinessLogic
 ) : SlackPatternBlockActionWebhook<SlackMessagePollVoteData>(
     provider,
@@ -31,14 +28,20 @@ class SlackMessagePollVoteAction(
 
     override fun handle(content: SlackMessagePollVoteData) {
         businessLogic.vote(content.userID, content.pollID, content.optionID)
-        val poll = liquidPollRepository.get(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
         val voteInfo = SlackVoteResultsFactory.voteResults(poll, compactVoteResults, provider)
 
         val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
-        provider.updateChatMessage(blocks, content.channelID, content.ts)
+
+        val times = pollCreationTimesStorage.get(poll.id)
+
+        for (entry in times.entries) {
+            provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+        }
+
     }
 }
 

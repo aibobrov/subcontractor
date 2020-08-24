@@ -12,7 +12,8 @@ data class AgreeDisagreePoll(
     override val author: PollAuthor,
     override val showResponses: Boolean,
     override val isAnonymous: Boolean,
-    override val isFinished: Boolean
+    override val isFinished: Boolean,
+    override val audience: PollAudience
 ) : Poll {
     override val type: PollType = PollType.AGREE_DISAGREE
 

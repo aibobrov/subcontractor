@@ -8,7 +8,7 @@ import slack.ui.components.PollResultBlockView
 import slack.ui.components.PollTitleBlockView
 
 class CompactPollBlockView(
-    private val poll: Poll,
+    poll: Poll,
     voteResults: SlackCompactVoteResults,
     private val showResults: Boolean
 ) : SlackBlockUIRepresentable {

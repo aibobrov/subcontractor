@@ -1,68 +1,84 @@
 package service
 
+import core.logic.DataStorage
+import core.logic.DispatcherError
+import core.logic.DispatcherImpl
+import core.model.PollResults
 import core.model.VoteResults
 import core.model.VoteWork
 import core.model.Voter
 import core.model.base.OptionID
+import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.UserID
-import core.model.storage.LiquidPollRepository
+import core.model.errors.VotingError
 
-// TODO: reimplement all logic
-class VotingBusinessLogicImpl(
-    private val pollRepository: LiquidPollRepository
-) : VotingBusinessLogic {
-    private val votesStorage: MutableMap<PollID, VoteResults> = mutableMapOf()
-    private val usersToWork: MutableMap<UserID, Voter> = mutableMapOf()
-    private val delegationStorage: MutableMap<UserID, UserID> = mutableMapOf()
 
-    private fun mutableMapVoters(pollID: PollID): MutableMap<OptionID, Set<Voter>> {
-        val options = emptyResults(pollID)
-        val immutableVoteResults = votesStorage[pollID] ?: options
-        return immutableVoteResults.toMutableMap()
+class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : VotingBusinessLogic {
+
+    private val dispatcher = DispatcherImpl(storage)
+
+    override fun registerPoll(poll: Poll) {
+        dispatcher.registerOrder(poll.id, poll.author.id, poll)
     }
 
-    // TODO: edge cases/cleanup/refactor
+    override fun getPoll(pollID: PollID): Poll? {
+        return dispatcher.getOrder(pollID)
+    }
+
     override fun vote(userID: UserID, pollID: PollID, optionID: OptionID) {
-        fun deletePrevWork() { // remove old vote
-            val oldVoter = usersToWork.remove(userID)
-            if (oldVoter != null) {
-                check(oldVoter.work is VoteWork.Vote) { "Delegation is not supported yet" }
-                val vote = oldVoter.work
-                val voteResults = mutableMapVoters(pollID)
-                val voters = voteResults[vote.optionId] ?: setOf()
-                voteResults[vote.optionId] = voters.minus(oldVoter)
-                votesStorage[vote.pollID] = VoteResults(voteResults)
-            }
+        dispatcher.executeOrder(pollID, userID, PollResults.Option(optionID))
+        dispatcher.confirmExecution(pollID, userID)
+    }
+
+    override fun addVoters(pollID: PollID, usersId: List<UserID>) {
+        dispatcher.addExecutors(pollID, usersId) { resultsList: List<PollResults?> ->
+            PollResults.OptionsList(
+                resultsList
+            )
         }
+    }
 
-        fun addVoteWork() {// add vote
-            val mutableResults = mutableMapVoters(pollID)
-            val voters = mutableResults[optionID] ?: setOf()
-            val newVoter = Voter(userID, VoteWork.Vote(pollID, optionID))
-            mutableResults[optionID] = voters.plus(newVoter)
-            val newVoteResults = VoteResults(mutableResults)
-            votesStorage[pollID] = newVoteResults
-            usersToWork[userID] = newVoter
+    override fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError? {
+        val maybeError =
+            dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { results: List<PollResults?> -> results.last() }
+        if (maybeError == DispatcherError.CycleFound) {
+            return VotingError.CycleFound
         }
-
-        deletePrevWork()
-
-        addVoteWork()
+        return null
     }
-
-    override fun delegate(userID: UserID, toUserID: UserID) {
-        // TODO: edge cases
-        delegationStorage[userID] = toUserID
-    }
-
-    private fun emptyResults(pollID: PollID): VoteResults {
-        return VoteResults.empty(pollRepository.get(pollID)?.options ?: listOf())
-    }
-
 
     override fun voteResults(pollID: PollID): VoteResults {
-        // TODO: edge cases
-        return votesStorage[pollID] ?: emptyResults(pollID)
+
+        val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
+
+        val options = getPoll(pollID)?.options ?: return VoteResults(voteResults)
+
+        for (option in options) {
+            voteResults[option.id] = mutableListOf()
+        }
+
+        val executors = dispatcher.getExecutors(pollID) ?: return VoteResults(voteResults)
+
+
+        val results: PollResults.OptionsList =
+            dispatcher.getWorkResults(pollID) as PollResults.OptionsList? ?: return VoteResults(voteResults)
+
+        if (results.list.size != executors.size) {
+            return VoteResults(voteResults)
+        }
+        for (i in results.list.indices) {
+            val option = results.list[i] as PollResults.Option?
+            val optionID = option?.result
+            val executorId = executors[i]
+            if (optionID != null) {
+                if (voteResults[optionID] == null) {
+                    voteResults[optionID] = mutableListOf(Voter(executorId, VoteWork.Vote(pollID, optionID)))
+                } else {
+                    voteResults[optionID]?.add(Voter(executorId, VoteWork.Vote(pollID, optionID)))
+                }
+            }
+        }
+        return VoteResults(voteResults)
     }
 }

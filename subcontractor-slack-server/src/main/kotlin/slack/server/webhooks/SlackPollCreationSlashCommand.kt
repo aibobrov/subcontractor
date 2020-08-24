@@ -2,8 +2,10 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
+import core.model.PollAudience
 import core.model.PollAuthor
 import core.model.PollType
+import core.model.PollVoter
 import core.model.base.ChannelID
 import core.model.base.UserID
 import slack.model.*
@@ -28,7 +30,7 @@ class SlackPollCreationSlashCommand(
             id = metadata.pollID,
             author = PollAuthor(content.userID, content.userName),
             type = PollType.DEFAULT
-        ).apply { audience = SlackAudience(listOf(SlackConversation(content.channelID))) }
+        ).apply { audience = PollAudience(listOf(PollVoter(content.channelID))) }
         creationRepository.put(metadata.pollID, builder)
 
         val errors = SlackPollBuilderValidator.validate(builder)

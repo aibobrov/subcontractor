@@ -5,13 +5,13 @@ import com.slack.api.model.Attachment
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
+import core.model.PollCreationTime
+import core.model.PollVoter
 import core.model.base.ChannelID
 import core.model.base.UserID
 import core.model.base.VotingTime
-import slack.model.SlackConversation
 import slack.model.SlackUserProfile
 import slack.model.SlackUser
-import slack.ui.poll.PreviewPollAttachmentBlockView
 import utils.unreachable
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
@@ -29,7 +29,7 @@ interface SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<Pair<PollVoter, PollCreationTime>?>
 
 
     fun postEphemeral(
@@ -39,12 +39,18 @@ interface SlackRequestProvider {
         userID: UserID
     ): CompletableFuture<Unit>
 
+    fun postEphemeral(
+        text: String?,
+        channelID: ChannelID,
+        userID: UserID
+    ): CompletableFuture<Unit>
+
     fun scheduleChatMessage(
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         postAt: LocalDateTime
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<Pair<PollVoter, PollCreationTime>?>
 
     fun updateChatMessage(
         blocks: UIRepresentable<List<LayoutBlock>>,
@@ -56,11 +62,13 @@ interface SlackRequestProvider {
         text: String?,
         blocks: UIRepresentable<List<LayoutBlock>>,
         userID: UserID
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<Pair<PollVoter, PollCreationTime>?>
 
-    fun conversationsList(): CompletableFuture<List<SlackConversation>>
+    fun conversationsList(): CompletableFuture<List<PollVoter>>
 
     fun usersList(): CompletableFuture<List<SlackUser>>
+
+    fun usersList(channelID: ChannelID): CompletableFuture<List<SlackUser>?>
 
     fun userProfile(userID: UserID): CompletableFuture<SlackUserProfile>
 
@@ -71,7 +79,7 @@ interface SlackRequestProvider {
         blocks: UIRepresentable<List<LayoutBlock>>,
         channelID: ChannelID,
         votingTime: VotingTime
-    ): CompletableFuture<Unit> {
+    ): CompletableFuture<Pair<PollVoter, PollCreationTime>?> {
         return when (votingTime) {
             VotingTime.Unlimited, is VotingTime.UpTo -> postChatMessage(text, blocks, channelID)
             is VotingTime.ScheduledTime -> scheduleChatMessage(text, blocks, channelID, votingTime.startDateTime)
@@ -83,4 +91,5 @@ interface SlackRequestProvider {
         channelID: ChannelID,
         ts: String
     ): CompletableFuture<String>
+
 }

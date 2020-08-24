@@ -2,8 +2,8 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import slack.model.SlackAudience
-import slack.model.SlackConversation
+import core.model.PollAudience
+import core.model.PollVoter
 import slack.model.SlackPollMetadata
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackViewBlockActionWebhook
@@ -28,7 +28,7 @@ class SlackPollCreationAudiencePickerAction(
 }
 
 data class SlackPollCreationAudiencePickerData(
-    val audience: SlackAudience
+    val audience: PollAudience
 ) {
     companion object : SlackBlockActionDataFactory<SlackPollCreationAudiencePickerData> {
         override fun fromRequest(
@@ -36,8 +36,8 @@ data class SlackPollCreationAudiencePickerData(
             context: ActionContext
         ): SlackPollCreationAudiencePickerData {
             val action = request.payload.actions.first()
-            val selectedConversation = action.selectedConversations.map { SlackConversation(it) }
-            val audience = SlackAudience(selectedConversation)
+            val selectedConversation = action.selectedConversations.map { PollVoter(it) }
+            val audience = PollAudience(selectedConversation)
             return SlackPollCreationAudiencePickerData(audience)
         }
     }

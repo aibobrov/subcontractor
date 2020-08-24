@@ -3,7 +3,10 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
 import com.slack.api.model.view.ViewState
-import core.model.storage.LiquidPollRepository
+import core.model.PollCreationTime
+import core.model.PollVoter
+import core.model.base.UserID
+import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
@@ -16,7 +19,7 @@ import slack.ui.base.UIConstant
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository,
-    private val liquidPollRepository: LiquidPollRepository,
+    private val pollCreationTimesStorage: PollCreationTimesStorageImpl,
     private val businessLogic: VotingBusinessLogic
 ) : SlackViewSubmissionWebhook<CreationViewSubmissionData, SlackPollMetadata>(
     provider,
@@ -39,17 +42,36 @@ class SlackPollCreationViewSubmission(
 
         creationRepository.remove(metadata.pollID)
 
-        liquidPollRepository.put(metadata.pollID, newPoll)
+        businessLogic.registerPoll(newPoll)
+
+        val slackUsers = mutableListOf<UserID>()
+
+        for (conversation in builder.audience) {
+            val users = provider
+                .usersList(conversation.id)
+                .thenApply { usersList ->
+                    usersList?.map { user : SlackUser -> user.id }
+                }
+            users.get()?.let { slackUsers.addAll(it) } ?: run { slackUsers.add(conversation.id) }
+        }
+
+        businessLogic.addVoters(metadata.pollID, slackUsers)
 
         val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 
         val blocks = SlackUIFactory.createPollBlocks(newPoll, resultInfo)
 
         val pollText = UIConstant.Text.pollText(newPoll)
-        // TODO: store audience(conversation identifiers/messages)? separately?
+
+        val creationTimes = mutableMapOf<PollVoter, PollCreationTime>()
+
         for (conversation in builder.audience) {
-            provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
+            val pair = provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
+            pair.get()?.let { creationTimes[it.first] = it.second }
         }
+
+        pollCreationTimesStorage.put(metadata.pollID, creationTimes)
+
     }
 }
 

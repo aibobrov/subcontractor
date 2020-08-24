@@ -1,5 +1,6 @@
 package slack.model
 
+import core.model.PollAudience
 import core.model.PollAuthor
 import core.model.PollOption
 import core.model.PollType
@@ -20,5 +21,5 @@ class SlackMutablePollBuilder(
     override var isFinished: Boolean = false
     override var advancedOption: PollAdvancedOption = DEFAULT_SETTINGS
     override var number: Int = defaultNumber(type)
-    override var audience: SlackAudience = SlackAudience.EMPTY
+    override var audience: PollAudience = PollAudience.EMPTY
 }

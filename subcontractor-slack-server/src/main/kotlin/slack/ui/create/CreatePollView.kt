@@ -4,6 +4,7 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import com.slack.api.model.kotlin_extension.block.withBlocks
 import com.slack.api.model.view.View
 import com.slack.api.model.view.Views.*
+import core.model.PollAudience
 import core.model.PollOption
 import core.model.PollType
 import slack.model.*
@@ -21,7 +22,7 @@ class CreatePollView(
     options: List<PollOption>,
     startTime: LocalDateTime?,
     finishTime: LocalDateTime?,
-    audience: SlackAudience,
+    audience: PollAudience,
     errors: List<SlackError> = listOf()
 ) : SlackViewUIRepresentable {
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)

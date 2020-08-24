@@ -20,7 +20,7 @@ abstract class SlackPollBuilder(
     abstract var tags: List<PollTag>
     abstract var isFinished: Boolean
     abstract var advancedOption: PollAdvancedOption
-    abstract var audience: SlackAudience
+    abstract var audience: PollAudience
     abstract var number: Int
 
     fun with(builder: SlackPollBuilder) {
@@ -48,6 +48,7 @@ abstract class SlackPollBuilder(
                 showResponses = advancedOption.showResponses,
                 isAnonymous = advancedOption.isAnonymous,
                 author = author,
+                audience = audience,
                 tags = tags
             )
             PollType.AGREE_DISAGREE -> AgreeDisagreePoll(
@@ -57,7 +58,8 @@ abstract class SlackPollBuilder(
                 showResponses = advancedOption.showResponses,
                 isAnonymous = advancedOption.isAnonymous,
                 author = author,
-                isFinished = isFinished
+                isFinished = isFinished,
+                audience = audience
             )
             PollType.ONE_TO_N -> OneToNPoll(
                 id,
@@ -67,7 +69,8 @@ abstract class SlackPollBuilder(
                 isAnonymous = advancedOption.isAnonymous,
                 author = author,
                 isFinished = isFinished,
-                number = number
+                number = number,
+                audience = audience
             )
         }
     }

@@ -1,5 +1,6 @@
 package core.model.base
 
+import core.model.PollAudience
 import core.model.PollAuthor
 import core.model.PollOption
 import core.model.PollType
@@ -22,4 +23,6 @@ interface Poll {
     val isFinished: Boolean
 
     val options: List<PollOption>
+
+    val audience: PollAudience
 }

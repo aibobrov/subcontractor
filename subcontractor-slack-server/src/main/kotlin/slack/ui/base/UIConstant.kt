@@ -43,6 +43,8 @@ object UIConstant {
 
         // Message interactivity
         const val DELEGATE_VOTE = "DELEGATE_VOTE"
+        const val CANCEL_VOTE = "CANCEL_VOTE"
+        const val CANCEL_DELEGATION = "CANCEL_DELEGATION"
         val VOTE = "VOTE#(.*)#(.*)".toPattern()
         fun voteAction(pollID: PollID, optionID: OptionID): String = "VOTE#$pollID#$optionID"
     }
@@ -50,6 +52,10 @@ object UIConstant {
     object Text {
         fun delegationInfo(toUserID: UserID): String {
             return "You gave your vote to <@$toUserID>"
+        }
+
+        fun delegationError(toUserID: UserID): String {
+            return "Error! You can't delegate vote to <@$toUserID>. Delegation cycle is found."
         }
 
         fun pollText(poll: Poll): String {
