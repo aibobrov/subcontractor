@@ -12,6 +12,8 @@ interface Customer<WorkReport> {
 
     fun deleteExecutor(executor: Executor<WorkReport>)
 
+    fun deleteExecutors()
+
     fun getExecutors(): List<Executor<WorkReport>>
 
     fun confirmWorkReport(executor: Executor<WorkReport>)

@@ -127,4 +127,8 @@ class Worker<WorkReport>(
     override fun deleteCustomer(customer: Customer<WorkReport>) {
         customers.remove(customer)
     }
+
+    override fun deleteExecutors() {
+        executors.clear()
+    }
 }

@@ -125,37 +125,33 @@ open class DispatcherImpl<Order, WorkReport>(
 
     override fun confirmExecution(orderId: OrderId, executorId: UserId): DispatcherError? {
         val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
-        for (customer in executor.getCustomers()) {
+        val customers = executor.getCustomers()
+        for (customer in customers) {
             customer.confirmWorkReport(executor)
         }
         database.modifyWorker(orderId, executor)
         return null
     }
 
-    private fun deleteExecutor(orderId: OrderId, customer: Worker<WorkReport>, executor: Worker<WorkReport>) {
-        customer.deleteExecutor(executor)
-        executor.deleteCustomer(customer)
-        if (executor.getCustomers().isEmpty()) {
-            database.deleteWorker(orderId, executor.userId)
-        }
-        database.modifyWorker(orderId, executor)
-        database.modifyWorker(orderId, customer)
-    }
 
     override fun cancelDelegation(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError? {
         val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.WorkerNotFound
         val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
         if (customer.getExecutors().contains(executor)) {
-            deleteExecutor(orderId, customer, executor)
+            customer.deleteExecutor(executor)
+            executor.deleteCustomer(customer)
+            database.modifyWorker(orderId, executor)
+            database.modifyWorker(orderId, customer)
+            if (executor.getCustomers().isEmpty()) {
+                database.deleteWorker(orderId, executor.userId)
+            }
         }
         return null
     }
 
     override fun cancelDelegation(orderId: OrderId, customerId: UserId): DispatcherError? {
         val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.WorkerNotFound
-        for (executor in customer.getExecutors()) {
-            deleteExecutor(orderId, customer, executor as Worker<WorkReport>)
-        }
+        customer.deleteExecutors()
         return null
     }
 
