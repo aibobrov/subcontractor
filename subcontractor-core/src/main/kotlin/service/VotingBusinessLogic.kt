@@ -19,5 +19,9 @@ interface VotingBusinessLogic {
 
     fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError?
 
+    fun cancelVote(pollID: PollID, userId: UserID)
+
+    fun cancelDelegation(pollID: PollID, userId: UserID)
+
     fun voteResults(pollID: PollID): VoteResults
 }

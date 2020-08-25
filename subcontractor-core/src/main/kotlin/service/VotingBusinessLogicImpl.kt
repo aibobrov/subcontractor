@@ -48,6 +48,14 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
         return null
     }
 
+    override fun cancelVote(pollID: PollID, userId: UserID) {
+        dispatcher.cancelExecution(pollID, userId)
+    }
+
+    override fun cancelDelegation(pollID: PollID, userId: UserID) {
+        dispatcher.cancelDelegation(pollID, userId)
+    }
+
     override fun voteResults(pollID: PollID): VoteResults {
 
         val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
