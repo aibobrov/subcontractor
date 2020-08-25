@@ -74,7 +74,7 @@ open class DispatcherImpl<Order, WorkReport>(
         val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.OrderNotFound
         val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
         customer.confirmWorkReport(executor)
-        database.modifyCustomer(orderId, customer)
+        database.modifyWorker(orderId, customer)
         database.modifyWorker(orderId, executor)
         return null
     }

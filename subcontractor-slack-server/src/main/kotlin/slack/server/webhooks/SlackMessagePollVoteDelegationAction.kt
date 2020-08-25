@@ -64,9 +64,13 @@ class SlackMessagePollVoteDelegationAction(
 
         val pair = provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
 
-        pair.get()?.let { creationTimes[it.first] = it.second }
-
-        pollCreationTimesStorage.put(poll.id, creationTimes)
+        pair.get()?.let {
+            creationTimes[it.first] = it.second
+            for (entry in creationTimes) {
+                provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+            }
+            pollCreationTimesStorage.put(poll.id, creationTimes)
+        }
     }
 }
 

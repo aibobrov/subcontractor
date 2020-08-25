@@ -45,6 +45,7 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
         if (maybeError == DispatcherError.CycleFound) {
             return VotingError.CycleFound
         }
+        dispatcher.confirmExecution(pollId, userId, toUserID)
         return null
     }
 
