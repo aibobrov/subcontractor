@@ -6,10 +6,13 @@ import core.model.base.PollID
 import core.model.base.UserID
 import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
+import slack.model.SlackUIFactory
+import slack.model.SlackVoteResultsFactory
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackMessageBlockActionWebhook
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
+import java.lang.IllegalArgumentException
 
 class SlackMessagePollVoteCancelAction(
     provider: SlackRequestProvider,
@@ -22,7 +25,22 @@ class SlackMessagePollVoteCancelAction(
     override val actionID: String = UIConstant.ActionID.CANCEL_VOTE
 
     override fun handle(content: SlackMessagePollVoteCancelData) {
-        TODO("Not yet implemented")
+
+        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+
+        businessLogic.cancelVote(poll.id, content.userID)
+
+        val voteResults = businessLogic.voteResults(poll.id)
+        val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
+        val voteInfo = SlackVoteResultsFactory.voteResults(poll, compactVoteResults, provider)
+
+        val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
+
+        val times = pollCreationTimesStorage.get(poll.id)
+
+        for (entry in times.entries) {
+            provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+        }
     }
 }
 

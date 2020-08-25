@@ -132,17 +132,29 @@ open class DispatcherImpl<Order, WorkReport>(
         return null
     }
 
+    private fun deleteExecutor(orderId: OrderId, customer: Worker<WorkReport>, executor: Worker<WorkReport>) {
+        customer.deleteExecutor(executor)
+        executor.deleteCustomer(customer)
+        if (executor.getCustomers().isEmpty()) {
+            database.deleteWorker(orderId, executor.userId)
+        }
+        database.modifyWorker(orderId, executor)
+        database.modifyWorker(orderId, customer)
+    }
+
     override fun cancelDelegation(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError? {
         val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.WorkerNotFound
         val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
         if (customer.getExecutors().contains(executor)) {
-            customer.deleteExecutor(executor)
-            executor.deleteCustomer(customer)
-            if (executor.getCustomers().isEmpty()) {
-                database.deleteWorker(orderId, executor.userId)
-            }
-            database.modifyWorker(orderId, executor)
-            database.modifyWorker(orderId, customer)
+            deleteExecutor(orderId, customer, executor)
+        }
+        return null
+    }
+
+    override fun cancelDelegation(orderId: OrderId, customerId: UserId): DispatcherError? {
+        val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.WorkerNotFound
+        for (executor in customer.getExecutors()) {
+            deleteExecutor(orderId, customer, executor as Worker<WorkReport>)
         }
         return null
     }
