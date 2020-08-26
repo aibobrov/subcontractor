@@ -18,11 +18,11 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
 
     private val dispatcher = DispatcherImpl(storage)
 
-    override fun registerPoll(poll: Poll) {
+    override fun register(poll: Poll) {
         dispatcher.registerOrder(poll.id, poll.author.id, poll)
     }
 
-    override fun getPoll(pollID: PollID): Poll? {
+    override fun get(pollID: PollID): Poll? {
         return dispatcher.getOrder(pollID)
     }
 
@@ -40,8 +40,7 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
     }
 
     override fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError? {
-        val maybeError =
-            dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { results: List<PollResults?> -> results.last() }
+        val maybeError = dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { it.last() }
         if (maybeError == DispatcherError.CycleFound) {
             return VotingError.CycleFound
         }
@@ -61,7 +60,7 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
 
         val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
 
-        val options = getPoll(pollID)?.options ?: return VoteResults(voteResults)
+        val options = get(pollID)?.options ?: return VoteResults(voteResults)
 
         for (option in options) {
             voteResults[option.id] = mutableListOf()

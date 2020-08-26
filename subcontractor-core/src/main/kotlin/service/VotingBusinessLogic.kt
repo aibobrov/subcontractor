@@ -9,9 +9,9 @@ import core.model.errors.VotingError
 
 interface VotingBusinessLogic {
 
-    fun registerPoll(poll: Poll)
+    fun register(poll: Poll)
 
-    fun getPoll(pollID: PollID): Poll?
+    fun get(pollID: PollID): Poll?
 
     fun vote(userID: UserID, pollID: PollID, optionID: OptionID)
 

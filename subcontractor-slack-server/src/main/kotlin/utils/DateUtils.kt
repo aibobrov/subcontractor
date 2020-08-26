@@ -47,4 +47,4 @@ val LocalDateTime.unixEpochTimestamp: Long
     get() = atZone(ZoneId.systemDefault()).toEpochSecond()
 
 val LocalTime.unixEpochTimestamp: Long
-    get() = LocalDateTime.of(LocalDate.now(), this).unixEpochTimestamp
+    get() = LocalDateTime.of(LocalDate.MIN, this).unixEpochTimestamp

@@ -6,6 +6,7 @@ import core.model.base.ChannelID
 import core.model.base.PollID
 import core.model.base.UserID
 import core.model.errors.VotingError
+import core.model.storage.PollCreationTimesStorage
 import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
@@ -18,7 +19,7 @@ import slack.ui.poll.PreviewPollAttachment
 
 class SlackMessagePollVoteDelegationAction(
     provider: SlackRequestProvider,
-    private val pollCreationTimesStorage: PollCreationTimesStorageImpl,
+    private val pollCreationTimesStorage: PollCreationTimesStorage,
     private val businessLogic: VotingBusinessLogic
 ) : SlackMessageBlockActionWebhook<SlackMessagePollVoteDelegationData>(
     provider,
@@ -40,7 +41,7 @@ class SlackMessagePollVoteDelegationAction(
             return
         }
 
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.get(content.pollID) ?: throw IllegalArgumentException()
 
         // Post info about delegation
         val permalink = provider.getPermanentMessageURL(content.channelID, content.ts)
@@ -62,14 +63,15 @@ class SlackMessagePollVoteDelegationAction(
 
         val creationTimes = pollCreationTimesStorage.get(poll.id)
 
-        val pair = provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
-
-        pair.get()?.let {
-            creationTimes[it.first] = it.second
-            for (entry in creationTimes) {
-                provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+        val messageResponse = provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
+        messageResponse.thenAccept {
+            if (it != null) {
+                creationTimes[it.voter] = it.time
+                for (entry in creationTimes) {
+                    provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+                }
+                pollCreationTimesStorage.put(poll.id, creationTimes)
             }
-            pollCreationTimesStorage.put(poll.id, creationTimes)
         }
     }
 }

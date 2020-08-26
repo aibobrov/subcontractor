@@ -25,8 +25,7 @@ class SlackMessagePollVoteCancelAction(
     override val actionID: String = UIConstant.ActionID.CANCEL_VOTE
 
     override fun handle(content: SlackMessagePollVoteCancelData) {
-
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.get(content.pollID) ?: throw IllegalArgumentException()
 
         businessLogic.cancelVote(poll.id, content.userID)
 

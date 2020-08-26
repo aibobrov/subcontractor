@@ -25,7 +25,7 @@ class SlackMessagePollDelegationCancelAction(
     override val actionID: String = UIConstant.ActionID.CANCEL_DELEGATION
 
     override fun handle(content: SlackMessagePollDelegationCancelData) {
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.get(content.pollID) ?: throw IllegalArgumentException()
 
         businessLogic.cancelDelegation(poll.id, content.userID)
 
@@ -37,8 +37,8 @@ class SlackMessagePollDelegationCancelAction(
 
         val times = pollCreationTimesStorage.get(poll.id)
 
-        for (entry in times.entries) {
-            provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+        for ((voter, time) in times.entries) {
+            provider.updateChatMessage(blocks, voter.id, time.value)
         }
     }
 }

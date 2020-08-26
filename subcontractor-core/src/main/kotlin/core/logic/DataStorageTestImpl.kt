@@ -1,14 +1,16 @@
 package core.logic
 
+import java.util.concurrent.ConcurrentHashMap
+
 class DataStorageTestVersion<Order, WorkReport> : DataStorage<Order, WorkReport> {
 
-    private val orders = mutableMapOf<OrderId, Order>()
-    private val customers = mutableMapOf<OrderId, Customer<WorkReport>>()
-    private val workers = mutableMapOf<OrderId, MutableMap<UserId, Worker<WorkReport>>>()
+    private val orders: MutableMap<OrderId, Order> = ConcurrentHashMap()
+    private val customers: MutableMap<OrderId, Customer<WorkReport>> = ConcurrentHashMap()
+    private val workers: MutableMap<OrderId, MutableMap<UserId, Worker<WorkReport>>> = ConcurrentHashMap()
 
     override fun addOrder(orderId: OrderId, customer: Customer<WorkReport>, order: Order): DispatcherError? {
         if (orders.containsKey(orderId)) {
-            DispatcherError.OrderAlreadyExists
+            return DispatcherError.OrderAlreadyExists
         }
         orders[orderId] = order
         customers[orderId] = customer
@@ -39,7 +41,6 @@ class DataStorageTestVersion<Order, WorkReport> : DataStorage<Order, WorkReport>
     override fun getCustomer(orderId: OrderId): Customer<WorkReport>? {
         return customers[orderId]
     }
-
 
     override fun addWorker(orderId: OrderId, worker: Worker<WorkReport>): DispatcherError? {
         if (orders[orderId] == null) {

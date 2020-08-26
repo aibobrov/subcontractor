@@ -28,7 +28,7 @@ class SlackMessagePollVoteAction(
 
     override fun handle(content: SlackMessagePollVoteData) {
         businessLogic.vote(content.userID, content.pollID, content.optionID)
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.get(content.pollID) ?: throw IllegalArgumentException()
 
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
@@ -38,10 +38,9 @@ class SlackMessagePollVoteAction(
 
         val times = pollCreationTimesStorage.get(poll.id)
 
-        for (entry in times.entries) {
-            provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+        for ((voter, time) in times.entries) {
+            provider.updateChatMessage(blocks, voter.id, time.value)
         }
-
     }
 }
 

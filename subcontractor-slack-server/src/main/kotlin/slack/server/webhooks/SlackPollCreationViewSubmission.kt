@@ -2,10 +2,14 @@ package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
+import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.ViewState
+import core.UIRepresentable
+import core.model.PollAudience
 import core.model.PollCreationTime
 import core.model.PollVoter
 import core.model.base.UserID
+import core.model.base.VotingTime
 import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
@@ -15,6 +19,7 @@ import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
+import java.util.concurrent.*
 
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
@@ -42,18 +47,9 @@ class SlackPollCreationViewSubmission(
 
         creationRepository.remove(metadata.pollID)
 
-        businessLogic.registerPoll(newPoll)
+        businessLogic.register(newPoll)
 
-        val slackUsers = mutableListOf<UserID>()
-
-        for (conversation in builder.audience) {
-            val users = provider
-                .usersList(conversation.id)
-                .thenApply { usersList ->
-                    usersList?.map { user : SlackUser -> user.id }
-                }
-            users.get()?.let { slackUsers.addAll(it) } ?: run { slackUsers.add(conversation.id) }
-        }
+        val slackUsers = collectSlackUsers(builder.audience).get()
 
         businessLogic.addVoters(metadata.pollID, slackUsers)
 
@@ -63,15 +59,46 @@ class SlackPollCreationViewSubmission(
 
         val pollText = UIConstant.Text.pollText(newPoll)
 
-        val creationTimes = mutableMapOf<PollVoter, PollCreationTime>()
+        val broadcastFuture = slackBroadcastMessage(builder.audience, pollText, blocks, newPoll.votingTime)
+        broadcastFuture.thenAccept { creationTimes ->
+            pollCreationTimesStorage.put(metadata.pollID, creationTimes)
+        }
+    }
 
-        for (conversation in builder.audience) {
-            val pair = provider.sendChatMessage(pollText, blocks, conversation.id, newPoll.votingTime)
-            pair.get()?.let { creationTimes[it.first] = it.second }
+    private fun collectSlackUsers(audience: PollAudience): CompletableFuture<List<UserID>> {
+        val userListFutures = audience.map { voter ->
+            provider
+                .usersList(voter.id)
+                .thenApply { usersList ->
+                    voter.id to usersList?.map { it.id }
+                }
         }
 
-        pollCreationTimesStorage.put(metadata.pollID, creationTimes)
+        return CompletableFuture.allOf(*userListFutures.toTypedArray()).thenApply { _ ->
+            userListFutures
+                .map { it.get() }
+                .flatMap { (voterID, users) ->
+                    users ?: listOf(voterID)
+                }
+                .toSet()
+                .toList()
+        }
+    }
 
+    private fun slackBroadcastMessage(
+        audience: PollAudience,
+        text: String?,
+        blocks: UIRepresentable<List<LayoutBlock>>,
+        votingTime: VotingTime
+    ): CompletableFuture<MutableMap<PollVoter, PollCreationTime>> {
+        val sendMessageFutures = audience.map { provider.sendChatMessage(text, blocks, it.id, votingTime) }
+        return CompletableFuture.allOf(*sendMessageFutures.toTypedArray()).thenApply { _ ->
+            sendMessageFutures
+                .mapNotNull { it.get() }
+                .map { it.voter to it.time }
+                .toMap()
+                .toMutableMap()
+        }
     }
 }
 
