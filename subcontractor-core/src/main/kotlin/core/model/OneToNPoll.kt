@@ -2,6 +2,7 @@ package core.model
 
 import core.model.base.Poll
 import core.model.base.PollID
+import core.model.base.PollTag
 import core.model.base.VotingTime
 import java.util.*
 
@@ -14,6 +15,7 @@ data class OneToNPoll(
     override val isAnonymous: Boolean,
     override val isFinished: Boolean,
     override val audience: PollAudience,
+    override val tags: List<PollTag>,
     val number: Int
 ) : Poll {
     override val type: PollType = PollType.ONE_TO_N

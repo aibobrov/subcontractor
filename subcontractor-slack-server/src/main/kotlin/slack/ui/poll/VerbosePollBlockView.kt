@@ -4,6 +4,7 @@ import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.SingleChoicePoll
 import slack.model.SlackVerboseVoteResults
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.components.PollTagsBlockView
 import slack.ui.components.PollTitleBlockView
 
 class VerbosePollBlockView(
@@ -12,6 +13,7 @@ class VerbosePollBlockView(
     showResults: Boolean
 ) : SlackBlockUIRepresentable {
     private val titleBlockView = PollTitleBlockView(poll.question)
+    private val tagsBlockView = PollTagsBlockView(poll.tags)
     private val delegationBlockView = DelegationBlockView(poll.id)
     private val optionsBlockView = VerboseOptionsBlockView(poll.id, poll.options, voteResults, showResults)
     private val contextBlockView = PollContextBlockView(poll)
@@ -19,6 +21,8 @@ class VerbosePollBlockView(
     override fun representIn(builder: LayoutBlockDsl) {
         builder.apply {
             titleBlockView.representIn(this)
+            tagsBlockView.representIn(this)
+            divider()
             buildPollDescription(this, poll.description)
             divider()
             optionsBlockView.representIn(this)

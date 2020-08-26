@@ -28,6 +28,7 @@ object UIConstant {
         const val POLL_TYPE = "POLL_TYPE"
         const val POLL_NUMBER = "POLL_NUMBER"
         const val POLL_AUDIENCE = "POLL_AUDIENCE"
+        const val POLL_TAG = "POLL_TAG"
         const val POLL_QUESTION = "POLL_QUESTION"
         const val ADD_NEW_OPTION_BUTTON = "ADD_NEW_OPTION_BUTTON"
         const val START_DATE_PICKER = "START_DATE_PICKER"

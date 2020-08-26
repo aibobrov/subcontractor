@@ -26,6 +26,7 @@ class CreatePollView(
     errors: List<SlackError> = listOf()
 ) : SlackViewUIRepresentable {
     private val createPollBlockView = CreatePollBlockView(currentPollType, options)
+    private val pollTagsPickerBlockView = CreatePollTagsPickerBlockView()
     private val audiencePickerBlockView = CreatePollAudiencePickerBlockView(audience)
     private val errorBlockView = ErrorBlockView(errors)
     private val startDateTimePickerBlockView =
@@ -48,6 +49,7 @@ class CreatePollView(
                 divider()
                 buildAdvancedSettings(this, advancedSettings)
                 divider()
+                pollTagsPickerBlockView.representIn(this)
                 audiencePickerBlockView.representIn(this)
             })
     }

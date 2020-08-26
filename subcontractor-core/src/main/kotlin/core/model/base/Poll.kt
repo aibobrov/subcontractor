@@ -25,4 +25,6 @@ interface Poll {
     val options: List<PollOption>
 
     val audience: PollAudience
+
+    val tags: List<PollTag>
 }

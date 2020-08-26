@@ -45,6 +45,9 @@ open class SlackAppConfiguration(
     // Audience
     val audiencePickerAction = SlackPollCreationAudiencePickerAction(provider, creationRepository)
 
+    // Tags
+    val tagsPickerAction = SlackPollCreationTagPickerAction(provider, creationRepository)
+
     // Empty action
     val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
 
@@ -78,6 +81,7 @@ open class SlackAppConfiguration(
             finishDatePickerAction,
             finishTimePickerAction,
             audiencePickerAction,
+            tagsPickerAction,
             emptyAction,
             delegationAction,
             voteAction,

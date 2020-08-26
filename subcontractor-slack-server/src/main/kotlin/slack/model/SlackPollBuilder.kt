@@ -59,7 +59,8 @@ abstract class SlackPollBuilder(
                 isAnonymous = advancedOption.isAnonymous,
                 author = author,
                 isFinished = isFinished,
-                audience = audience
+                audience = audience,
+                tags = tags
             )
             PollType.ONE_TO_N -> OneToNPoll(
                 id,
@@ -70,7 +71,8 @@ abstract class SlackPollBuilder(
                 author = author,
                 isFinished = isFinished,
                 number = number,
-                audience = audience
+                audience = audience,
+                tags = tags
             )
         }
     }

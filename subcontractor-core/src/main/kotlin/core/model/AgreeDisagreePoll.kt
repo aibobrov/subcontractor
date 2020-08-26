@@ -2,6 +2,7 @@ package core.model
 
 import core.model.base.Poll
 import core.model.base.PollID
+import core.model.base.PollTag
 import core.model.base.VotingTime
 import java.util.*
 
@@ -13,7 +14,8 @@ data class AgreeDisagreePoll(
     override val showResponses: Boolean,
     override val isAnonymous: Boolean,
     override val isFinished: Boolean,
-    override val audience: PollAudience
+    override val audience: PollAudience,
+    override val tags: List<PollTag>
 ) : Poll {
     override val type: PollType = PollType.AGREE_DISAGREE
 

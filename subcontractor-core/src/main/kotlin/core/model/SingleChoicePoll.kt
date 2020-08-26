@@ -16,7 +16,7 @@ data class SingleChoicePoll(
     override val isAnonymous: Boolean,
     override val author: PollAuthor,
     override val audience: PollAudience,
-    val tags: List<PollTag> = listOf()
+    override val tags: List<PollTag>
 ) : Poll {
     override val type: PollType
         get() = PollType.SINGLE_CHOICE

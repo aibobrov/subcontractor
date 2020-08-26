@@ -14,6 +14,8 @@ application {
 dependencies {
     implementation(project(path = ":subcontractor-core", configuration = "default"))
     implementation(kotlin("stdlib-jdk8"))
+    runtimeOnly(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = "1.4.0")
+
 
     // Slack
     implementation("com.slack.api:slack-api-client-kotlin-extension:1.1.1")
