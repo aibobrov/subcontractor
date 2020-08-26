@@ -1,15 +1,11 @@
 package slack.server.webhooks
 
 import com.slack.api.bolt.context.builtin.ActionContext
-import com.slack.api.bolt.context.builtin.ViewSubmissionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
-import com.slack.api.bolt.request.builtin.ViewSubmissionRequest
-import core.model.base.Poll
 import core.model.base.PollTag
 import slack.model.SlackPollMetadata
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackViewBlockActionWebhook
-import slack.server.base.SlackViewSubmissionDataFactory
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant

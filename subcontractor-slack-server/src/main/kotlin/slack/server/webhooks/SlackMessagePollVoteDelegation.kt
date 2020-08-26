@@ -7,7 +7,6 @@ import core.model.base.PollID
 import core.model.base.UserID
 import core.model.errors.VotingError
 import core.model.storage.PollCreationTimesStorage
-import core.model.storage.PollCreationTimesStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
 import slack.model.SlackVoteResultsFactory

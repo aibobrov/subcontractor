@@ -19,43 +19,47 @@ open class SlackAppConfiguration(
     businessLogic: VotingBusinessLogic
 ) {
     // Poll creation
-    val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
-    val creationSubmission =
+    private val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
+    private val creationSubmission =
         SlackPollCreationViewSubmission(provider, creationRepository, pollCreationTimesStorage, businessLogic)
-    val editOptionsSubmission = SlackPollEditOptionsViewSubmission(provider, creationRepository)
-    val editOptionAction = SlackViewPollSingleChoiceEditOptionAction(provider, creationRepository)
-    val editOptionAddOptionAction = SlackViewPollEditOptionAddOptionAction(provider, creationRepository)
-    val editOverflowOptionAction = SlackViewPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
-    val changeTypeAction = SlackViewPollCreationChangeTypeAction(provider, creationRepository)
-    val numberPickerAction = SlackPollCreationNumberPickerAction(provider, creationRepository)
+    private val editOptionsSubmission = SlackPollEditOptionsViewSubmission(provider, creationRepository)
+    private val editOptionAction = SlackViewPollSingleChoiceEditOptionAction(provider, creationRepository)
+    private val editOptionAddOptionAction = SlackViewPollEditOptionAddOptionAction(provider, creationRepository)
+    private val editOverflowOptionAction =
+        SlackViewPollCreationSingleChoicePollOverflowAction(provider, creationRepository)
+    private val changeTypeAction = SlackViewPollCreationChangeTypeAction(provider, creationRepository)
+    private val numberPickerAction = SlackPollCreationNumberPickerAction(provider, creationRepository)
 
     // Advanced Settings
-    val anonymousSettingAction = SlackViewPollCreationAnonymousSettingAction(provider, creationRepository)
-    val showResponsesSettingAction = SlackViewPollCreationShowResponsesSettingAction(provider, creationRepository)
-    val startDateTimePickerSettingAction = SlackViewPollCreationStartDateTimeSettingAction(provider, creationRepository)
-    val finishDateTimePickerSettingAction =
+    private val anonymousSettingAction = SlackViewPollCreationAnonymousSettingAction(provider, creationRepository)
+    private val showResponsesSettingAction =
+        SlackViewPollCreationShowResponsesSettingAction(provider, creationRepository)
+    private val startDateTimePickerSettingAction =
+        SlackViewPollCreationStartDateTimeSettingAction(provider, creationRepository)
+    private val finishDateTimePickerSettingAction =
         SlackViewPollCreationFinishDateTimeSettingAction(provider, creationRepository)
 
     // Date/Time/DateTime picker
-    val startDatePickerAction = SlackViewPollCreationStartDatePickerAction(provider, creationRepository)
-    val startTimePickerAction = SlackViewPollCreationStartTimePickerAction(provider, creationRepository)
-    val finishDatePickerAction = SlackViewPollCreationFinishDatePickerAction(provider, creationRepository)
-    val finishTimePickerAction = SlackViewPollCreationFinishTimePickerAction(provider, creationRepository)
+    private val startDatePickerAction = SlackViewPollCreationStartDatePickerAction(provider, creationRepository)
+    private val startTimePickerAction = SlackViewPollCreationStartTimePickerAction(provider, creationRepository)
+    private val finishDatePickerAction = SlackViewPollCreationFinishDatePickerAction(provider, creationRepository)
+    private val finishTimePickerAction = SlackViewPollCreationFinishTimePickerAction(provider, creationRepository)
 
     // Audience
-    val audiencePickerAction = SlackPollCreationAudiencePickerAction(provider, creationRepository)
+    private val audiencePickerAction = SlackPollCreationAudiencePickerAction(provider, creationRepository)
 
     // Tags
-    val tagsPickerAction = SlackPollCreationTagPickerAction(provider, creationRepository)
+    private val tagsPickerAction = SlackPollCreationTagPickerAction(provider, creationRepository)
 
     // Empty action
-    val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
+    private val emptyAction = SlackEmptyAction(UIConstant.ActionID.EMPTY, provider)
 
     // Voting
-    val delegationAction = SlackMessagePollVoteDelegationAction(provider, pollCreationTimesStorage, businessLogic)
-    val voteAction = SlackMessagePollVoteAction(provider, pollCreationTimesStorage, businessLogic)
-    val cancelVoteAction = SlackMessagePollVoteCancelAction(provider, pollCreationTimesStorage, businessLogic)
-    val cancelDelegationAction =
+    private val delegationAction =
+        SlackMessagePollVoteDelegationAction(provider, pollCreationTimesStorage, businessLogic)
+    private val voteAction = SlackMessagePollVoteAction(provider, pollCreationTimesStorage, businessLogic)
+    private val cancelVoteAction = SlackMessagePollVoteCancelAction(provider, pollCreationTimesStorage, businessLogic)
+    private val cancelDelegationAction =
         SlackMessagePollDelegationCancelAction(provider, pollCreationTimesStorage, businessLogic)
 
     @Bean
