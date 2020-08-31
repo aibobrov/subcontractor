@@ -6,7 +6,7 @@ import core.model.base.ChannelID
 import core.model.base.OptionID
 import core.model.base.PollID
 import core.model.base.UserID
-import core.model.storage.PollCreationTimesStorageImpl
+import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
 import slack.server.base.SlackBlockActionDataFactory
@@ -18,7 +18,7 @@ import java.util.regex.Pattern
 
 class SlackMessagePollVoteAction(
     provider: SlackRequestProvider,
-    private val pollCreationTimesStorage: PollCreationTimesStorageImpl,
+    private val pollInfoStorage: PollInfoStorageImpl,
     private val businessLogic: VotingBusinessLogic
 ) : SlackPatternBlockActionWebhook<SlackMessagePollVoteData>(
     provider,
@@ -27,8 +27,8 @@ class SlackMessagePollVoteAction(
     override val actionID: Pattern = UIConstant.ActionID.VOTE
 
     override fun handle(content: SlackMessagePollVoteData) {
-        businessLogic.vote(content.userID, content.pollID, content.optionID)
-        val poll = businessLogic.get(content.pollID) ?: throw IllegalArgumentException()
+        businessLogic.vote(content.pollID, content.userID, content.optionID)
+        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
@@ -36,7 +36,7 @@ class SlackMessagePollVoteAction(
 
         val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
 
-        val times = pollCreationTimesStorage.get(poll.id)
+        val times = pollInfoStorage.getPollCreationTimes(poll.id)
 
         for ((voter, time) in times.entries) {
             provider.updateChatMessage(blocks, voter.id, time.value)

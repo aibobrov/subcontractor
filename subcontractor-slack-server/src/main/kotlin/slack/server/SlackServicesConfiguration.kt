@@ -1,10 +1,13 @@
 package slack.server
 
 import core.logic.DataStorage
+import core.logic.DataStorageSqlImpl
 import core.logic.DataStorageTestVersion
 import core.model.PollResults
+import core.model.PollResultsSerializer
+import core.model.PollSerializer
 import core.model.base.Poll
-import core.model.storage.PollCreationTimesStorageImpl
+import core.model.storage.PollInfoStorageImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -19,7 +22,7 @@ typealias DataBase = DataStorageTestVersion<Poll, PollResults>
 @Configuration
 open class SlackServicesConfiguration {
 
-    val storage : DataStorage<Poll, PollResults> = DataBase()
+    private val dispatcherStorage : DataStorage<Poll, PollResults> = DataBase()
 
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {
@@ -32,12 +35,12 @@ open class SlackServicesConfiguration {
     }
 
     @Bean
-    open fun createLiquidPollRepository(): PollCreationTimesStorageImpl {
-        return PollCreationTimesStorageImpl()
+    open fun createLiquidPollRepository(): PollInfoStorageImpl {
+        return PollInfoStorageImpl()
     }
 
     @Bean
     open fun createBusinessLogic(): VotingBusinessLogic {
-        return VotingBusinessLogicImpl(storage)
+        return VotingBusinessLogicImpl(dispatcherStorage)
     }
 }

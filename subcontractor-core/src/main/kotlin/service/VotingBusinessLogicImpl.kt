@@ -14,37 +14,29 @@ import core.model.base.UserID
 import core.model.errors.VotingError
 
 
-class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : VotingBusinessLogic {
 
-    private val dispatcher = DispatcherImpl(storage)
+class VotingBusinessLogicImpl(private val dispatcherStorage: DataStorage<Poll, PollResults>) : VotingBusinessLogic {
 
-    override fun register(poll: Poll) {
-        dispatcher.registerOrder(poll.id, poll.author.id, poll)
+    private val dispatcher = DispatcherImpl(dispatcherStorage)
+
+    override fun register(poll: Poll, votersId: List<UserID>) {
+        dispatcher.registerWork(poll.id, poll, poll.author.id, votersId)
     }
 
-    override fun get(pollID: PollID): Poll? {
-        return dispatcher.getOrder(pollID)
+    override fun getPoll(pollID: PollID): Poll? {
+        return dispatcher.getWork(pollID)
     }
 
-    override fun vote(userID: UserID, pollID: PollID, optionID: OptionID) {
-        dispatcher.executeOrder(pollID, userID, PollResults.Option(optionID))
-        dispatcher.confirmExecution(pollID, userID)
+    override fun vote(pollID: PollID, userId: UserID, optionID: OptionID) {
+        dispatcher.executeOrder(pollID, userId, PollResults(optionID))
     }
 
-    override fun addVoters(pollID: PollID, usersId: List<UserID>) {
-        dispatcher.addExecutors(pollID, usersId) { resultsList: List<PollResults?> ->
-            PollResults.OptionsList(
-                resultsList
-            )
-        }
-    }
-
-    override fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError? {
-        val maybeError = dispatcher.delegateOrder(pollId, userId, listOf(toUserID)) { it.last() }
-        if (maybeError == DispatcherError.CycleFound) {
+    override fun delegate(pollID: PollID, userId: UserID, toUserID: UserID): VotingError? {
+        try {
+            dispatcher.delegateOrder(pollID, userId, toUserID)
+        } catch (error: DispatcherError.CycleFound) {
             return VotingError.CycleFound
         }
-        dispatcher.confirmExecution(pollId, userId, toUserID)
         return null
     }
 
@@ -60,30 +52,21 @@ class VotingBusinessLogicImpl(val storage: DataStorage<Poll, PollResults>) : Vot
 
         val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
 
-        val options = get(pollID)?.options ?: return VoteResults(voteResults)
+        val options = getPoll(pollID)?.options ?: return VoteResults(voteResults)
 
         for (option in options) {
             voteResults[option.id] = mutableListOf()
         }
 
-        val executors = dispatcher.getExecutors(pollID) ?: return VoteResults(voteResults)
+        val results = dispatcher.getWorkResults(pollID)
 
-
-        val results: PollResults.OptionsList =
-            dispatcher.getWorkResults(pollID) as PollResults.OptionsList? ?: return VoteResults(voteResults)
-
-        if (results.list.size != executors.size) {
-            return VoteResults(voteResults)
-        }
-        for (i in results.list.indices) {
-            val option = results.list[i] as PollResults.Option?
-            val optionID = option?.result
-            val executorId = executors[i]
+        for (result in results) {
+            val optionID = result.value?.result
             if (optionID != null) {
                 if (voteResults[optionID] == null) {
-                    voteResults[optionID] = mutableListOf(Voter(executorId, VoteWork.Vote(pollID, optionID)))
+                    voteResults[optionID] = mutableListOf(Voter(result.key, VoteWork.Vote(pollID, optionID)))
                 } else {
-                    voteResults[optionID]?.add(Voter(executorId, VoteWork.Vote(pollID, optionID)))
+                    voteResults[optionID]?.add(Voter(result.key, VoteWork.Vote(pollID, optionID)))
                 }
             }
         }

@@ -8,10 +8,6 @@ import core.model.base.PollID
 import core.model.base.UserID
 
 interface PollInfoStorage {
-    fun putPoll(pollId: PollID, poll: Poll)
-    fun getPoll(pollId: PollID): Poll?
-    fun putPollOrder(pollId: PollID, orderId: OrderId, time: PollCreationTime)
-    fun getPollOrder(pollId: PollID, userId: UserID, time: PollCreationTime): OrderId?
-    fun put(pollId: PollID, times: MutableMap<PollVoter, PollCreationTime>)
-    fun get(pollId: PollID): MutableMap<PollVoter, PollCreationTime>
+    fun putPollCreationTimes(pollId: PollID, times: MutableMap<PollVoter, PollCreationTime>)
+    fun getPollCreationTimes(pollId: PollID): MutableMap<PollVoter, PollCreationTime>
 }
