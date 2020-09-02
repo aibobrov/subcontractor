@@ -12,7 +12,7 @@ interface Poll {
 
     val votingTime: VotingTime
 
-    val type: PollType
+    val pollType: PollType
 
     val author: PollAuthor
 

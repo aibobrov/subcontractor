@@ -1,19 +1,24 @@
 package core.model.base
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
+@Serializable
 sealed class VotingTime {
+    @Serializable
     object Unlimited : VotingTime()
 
-    class Ranged(val range: ClosedRange<LocalDateTime>) : VotingTime(), ScheduledTime {
-        override val startDateTime: LocalDateTime get() = range.start
+    @Serializable
+    class Ranged(val range: ClosedRange<@Contextual LocalDateTime>) : VotingTime() {
+        val startDateTime: LocalDateTime get() = range.start
     }
 
-    class From(override val startDateTime: LocalDateTime) : VotingTime(), ScheduledTime
+    @Serializable
+    class From(val startDateTime: @Contextual LocalDateTime) : VotingTime()
 
-    class UpTo(val date: LocalDateTime) : VotingTime()
+    @Serializable
+    class UpTo(val date: @Contextual LocalDateTime) : VotingTime()
 
-    interface ScheduledTime {
-        val startDateTime: LocalDateTime
-    }
+
 }

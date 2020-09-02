@@ -13,6 +13,7 @@ class PollSerializer() : Serializer<Poll> {
         polymorphic(Poll::class) {
             subclass(AgreeDisagreePoll::class)
             subclass(SingleChoicePoll::class)
+            subclass(OneToNPoll::class)
         }
     }
 

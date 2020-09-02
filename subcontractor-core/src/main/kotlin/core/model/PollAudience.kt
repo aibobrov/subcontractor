@@ -1,5 +1,8 @@
 package core.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class PollAudience(
     val conversations: List<PollVoter>
 ) : List<PollVoter> by conversations {
