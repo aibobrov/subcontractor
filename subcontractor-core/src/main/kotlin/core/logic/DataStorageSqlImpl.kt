@@ -15,7 +15,7 @@ object Works : Table() {
     override val primaryKey = PrimaryKey(workId)
 }
 
-object Orders: Table() {
+object Orders : Table() {
     val workId = varchar("workId", 100)
     val customerId = varchar("customerId", 100)
     val executorId = varchar("executorId", 100)
@@ -25,7 +25,7 @@ object Orders: Table() {
     override val primaryKey = PrimaryKey(workId, customerId, executorId)
 }
 
-object Workers: Table() {
+object Workers : Table() {
     val workId = varchar("workId", 100)
     val userId = varchar("userId", 100)
     val worker = text("worker")
@@ -34,12 +34,11 @@ object Workers: Table() {
 }
 
 
-
 class DataStorageSqlImpl<Work, WorkResults>(
-    private val url: String,
-    private val driver: String,
-    private val user: String,
-    private val password: String,
+    url: String,
+    driver: String,
+    user: String,
+    password: String,
     private val workSerializer: Serializer<Work>,
     private val workResultsSerializer: Serializer<WorkResults>
 ) : DataStorage<Work, WorkResults> {
@@ -57,7 +56,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
                 Works.workId eq workId
             }
             if (!maybeExistWork.empty()) {
-               throw DispatcherError.WorkAlreadyExists
+                throw DispatcherError.WorkAlreadyExists
             }
             Works.insert {
                 it[Works.workId] = workId
@@ -106,7 +105,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
     override fun addOrder(workId: WorkId, orderId: OrderId, order: Order) {
         transaction {
             val maybeExistOrder = Orders.select {
-                (Orders.workId eq workId) and (Orders.customerId eq orderId.customerId)  and (Orders.executorId eq orderId.executorId)
+                (Orders.workId eq workId) and (Orders.customerId eq orderId.customerId) and (Orders.executorId eq orderId.executorId)
             }
             if (!maybeExistOrder.empty()) {
                 throw DispatcherError.OrderAlreadyExists
@@ -172,7 +171,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
             if (maybeExistWorker.empty()) {
                 throw DispatcherError.WorkerNotFound
             }
-            Workers.update ({(Workers.workId eq workId) and (Workers.userId eq worker.userId)}) {
+            Workers.update({ (Workers.workId eq workId) and (Workers.userId eq worker.userId) }) {
                 it[Workers.worker] = Json.encodeToString(worker)
             }
         }
@@ -212,7 +211,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
             if (maybeExistWorker.empty()) {
                 throw DispatcherError.WorkerNotFound
             }
-            Json.decodeFromString(maybeExistWorker.map {it[Workers.worker]}[0])
+            Json.decodeFromString(maybeExistWorker.map { it[Workers.worker] }[0])
         }
     }
 
@@ -224,7 +223,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
             if (work.empty()) {
                 throw DispatcherError.WorkerNotFound
             }
-            Works.update({Works.workId eq workId}){
+            Works.update({ Works.workId eq workId }) {
                 it[Works.customer] = Json.encodeToString(customer)
             }
         }
@@ -257,7 +256,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
             if (maybeExistOrder.empty()) {
                 throw DispatcherError.OrderNotFound
             }
-            Orders.update({(Orders.workId eq workId) and (Orders.executorId eq orderId.executorId) and (Orders.customerId eq orderId.customerId)}) {
+            Orders.update({ (Orders.workId eq workId) and (Orders.executorId eq orderId.executorId) and (Orders.customerId eq orderId.customerId) }) {
                 it[Orders.report] = report?.let { it1 -> workResultsSerializer.toJson(it1) }
             }
         }

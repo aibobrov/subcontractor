@@ -7,7 +7,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.*
 
-class PollSerializer() : Serializer<Poll> {
+class PollSerializer : Serializer<Poll> {
 
     private val module = SerializersModule {
         polymorphic(Poll::class) {

@@ -8,12 +8,12 @@ import core.model.base.PollID
 import core.model.base.UserID
 import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
-import slack.model.*
+import slack.model.SlackUIFactory
+import slack.model.SlackVoteResultsFactory
 import slack.server.base.SlackBlockActionDataFactory
 import slack.server.base.SlackPatternBlockActionWebhook
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
-import java.lang.IllegalArgumentException
 import java.util.regex.Pattern
 
 class SlackMessagePollVoteAction(

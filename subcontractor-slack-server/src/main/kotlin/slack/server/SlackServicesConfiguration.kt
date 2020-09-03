@@ -2,7 +2,6 @@ package slack.server
 
 import core.logic.DataStorage
 import core.logic.DataStorageSqlImpl
-import core.logic.DataStorageTestVersion
 import core.model.PollResults
 import core.model.PollResultsSerializer
 import core.model.PollSerializer
@@ -21,9 +20,14 @@ typealias DataBase = DataStorageSqlImpl<Poll, PollResults>
 
 @Configuration
 open class SlackServicesConfiguration {
-
-    private val dispatcherStorage : DataStorage<Poll, PollResults> = DataBase("jdbc:postgresql://localhost:5432/test", "org.postgresql.Driver",
-        "root", "12345", PollSerializer(), PollResultsSerializer())
+    private val dispatcherStorage: DataStorage<Poll, PollResults> = DataBase(
+        Config.DBURL,
+        "org.postgresql.Driver",
+        Config.DBUSERNAME,
+        Config.DBPASSWORD,
+        PollSerializer(),
+        PollResultsSerializer()
+    )
 
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {
