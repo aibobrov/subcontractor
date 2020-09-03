@@ -4,7 +4,10 @@ import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.PollTag
 import core.model.base.VotingTime
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SingleChoicePoll(
     override val id: PollID,
     override val question: String,
@@ -18,6 +21,6 @@ data class SingleChoicePoll(
     override val audience: PollAudience,
     override val tags: List<PollTag>
 ) : Poll {
-    override val type: PollType
+    override val pollType: PollType
         get() = PollType.SINGLE_CHOICE
 }

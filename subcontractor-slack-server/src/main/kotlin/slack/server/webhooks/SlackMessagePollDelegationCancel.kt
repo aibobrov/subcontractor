@@ -4,7 +4,7 @@ import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.base.PollID
 import core.model.base.UserID
-import core.model.storage.PollCreationTimesStorageImpl
+import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
 import slack.model.SlackVoteResultsFactory
@@ -16,7 +16,7 @@ import java.lang.IllegalArgumentException
 
 class SlackMessagePollDelegationCancelAction(
     provider: SlackRequestProvider,
-    private val pollCreationTimesStorage: PollCreationTimesStorageImpl,
+    private val pollInfoStorage: PollInfoStorageImpl,
     private val businessLogic: VotingBusinessLogic
 ) : SlackMessageBlockActionWebhook<SlackMessagePollDelegationCancelData>(
     provider,
@@ -25,7 +25,7 @@ class SlackMessagePollDelegationCancelAction(
     override val actionID: String = UIConstant.ActionID.CANCEL_DELEGATION
 
     override fun handle(content: SlackMessagePollDelegationCancelData) {
-        val poll = businessLogic.get(content.pollID) ?: throw IllegalArgumentException()
+        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
         businessLogic.cancelDelegation(poll.id, content.userID)
 
@@ -35,7 +35,7 @@ class SlackMessagePollDelegationCancelAction(
 
         val blocks = SlackUIFactory.createPollBlocks(poll, voteInfo)
 
-        val times = pollCreationTimesStorage.get(poll.id)
+        val times = pollInfoStorage.getPollCreationTimes(poll.id)
 
         for ((voter, time) in times.entries) {
             provider.updateChatMessage(blocks, voter.id, time.value)
@@ -43,7 +43,10 @@ class SlackMessagePollDelegationCancelAction(
     }
 }
 
-data class SlackMessagePollDelegationCancelData(val pollID: PollID, val userID: UserID) {
+data class SlackMessagePollDelegationCancelData(
+    val pollID: PollID,
+    val userID: UserID
+) {
     companion object : SlackBlockActionDataFactory<SlackMessagePollDelegationCancelData> {
         override fun fromRequest(
             request: BlockActionRequest,

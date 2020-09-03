@@ -1,5 +1,8 @@
 package core.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class PollType {
     SINGLE_CHOICE,
     AGREE_DISAGREE,

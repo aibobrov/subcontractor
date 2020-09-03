@@ -1,86 +1,112 @@
 package core.logic
 
-import java.util.concurrent.ConcurrentHashMap
+class DataStorageTestVersion<Work, WorkResults> : DataStorage<Work, WorkResults> {
 
-class DataStorageTestVersion<Order, WorkReport> : DataStorage<Order, WorkReport> {
+    private val works = mutableMapOf<WorkId, Work>()
+    private val customers = mutableMapOf<WorkId, Customer>()
+    private val orders = mutableMapOf<WorkId, MutableMap<OrderId, Order>>()
+    private val workers = mutableMapOf<WorkId, MutableMap<UserId, Worker>>()
+    private val reports = mutableMapOf<WorkId, MutableMap<OrderId, WorkResults?>>()
 
-    private val orders: MutableMap<OrderId, Order> = ConcurrentHashMap()
-    private val customers: MutableMap<OrderId, Customer<WorkReport>> = ConcurrentHashMap()
-    private val workers: MutableMap<OrderId, MutableMap<UserId, Worker<WorkReport>>> = ConcurrentHashMap()
 
-    override fun addOrder(orderId: OrderId, customer: Customer<WorkReport>, order: Order): DispatcherError? {
-        if (orders.containsKey(orderId)) {
-            return DispatcherError.OrderAlreadyExists
+    override fun addWork(workId: WorkId, work: Work) {
+        if (works[workId] != null) {
+            throw DispatcherError.WorkerAlreadyExists
         }
-        orders[orderId] = order
-        customers[orderId] = customer
-        return null
+        works[workId] = work
+        orders[workId] = mutableMapOf()
+        workers[workId] = mutableMapOf()
+        reports[workId] = mutableMapOf()
     }
 
-    override fun deleteOrder(orderId: OrderId): DispatcherError? {
-        if (!orders.containsKey(orderId)) {
-            return DispatcherError.OrderNotFound
+    override fun deleteWork(workId: WorkId) {
+        if (works[workId] == null) {
+            throw DispatcherError.WorkNotFound
         }
-        orders.remove(orderId)
-        customers.remove(orderId)
-        return null
+        customers.remove(workId)
+        orders.remove(workId)
+        workers.remove(workId)
+        reports.remove(workId)
     }
 
-    override fun getOrder(orderId: OrderId): Order? {
-        return orders[orderId]
+
+    override fun addOrder(workId: WorkId, orderId: OrderId, order: Order) {
+        if (works[workId] == null) {
+            throw DispatcherError.WorkNotFound
+        }
+        orders[workId]?.put(orderId, order)
     }
 
-    override fun modifyCustomer(orderId: OrderId, customer: Customer<WorkReport>): DispatcherError? {
-        if (!orders.containsKey(orderId)) {
-            return DispatcherError.OrderNotFound
-        }
-        customers[orderId] = customer
-        return null
+    override fun getOrder(workId: WorkId, orderId: OrderId): Order {
+        return orders[workId]?.get(orderId) ?: throw DispatcherError.OrderNotFound
     }
 
-    override fun getCustomer(orderId: OrderId): Customer<WorkReport>? {
-        return customers[orderId]
+    override fun addWorker(workId: WorkId, worker: Worker) {
+        if (workers[workId] == null) {
+            throw DispatcherError.WorkNotFound
+        }
+        workers[workId]?.put(worker.userId, worker)
     }
 
-    override fun addWorker(orderId: OrderId, worker: Worker<WorkReport>): DispatcherError? {
-        if (orders[orderId] == null) {
-            return DispatcherError.OrderNotFound
+    override fun modifyWorker(workId: WorkId, worker: Worker) {
+        if (workers[workId] == null) {
+            throw DispatcherError.WorkNotFound
         }
-        if (workers[orderId]?.get(worker.userId) != null) {
-            return DispatcherError.WorkerAlreadyExists
+        if (workers[workId]?.get(worker.userId) == null) {
+            throw DispatcherError.WorkerNotFound
         }
-        if (workers[orderId] == null) {
-            workers[orderId] = mutableMapOf()
-        }
-        workers[orderId]?.set(worker.userId, worker)
-        return null
+        workers[workId]?.put(worker.userId, worker)
     }
 
-    override fun modifyWorker(orderId: OrderId, worker: Worker<WorkReport>): DispatcherError? {
-        if (!orders.containsKey(orderId)) {
-            return DispatcherError.OrderNotFound
+    override fun deleteWorker(workId: WorkId, workerId: UserId) {
+        if (workers[workId] == null) {
+            throw DispatcherError.WorkNotFound
         }
-        if (workers[orderId]?.get(worker.userId) == null) {
-            return DispatcherError.WorkerNotFound
+        if (workers[workId]?.get(workerId) == null) {
+            throw DispatcherError.WorkerNotFound
         }
-        workers[orderId]?.set(worker.userId, worker)
-        return null
+        workers[workId]?.remove(workerId)
     }
 
-    override fun deleteWorker(orderId: OrderId, workerId: UserId): DispatcherError? {
-        if (!workers.containsKey(orderId)) {
-            return DispatcherError.OrderNotFound
-        }
-        if (workers[orderId]?.get(workerId) == null) {
-            return DispatcherError.WorkerNotFound
-        }
-        workers[orderId]?.remove(workerId)
-        return null
+    override fun getWorker(workId: WorkId, workerId: UserId): Worker {
+        return workers[workId]?.get(workerId) ?: throw DispatcherError.WorkNotFound
     }
 
-    override fun getWorker(orderId: OrderId, workerId: UserId): Worker<WorkReport>? {
-        return workers[orderId]?.get(workerId)
+    override fun getCustomer(workId: WorkId): Customer {
+        return customers[workId] ?: throw DispatcherError.WorkNotFound
     }
 
+
+    override fun addWorkResult(workId: core.logic.WorkId, orderId: OrderId, report: WorkResults?) {
+        if (reports[workId] == null) {
+            throw DispatcherError.WorkNotFound
+        }
+        if (orders[workId]?.get(orderId) == null) {
+            throw DispatcherError.OrderNotFound
+        }
+        reports[workId]?.put(orderId, report)
+    }
+
+    override fun getWorkResult(workId: core.logic.WorkId, orderId: OrderId): WorkResults? {
+        return reports[workId]?.get(orderId)
+    }
+
+    override fun modifyCustomer(workId: WorkId, customer: Customer) {
+        if (customers[workId] == null) {
+            throw DispatcherError.WorkNotFound
+        }
+        customers[workId] = customer
+    }
+
+    override fun addCustomer(workId: WorkId, customer: Customer) {
+        if (works[workId] == null) {
+            throw DispatcherError.WorkNotFound
+        }
+        customers[workId] = customer
+    }
+
+    override fun getWork(workId: WorkId): Work {
+        return works[workId] ?: throw DispatcherError.WorkerNotFound
+    }
 
 }

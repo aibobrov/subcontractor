@@ -1,5 +1,6 @@
 package service
 
+import core.logic.OrderId
 import core.model.VoteResults
 import core.model.base.OptionID
 import core.model.base.Poll
@@ -9,15 +10,13 @@ import core.model.errors.VotingError
 
 interface VotingBusinessLogic {
 
-    fun register(poll: Poll)
+    fun register(poll: Poll, votersId: List<UserID>)
 
-    fun get(pollID: PollID): Poll?
+    fun getPoll(pollID: PollID): Poll?
 
-    fun vote(userID: UserID, pollID: PollID, optionID: OptionID)
+    fun vote(pollID: PollID, userId: UserID, optionID: OptionID)
 
-    fun addVoters(pollID: PollID, usersId: List<UserID>)
-
-    fun delegate(pollId: PollID, userId: UserID, toUserID: UserID): VotingError?
+    fun delegate(pollID: PollID, userId: UserID, toUserID: UserID): VotingError?
 
     fun cancelVote(pollID: PollID, userId: UserID)
 

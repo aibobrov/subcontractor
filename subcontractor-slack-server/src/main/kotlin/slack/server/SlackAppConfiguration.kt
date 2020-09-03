@@ -1,7 +1,7 @@
 package slack.server
 
 import com.slack.api.bolt.App
-import core.model.storage.PollCreationTimesStorageImpl
+import core.model.storage.PollInfoStorageImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -15,13 +15,13 @@ import slack.ui.base.UIConstant
 open class SlackAppConfiguration(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository,
-    pollCreationTimesStorage: PollCreationTimesStorageImpl,
+    pollInfoStorage: PollInfoStorageImpl,
     businessLogic: VotingBusinessLogic
 ) {
     // Poll creation
     private val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
     private val creationSubmission =
-        SlackPollCreationViewSubmission(provider, creationRepository, pollCreationTimesStorage, businessLogic)
+        SlackPollCreationViewSubmission(provider, creationRepository, pollInfoStorage, businessLogic)
     private val editOptionsSubmission = SlackPollEditOptionsViewSubmission(provider, creationRepository)
     private val editOptionAction = SlackViewPollSingleChoiceEditOptionAction(provider, creationRepository)
     private val editOptionAddOptionAction = SlackViewPollEditOptionAddOptionAction(provider, creationRepository)
@@ -56,11 +56,11 @@ open class SlackAppConfiguration(
 
     // Voting
     private val delegationAction =
-        SlackMessagePollVoteDelegationAction(provider, pollCreationTimesStorage, businessLogic)
-    private val voteAction = SlackMessagePollVoteAction(provider, pollCreationTimesStorage, businessLogic)
-    private val cancelVoteAction = SlackMessagePollVoteCancelAction(provider, pollCreationTimesStorage, businessLogic)
+        SlackMessagePollVoteDelegationAction(provider, pollInfoStorage, businessLogic)
+    private val voteAction = SlackMessagePollVoteAction(provider, pollInfoStorage, businessLogic)
+    private val cancelVoteAction = SlackMessagePollVoteCancelAction(provider, pollInfoStorage, businessLogic)
     private val cancelDelegationAction =
-        SlackMessagePollDelegationCancelAction(provider, pollCreationTimesStorage, businessLogic)
+        SlackMessagePollDelegationCancelAction(provider, pollInfoStorage, businessLogic)
 
     @Bean
     open fun initSlackApp(): App {

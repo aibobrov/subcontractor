@@ -13,7 +13,7 @@ object SlackVoteResultsFactory {
         result: SlackCompactVoteResults,
         provider: SlackRequestProvider
     ): SlackPollVoteInfo {
-        return when (poll.type) {
+        return when (poll.pollType) {
             PollType.SINGLE_CHOICE -> {
                 val involvedUsers = result.values.flatMap { users -> users.map { it.id } }.toSet()
                 val voteResultsFuture = provider
@@ -33,7 +33,7 @@ object SlackVoteResultsFactory {
     }
 
     fun emptyVoteResults(poll: Poll): SlackPollVoteInfo {
-        return when(poll.type) {
+        return when(poll.pollType) {
             PollType.SINGLE_CHOICE -> SlackPollVoteInfo.Verbose(SlackVerboseVoteResults.EMPTY)
             PollType.AGREE_DISAGREE -> SlackPollVoteInfo.Compact(SlackCompactVoteResults.EMPTY)
             PollType.ONE_TO_N -> SlackPollVoteInfo.Compact(SlackCompactVoteResults.EMPTY)

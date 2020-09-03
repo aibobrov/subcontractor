@@ -10,7 +10,7 @@ import core.model.PollCreationTime
 import core.model.PollVoter
 import core.model.base.UserID
 import core.model.base.VotingTime
-import core.model.storage.PollCreationTimesStorageImpl
+import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory
@@ -24,7 +24,7 @@ import java.util.concurrent.*
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository,
-    private val pollCreationTimesStorage: PollCreationTimesStorageImpl,
+    private val pollInfoStorage: PollInfoStorageImpl,
     private val businessLogic: VotingBusinessLogic
 ) : SlackViewSubmissionWebhook<CreationViewSubmissionData, SlackPollMetadata>(
     provider,
@@ -47,11 +47,9 @@ class SlackPollCreationViewSubmission(
 
         creationRepository.remove(metadata.pollID)
 
-        businessLogic.register(newPoll)
-
         val slackUsers = collectSlackUsers(builder.audience).get()
 
-        businessLogic.addVoters(metadata.pollID, slackUsers)
+        businessLogic.register(newPoll, slackUsers)
 
         val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 
@@ -61,7 +59,7 @@ class SlackPollCreationViewSubmission(
 
         val broadcastFuture = slackBroadcastMessage(builder.audience, pollText, blocks, newPoll.votingTime)
         broadcastFuture.thenAccept { creationTimes ->
-            pollCreationTimesStorage.put(metadata.pollID, creationTimes)
+            pollInfoStorage.putPollCreationTimes(metadata.pollID, creationTimes)
         }
     }
 

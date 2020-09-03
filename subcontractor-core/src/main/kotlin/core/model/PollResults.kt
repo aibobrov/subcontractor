@@ -1,8 +1,7 @@
 package core.model
 
 import core.model.base.OptionID
+import kotlinx.serialization.Serializable
 
-sealed class PollResults {
-    data class Option(val result: OptionID) : PollResults()
-    data class OptionsList(val list: List<PollResults?>) : PollResults()
-}
+@Serializable
+data class PollResults(val result: OptionID)

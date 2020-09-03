@@ -1,158 +1,187 @@
 package core.logic
 
-open class DispatcherImpl<Order, WorkReport>(
-    private val database: DataStorage<Order, WorkReport>
-) : Dispatcher<Order, WorkReport> {
+open class DispatcherImpl<Work, WorkResults>(
+    private val database: DataStorage<Work, WorkResults>
+) : Dispatcher<Work, WorkResults> {
 
-    override fun registerOrder(orderId: OrderId, customerId: UserId, order: Order): DispatcherError? {
-        return database.addOrder(orderId, Worker(orderId), order)
-    }
-
-    override fun deleteOrder(orderId: OrderId): DispatcherError? {
-        return database.deleteOrder(orderId)
-    }
-
-    override fun getOrder(orderId: OrderId): Order? {
-        return database.getOrder(orderId)
-    }
-
-    override fun addExecutors(
-        orderId: OrderId,
-        executorsId: List<UserId>,
-        unitWorksResult: (List<WorkReport?>) -> WorkReport?
-    ): DispatcherError? {
-        val customer: Customer<WorkReport> = database.getCustomer(orderId) ?: return DispatcherError.OrderNotFound
+    override fun registerWork(
+        workId: WorkId,
+        work: Work,
+        customerId: UserId,
+        executorsId: List<UserId>
+    ): Map<UserId, OrderId> {
+        database.addWork(workId, work)
+        val orders = mutableMapOf<UserId, OrderId>()
         for (id in executorsId) {
-            val executor = Worker<WorkReport>(id)
-            executor.addCustomer(customer)
-            if (database.addWorker(orderId, executor) == null) {
-                customer.addExecutor(executor)
-            }
+            val orderId = OrderId(id, id)
+            val order = Order(orderId, OrdersChain(listOf(), listOf()), DispatcherUtil.getCurrentTime())
+            orders[id] = orderId
+            database.addOrder(workId, orderId, order)
+            val worker = Worker(id)
+            worker.addOrder(orderId)
+            database.addWorker(workId, worker)
         }
-        customer.setUnitWorksFunction(unitWorksResult)
-        database.modifyCustomer(orderId, customer)
-        return null
+        val customer = Customer(customerId, orders)
+        database.addCustomer(workId, customer)
+        return orders
     }
+
+    override fun getWork(workId: WorkId): Work {
+        return database.getWork(workId)
+    }
+
+    override fun deleteWork(workId: WorkId) {
+        database.deleteWork(workId)
+    }
+
+    private fun isContainsCycle(ordersChain: OrdersChain, dstId: UserId): Boolean {
+        return ordersChain.getExecutorsId().contains(dstId)
+    }
+
+    private fun delegateOrder(
+        workId: WorkId,
+        orderId: OrderId,
+        customer: Worker,
+        dstId: UserId
+    ): OrderId {
+        val time = DispatcherUtil.getCurrentTime()
+        val order = database.getOrder(workId, orderId)
+
+        val ordersChain = OrdersChain(order.ordersChain.orders + orderId, order.ordersChain.times + time)
+
+        if (isContainsCycle(ordersChain, dstId)) {
+            throw DispatcherError.CycleFound
+        }
+
+        var worker: Worker
+        try {
+            worker = database.getWorker(workId, dstId)
+        } catch (error: DispatcherError.WorkerNotFound) {
+            worker = Worker(dstId)
+            database.addWorker(workId, worker)
+        }
+
+        val newOrderId = OrderId(orderId.customerId, dstId)
+        val newOrder = Order(newOrderId, ordersChain, time)
+        database.addOrder(workId, newOrderId, newOrder)
+        worker.addOrder(newOrderId)
+        customer.addDelegation(orderId, time)
+        database.modifyWorker(workId, worker)
+        return newOrderId
+    }
+
 
     override fun delegateOrder(
+        workId: WorkId,
         orderId: OrderId,
         srcId: UserId,
-        dstId: List<UserId>,
-        unitWorksResults: (List<WorkReport?>) -> WorkReport?
-    ): DispatcherError? {
-        val customer = database.getWorker(orderId, srcId) ?: return DispatcherError.WorkerNotFound
-        for (id in dstId) {
-            if (isContainsCycle(id, customer)) {
-                return DispatcherError.CycleFound
+        dstId: UserId
+    ): OrderId {
+        val customer = database.getWorker(workId, srcId)
+        val newOrderId = delegateOrder(workId, orderId, customer, dstId)
+        database.modifyWorker(workId, customer)
+        return newOrderId
+    }
+
+    private fun executeOrder(workId: WorkId, orderId: OrderId, customer: Customer, results: WorkResults?) {
+
+        val order = database.getOrder(workId, orderId)
+
+        val chain = order.ordersChain
+        val indices = order.ordersChain.orders.indices
+
+        for (i in indices) {
+            val worker = database.getWorker(workId, chain.orders[i].executorId)
+
+            if (!worker.containsDelegation(chain.orders[i], chain.times[i])) {
+                throw DispatcherError.DelegationIsNotRelevant
             }
         }
-        for (id in dstId) {
-            val maybeExistWorker = database.getWorker(orderId, id)
-            if (maybeExistWorker == null) {
-                val newWorker = Worker(id, unitWorksResults)
-                customer.addExecutor(newWorker)
-                newWorker.addCustomer(customer)
-                database.addWorker(orderId, newWorker)
+
+        database.addWorkResult(workId, orderId, results)
+        customer.setWorkReport(orderId.customerId, WorkReport((order.ordersChain.orders + orderId).reversed(), orderId))
+    }
+
+
+    override fun executeOrder(workId: WorkId, orderId: OrderId, results: WorkResults?) {
+        val customer = database.getCustomer(workId)
+        executeOrder(workId, orderId, customer, results)
+        database.modifyCustomer(workId, customer)
+    }
+
+
+    override fun cancelExecution(workId: core.logic.WorkId, orderId: OrderId) {
+        executeOrder(workId, orderId, null)
+    }
+
+    override fun cancelDelegation(workId: core.logic.WorkId, orderId: OrderId) {
+        val worker = database.getWorker(workId, orderId.executorId)
+        worker.deleteDelegation(orderId)
+        database.modifyWorker(workId, worker)
+        cancelExecution(workId, orderId)
+    }
+
+    override fun getWorkResults(workId: WorkId): Map<UserId, WorkResults?> {
+        val customer = database.getCustomer(workId)
+        val reports = customer.getWorkResults()
+        val results = mutableMapOf<UserId, WorkResults?>()
+        for (report in reports) {
+            if (report.value != null) {
+                results[report.key] = database.getWorkResult(workId, report.value!!.resultId)
             } else {
-                customer.addExecutor(maybeExistWorker)
-                maybeExistWorker.addCustomer(customer)
+                results[report.key] = null
             }
         }
-        customer.setUnitWorksFunction(unitWorksResults)
-        database.modifyWorker(orderId, customer)
-        return null
+        return results
     }
 
-
-    override fun executeOrder(orderId: OrderId, executorId: UserId, report: WorkReport): DispatcherError? {
-        val worker = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
-        worker.executeWork(report)
-        return database.modifyWorker(orderId, worker)
+    override fun getTheMostActiveRealExecutors(workId: WorkId, count: Int): Map<UserId, Int> {
+        TODO("Not yet implemented")
     }
 
-    override fun confirmExecution(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError? {
-        val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.OrderNotFound
-        val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
-        customer.confirmWorkReport(executor)
-        database.modifyWorker(orderId, customer)
-        database.modifyWorker(orderId, executor)
-        return null
+    override fun getCustomerId(workId: WorkId): UserId {
+        return database.getCustomer(workId).userId
     }
 
-    override fun cancelExecution(orderId: OrderId, executorId: UserId): DispatcherError? {
-        val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
-        executor.deleteWork()
-        return database.modifyWorker(orderId, executor)
+    override fun getExecutorsId(workId: WorkId): List<UserId> {
+        val customer = database.getCustomer(workId)
+        return customer.getExecutorsId()
     }
 
-
-    override fun getExecutors(orderId: OrderId): List<UserId>? {
-        val customer = database.getCustomer(orderId) ?: return null
-        return customer.getExecutors().map { executor -> executor.userId }
-    }
-
-
-    override fun getCustomerId(orderId: OrderId): UserId? {
-        return database.getCustomer(orderId)?.userId
-    }
-
-    private fun isContainsCycle(dstId: UserId, customer: Worker<WorkReport>): Boolean {
-        if (dstId == customer.userId) {
-            return true
+    override fun delegateOrder(workId: WorkId, srcId: UserId, dstId: UserId): List<OrderId> {
+        val customer = database.getWorker(workId, srcId)
+        val worker = database.getWorker(workId, srcId)
+        val ordersId = worker.getOrders()
+        val ordersList = mutableListOf<OrderId>()
+        for (orderId in ordersId) {
+            ordersList.add(delegateOrder(workId, orderId, customer, dstId))
         }
-        for (parent in customer.getCustomers()) {
-            if (parent is Worker<WorkReport> && parent.getCustomers().isNotEmpty()) {
-                if (isContainsCycle(dstId, parent)) {
-                    return true
-                }
-            }
+        database.modifyWorker(workId, customer)
+        return ordersList
+    }
+
+    override fun executeOrder(workId: WorkId, userId: UserId, results: WorkResults?) {
+        val worker = database.getWorker(workId, userId)
+        val customer = database.getCustomer(workId)
+        val ordersId = worker.getOrders()
+        for (orderId in ordersId) {
+            executeOrder(workId, orderId, customer, results)
         }
-        return false
+        database.modifyCustomer(workId, customer)
+
     }
 
-    override fun getWorkResults(orderId: OrderId): WorkReport? {
-        val customer = database.getCustomer(orderId) ?: return null
-        return customer.getWorkResults()
+    override fun cancelExecution(workId: WorkId, userId: UserId) {
+        executeOrder(workId, userId, null)
     }
 
-    override fun getTheMostActiveRealExecutors(orderId: OrderId, count: Int): Map<UserId, Int>? {
-        val customer = database.getCustomer(orderId) ?: return null
-        val realExecutors = customer.getRealExecutors()
-        val countsOfWork = realExecutors.values.sorted()
-        val topCounts = countsOfWork.subList(0, count)
-        return realExecutors.filter { entry -> entry.value >= topCounts.last() }
-    }
-
-    override fun confirmExecution(orderId: OrderId, executorId: UserId): DispatcherError? {
-        val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
-        val customers = executor.getCustomers()
-        for (customer in customers) {
-            customer.confirmWorkReport(executor)
+    override fun cancelDelegation(workId: WorkId, userId: UserId) {
+        val worker = database.getWorker(workId, userId)
+        for (orderId in worker.getOrders()) {
+            worker.deleteDelegation(orderId)
         }
-        database.modifyWorker(orderId, executor)
-        return null
-    }
-
-
-    override fun cancelDelegation(orderId: OrderId, customerId: UserId, executorId: UserId): DispatcherError? {
-        val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.WorkerNotFound
-        val executor = database.getWorker(orderId, executorId) ?: return DispatcherError.WorkerNotFound
-        if (customer.getExecutors().contains(executor)) {
-            customer.deleteExecutor(executor)
-            executor.deleteCustomer(customer)
-            database.modifyWorker(orderId, executor)
-            database.modifyWorker(orderId, customer)
-            if (executor.getCustomers().isEmpty()) {
-                database.deleteWorker(orderId, executor.userId)
-            }
-        }
-        return null
-    }
-
-    override fun cancelDelegation(orderId: OrderId, customerId: UserId): DispatcherError? {
-        val customer = database.getWorker(orderId, customerId) ?: return DispatcherError.WorkerNotFound
-        customer.deleteExecutors()
-        return null
+        database.modifyWorker(workId, worker)
+        cancelExecution(workId, userId)
     }
 
 }

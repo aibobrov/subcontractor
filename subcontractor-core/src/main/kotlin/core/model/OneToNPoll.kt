@@ -4,8 +4,11 @@ import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.PollTag
 import core.model.base.VotingTime
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.util.*
 
+@Serializable
 data class OneToNPoll(
     override val id: PollID,
     override val question: String,
@@ -18,7 +21,7 @@ data class OneToNPoll(
     override val tags: List<PollTag>,
     val number: Int
 ) : Poll {
-    override val type: PollType = PollType.ONE_TO_N
+    override val pollType: PollType = PollType.ONE_TO_N
 
     override val options = OPTIONS_RANGE
         .take(number)

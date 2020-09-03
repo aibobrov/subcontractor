@@ -1,24 +1,34 @@
 package core.logic
 
-interface Customer<WorkReport> {
+import kotlinx.serialization.Serializable
 
-    val userId: UserId
+@Serializable
+class Customer(
+    val userId: UserId,
+    private val orders: Map<UserId, OrderId>
+) {
+    private var workReports: MutableMap<UserId, WorkReport?> =
+        orders.map { it.key to null }.toMap().toMutableMap()
 
-    fun setUnitWorksFunction(unitWorks: (List<WorkReport?>) -> WorkReport?)
+    private var ordersResults: MutableMap<UserId, MutableMap<OrderId, WorkReport>?> =
+        orders.map { it.key to null }.toMap().toMutableMap()
 
-    fun addExecutor(executor: Executor<WorkReport>)
+    fun setWorkReport(userId: UserId, report: WorkReport) {
+        workReports[userId] = report
+        for (orderId in report.reportPath) {
+            ordersResults[orderId.executorId]?.put(orderId, report)
+        }
+    }
 
-    fun addExecutors(executors: List<Executor<WorkReport>>)
+    fun getWorkResults(): Map<UserId, WorkReport?> {
+        return workReports
+    }
 
-    fun deleteExecutor(executor: Executor<WorkReport>)
+    fun getWorkResults(userId: UserId): Map<OrderId, WorkReport>? {
+        return ordersResults[userId]
+    }
 
-    fun deleteExecutors()
-
-    fun getExecutors(): List<Executor<WorkReport>>
-
-    fun confirmWorkReport(executor: Executor<WorkReport>)
-
-    fun getWorkResults(): WorkReport?
-
-    fun getRealExecutors(): Map<UserId, Int>
+    fun getExecutorsId(): List<UserId> {
+        return orders.keys.toList()
+    }
 }
