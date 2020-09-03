@@ -5,6 +5,7 @@ import core.model.PollOption
 import slack.model.SlackCompactVoteResults
 import slack.model.SlackUser
 import slack.ui.base.SlackBlockUIRepresentable
+import slack.ui.base.UIConstant
 import utils.ProgressUtils
 import java.text.DecimalFormat
 
@@ -63,7 +64,7 @@ class PollResultBlockView(
         }
 
         fun userListString(users: List<SlackUser>): String {
-            return users.joinToString(" ") { "<@${it.id}>" }
+            return users.joinToString(" ") { UIConstant.Text.userText(it) }
         }
 
 

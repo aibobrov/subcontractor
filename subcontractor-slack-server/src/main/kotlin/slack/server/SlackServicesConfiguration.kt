@@ -11,22 +11,19 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
 import service.VotingBusinessLogicImpl
-import slack.service.SlackPollCreationRepository
-import slack.service.SlackPollCreationRepositoryImpl
-import slack.service.SlackRequestManagerProviderImpl
-import slack.service.SlackRequestProvider
+import slack.service.*
 
 typealias DataBase = DataStorageSqlImpl<Poll, PollResults>
 
 @Configuration
 open class SlackServicesConfiguration {
     private val dispatcherStorage: DataStorage<Poll, PollResults> = DataBase(
-        Config.DBURL,
-        "org.postgresql.Driver",
-        Config.DBUSERNAME,
-        Config.DBPASSWORD,
-        PollSerializer(),
-        PollResultsSerializer()
+        url = Config.DBURL,
+        driver = "org.postgresql.Driver",
+        user = Config.DBUSERNAME,
+        password = Config.DBPASSWORD,
+        workSerializer = PollSerializer(),
+        workResultsSerializer = PollResultsSerializer()
     )
 
     @Bean
@@ -47,5 +44,10 @@ open class SlackServicesConfiguration {
     @Bean
     open fun createBusinessLogic(): VotingBusinessLogic {
         return VotingBusinessLogicImpl(dispatcherStorage)
+    }
+
+    @Bean
+    open fun createDelegationRuleRepository(): SlackDelegationRuleRepository {
+        return SlackDelegationRuleRepositoryImpl()
     }
 }

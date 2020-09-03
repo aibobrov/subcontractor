@@ -33,7 +33,7 @@ class SlackPollCreationSlashCommand(
         ).apply { audience = PollAudience(listOf(PollVoter(content.channelID))) }
         creationRepository.put(metadata.pollID, builder)
 
-        val errors = SlackPollBuilderValidator.validate(builder)
+        val errors = SlackValidator.validate(builder)
         val view = SlackUIFactory.creationView(metadata, builder, errors)
         provider.openView(view, content.triggerID)
     }

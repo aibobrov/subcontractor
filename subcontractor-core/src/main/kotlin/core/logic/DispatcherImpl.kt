@@ -110,11 +110,11 @@ open class DispatcherImpl<Work, WorkResults>(
     }
 
 
-    override fun cancelExecution(workId: core.logic.WorkId, orderId: OrderId) {
+    override fun cancelExecution(workId: WorkId, orderId: OrderId) {
         executeOrder(workId, orderId, null)
     }
 
-    override fun cancelDelegation(workId: core.logic.WorkId, orderId: OrderId) {
+    override fun cancelDelegation(workId: WorkId, orderId: OrderId) {
         val worker = database.getWorker(workId, orderId.executorId)
         worker.deleteDelegation(orderId)
         database.modifyWorker(workId, worker)
@@ -183,5 +183,4 @@ open class DispatcherImpl<Work, WorkResults>(
         database.modifyWorker(workId, worker)
         cancelExecution(workId, userId)
     }
-
 }

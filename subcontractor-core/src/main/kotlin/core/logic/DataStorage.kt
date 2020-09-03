@@ -13,6 +13,6 @@ interface DataStorage<Work, WorkResults> {
     fun addCustomer(workId: WorkId, customer: Customer)
     fun modifyCustomer(workId: WorkId, customer: Customer)
     fun getCustomer(workId: WorkId): Customer
-    fun addWorkResult(workId: core.logic.WorkId, orderId: OrderId, report: WorkResults?)
-    fun getWorkResult(workId: core.logic.WorkId, orderId: OrderId): WorkResults?
+    fun addWorkResult(workId: WorkId, orderId: OrderId, report: WorkResults?)
+    fun getWorkResult(workId: WorkId, orderId: OrderId): WorkResults?
 }

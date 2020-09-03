@@ -35,13 +35,13 @@ class SlackPollCreationViewSubmission(
 
     override fun handle(metadata: SlackPollMetadata, content: CreationViewSubmissionData) {
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
-        val errors = SlackPollBuilderValidator.validate(builder)
+        val errors = SlackValidator.validate(builder)
 
         if (errors.isNotEmpty()) {
             val view = SlackUIFactory.creationView(metadata, builder, errors)
             provider.updateView(view, content.viewID)
 
-            throw SlackError.Multiple(errors)
+            throw SlackError.Error
         }
         val newPoll = builder.apply { question = content.question }.build()
 

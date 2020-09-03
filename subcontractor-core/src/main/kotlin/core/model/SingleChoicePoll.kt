@@ -4,7 +4,6 @@ import core.model.base.Poll
 import core.model.base.PollID
 import core.model.base.PollTag
 import core.model.base.VotingTime
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -7,15 +7,13 @@ import core.model.PollResults
 import core.model.VoteResults
 import core.model.VoteWork
 import core.model.Voter
-import core.model.base.OptionID
-import core.model.base.Poll
-import core.model.base.PollID
-import core.model.base.UserID
+import core.model.base.*
 import core.model.errors.VotingError
 
 
-
-class VotingBusinessLogicImpl(private val dispatcherStorage: DataStorage<Poll, PollResults>) : VotingBusinessLogic {
+class VotingBusinessLogicImpl(
+    dispatcherStorage: DataStorage<Poll, PollResults>,
+) : VotingBusinessLogic {
 
     private val dispatcher = DispatcherImpl(dispatcherStorage)
 
@@ -71,5 +69,26 @@ class VotingBusinessLogicImpl(private val dispatcherStorage: DataStorage<Poll, P
             }
         }
         return VoteResults(voteResults)
+    }
+
+    // TODO: change to persistent store
+    private val delegations = mutableMapOf<UserID, List<DelegationRule>>()
+
+    override fun delegationRules(userId: UserID): List<DelegationRule> = delegations[userId] ?: listOf()
+
+    override fun deleteDelegationRule(userID: UserID, delegationRuleID: String) {
+        val rules = delegations[userID]?.toMutableList() ?: mutableListOf()
+        rules.removeIf { it.id == delegationRuleID }
+        delegations[userID] = rules
+    }
+
+    override fun clearDelegationRules(forUserID: UserID) {
+        delegations[forUserID] = mutableListOf()
+    }
+
+    override fun addDelegationRule(delegationRule: DelegationRule) {
+        val rules = delegations[delegationRule.owner]?.toMutableList() ?: mutableListOf()
+        rules.add(delegationRule)
+        delegations[delegationRule.owner] = rules
     }
 }

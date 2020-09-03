@@ -1,11 +1,7 @@
 package service
 
-import core.logic.OrderId
 import core.model.VoteResults
-import core.model.base.OptionID
-import core.model.base.Poll
-import core.model.base.PollID
-import core.model.base.UserID
+import core.model.base.*
 import core.model.errors.VotingError
 
 interface VotingBusinessLogic {
@@ -23,4 +19,12 @@ interface VotingBusinessLogic {
     fun cancelDelegation(pollID: PollID, userId: UserID)
 
     fun voteResults(pollID: PollID): VoteResults
+
+    fun delegationRules(userId: UserID): List<DelegationRule>
+
+    fun deleteDelegationRule(userID: UserID, delegationRuleID: String)
+
+    fun clearDelegationRules(forUserID: UserID)
+
+    fun addDelegationRule(delegationRule: DelegationRule)
 }

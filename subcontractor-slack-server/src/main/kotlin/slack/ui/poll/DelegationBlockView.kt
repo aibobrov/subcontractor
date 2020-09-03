@@ -40,6 +40,8 @@ class DelegationBlockView(private val pollID: PollID) : SlackBlockUIRepresentabl
         builder.usersSelect {
             actionId(UIConstant.ActionID.DELEGATE_VOTE)
             placeholder(DELEGATE_USER_SELECT_PLACEHOLDER)
+            // TODO: confirm dialog
+//            confirm { it }
         }
     }
 

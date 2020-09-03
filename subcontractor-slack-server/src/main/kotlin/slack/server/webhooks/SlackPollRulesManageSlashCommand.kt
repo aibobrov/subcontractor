@@ -3,17 +3,24 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.base.ChannelID
+import core.model.base.DelegationRule
 import core.model.base.UserID
 import service.VotingBusinessLogic
+import slack.model.SlackManageMetadata
+import slack.model.SlackUIFactory
 import slack.server.base.SlackSlashCommandDataFactory
 import slack.server.base.SlackSlashCommandWebhook
 import slack.service.SlackRequestProvider
 
-class SlackPollManageSlashCommand(provider: SlackRequestProvider, private val businessLogic: VotingBusinessLogic) :
+class SlackPollRulesManageSlashCommand(provider: SlackRequestProvider, private val businessLogic: VotingBusinessLogic) :
     SlackSlashCommandWebhook<ManageSlashCommandData>(provider, ManageSlashCommandData.Companion) {
-    override val commandName: String = "/manage"
+    override val commandName: String = "/rules"
 
     override fun handle(content: ManageSlashCommandData) {
+        val rules = businessLogic.delegationRules(content.userID)
+        val metadata = SlackManageMetadata(content.userID)
+        val ruleManageView = SlackUIFactory.delegationRulesView(metadata, rules, listOf())
+        provider.openView(ruleManageView, content.triggerID)
     }
 }
 

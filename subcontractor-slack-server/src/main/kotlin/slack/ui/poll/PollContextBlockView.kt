@@ -2,9 +2,9 @@ package slack.ui.poll
 
 import com.slack.api.model.kotlin_extension.block.dsl.LayoutBlockDsl
 import core.model.base.Poll
-import core.model.base.VotingTime
+import slack.model.SlackUser
 import slack.ui.base.SlackBlockUIRepresentable
-import utils.unixEpochTimestamp
+import slack.ui.base.UIConstant
 
 class PollContextBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
@@ -13,31 +13,10 @@ class PollContextBlockView(private val poll: Poll) : SlackBlockUIRepresentable {
 
     private fun buildContext(builder: LayoutBlockDsl, poll: Poll) {
         builder.context {
-            markdownText(
-                "Owner: <@${poll.author.id}>  |  🕔  Closes: ${votingTime(poll.votingTime)}  |  ${anonymousText(poll.isAnonymous)}"
-            )
-        }
-    }
-
-    companion object {
-
-        fun votingTime(votingTime: VotingTime): String {
-            fun format(timestamp: Long) = "<!date^$timestamp^{date_short_pretty} at {time}|Never>"
-
-            return when (votingTime) {
-                VotingTime.Unlimited -> "Never"
-                is VotingTime.From -> "Never"
-                is VotingTime.Ranged -> format(votingTime.range.endInclusive.unixEpochTimestamp)
-                is VotingTime.UpTo -> format(votingTime.date.unixEpochTimestamp)
-            }
-        }
-
-        fun anonymousText(flag: Boolean): String {
-            return if (flag) {
-                "🔒  Responses are Anonymous"
-            } else {
-                "🔓  Responses are Non-Anonymous"
-            }
+            val owner = "Owner: ${UIConstant.Text.userText(SlackUser(poll.author.id))}"
+            val closes = "🕔  Closes: ${UIConstant.Text.votingTime(poll.votingTime)}"
+            val anonymous = UIConstant.Text.anonymousText(poll.isAnonymous)
+            markdownText("$owner | $closes | $anonymous")
         }
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
 import slack.server.base.RegistrableWebhook
 import slack.server.webhooks.*
+import slack.service.SlackDelegationRuleRepository
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
@@ -16,7 +17,8 @@ open class SlackAppConfiguration(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository,
     pollInfoStorage: PollInfoStorageImpl,
-    businessLogic: VotingBusinessLogic
+    businessLogic: VotingBusinessLogic,
+    delegationRuleRepository: SlackDelegationRuleRepository
 ) {
     // Poll creation
     private val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
@@ -62,6 +64,14 @@ open class SlackAppConfiguration(
     private val cancelDelegationAction =
         SlackMessagePollDelegationCancelAction(provider, pollInfoStorage, businessLogic)
 
+    // Rules management
+    private val rulesManageCommand = SlackPollRulesManageSlashCommand(provider, businessLogic)
+    private val rulesClearAction = SlackDelegationRulesClearAction(provider, businessLogic)
+    private val rulesDeleteAction = SlackDelegationRuleDeleteAction(provider, businessLogic)
+    private val rulesAddAction = SlackDelegationRuleAddAction(provider, delegationRuleRepository)
+    private val rulesCreateAction = SlackDelegationRuleCreateAction(provider, businessLogic, delegationRuleRepository)
+    private val rulesUserSelectAction = SlackDelegationRuleSelectUserAction(provider, delegationRuleRepository)
+
     @Bean
     open fun initSlackApp(): App {
         val app = App()
@@ -90,7 +100,13 @@ open class SlackAppConfiguration(
             delegationAction,
             voteAction,
             cancelVoteAction,
-            cancelDelegationAction
+            cancelDelegationAction,
+            rulesManageCommand,
+            rulesClearAction,
+            rulesDeleteAction,
+            rulesAddAction,
+            rulesCreateAction,
+            rulesUserSelectAction
         )
 
         for (webhook in webhooks) {

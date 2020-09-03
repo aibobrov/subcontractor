@@ -4,11 +4,14 @@ import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.view.View
 import core.UIRepresentable
 import core.model.SingleChoicePoll
+import core.model.base.DelegationRule
 import core.model.base.Poll
 import slack.ui.create.CreatePollView
 import slack.ui.create.EditOptionsPollView
 import slack.ui.poll.CompactPollBlockView
 import slack.ui.poll.VerbosePollBlockView
+import slack.ui.rules.CreateDelegationRuleView
+import slack.ui.rules.TaggedRuleManageView
 
 object SlackUIFactory {
     fun creationView(
@@ -58,5 +61,14 @@ object SlackUIFactory {
     ): UIRepresentable<List<LayoutBlock>> {
         val showResponses = poll.showResponses && results.totalVoters > 0
         return VerbosePollBlockView(poll, results, showResponses)
+    }
+
+
+    fun delegationRulesView(metadata: SlackManageMetadata, rules: List<DelegationRule>, errors: List<SlackError>): UIRepresentable<View> {
+        return TaggedRuleManageView(metadata, rules, errors)
+    }
+
+    fun delegationRuleCreateView(metadata: SlackManageMetadata, errors: List<SlackError>): UIRepresentable<View> {
+        return CreateDelegationRuleView(metadata, errors)
     }
 }

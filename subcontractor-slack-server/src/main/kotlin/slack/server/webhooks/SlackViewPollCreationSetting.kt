@@ -3,7 +3,7 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import slack.model.SlackPollBuilder
-import slack.model.SlackPollBuilderValidator
+import slack.model.SlackValidator
 import slack.model.SlackUIFactory
 import slack.server.base.SlackViewBlockActionWebhook
 import slack.server.base.SlackDataFactory
@@ -25,7 +25,7 @@ abstract class SlackViewPollCreationSettingAction<Data: ViewIdentifiable>(
         val builder = creationRepository.get(metadata.pollID) ?: throw IllegalArgumentException()
         update(builder, content)
 
-            val errors = SlackPollBuilderValidator.validate(builder)
+            val errors = SlackValidator.validate(builder)
             val view = SlackUIFactory.creationView(metadata, builder, errors)
             provider.updateView(view, content.viewID)
     }

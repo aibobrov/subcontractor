@@ -77,7 +77,7 @@ class DataStorageTestVersion<Work, WorkResults> : DataStorage<Work, WorkResults>
     }
 
 
-    override fun addWorkResult(workId: core.logic.WorkId, orderId: OrderId, report: WorkResults?) {
+    override fun addWorkResult(workId: WorkId, orderId: OrderId, report: WorkResults?) {
         if (reports[workId] == null) {
             throw DispatcherError.WorkNotFound
         }
@@ -87,7 +87,7 @@ class DataStorageTestVersion<Work, WorkResults> : DataStorage<Work, WorkResults>
         reports[workId]?.put(orderId, report)
     }
 
-    override fun getWorkResult(workId: core.logic.WorkId, orderId: OrderId): WorkResults? {
+    override fun getWorkResult(workId: WorkId, orderId: OrderId): WorkResults? {
         return reports[workId]?.get(orderId)
     }
 

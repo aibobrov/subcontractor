@@ -2,20 +2,21 @@ package slack.ui.base
 
 import com.google.gson.Gson
 import com.slack.api.util.json.GsonFactory
-import core.model.base.OptionID
-import core.model.base.Poll
-import core.model.base.PollID
-import core.model.base.UserID
+import core.model.base.*
+import slack.model.SlackUser
+import utils.unixEpochTimestamp
 import java.time.format.DateTimeFormatter
 
 object UIConstant {
     object BlockID {
         const val QUESTION = "QUESTION_BLOCK_ID"
+        const val POLL_TAGS_SELECT = "POLL_TAGS_SELECT"
     }
 
     object CallbackID {
         const val ADD_OPTION_VIEW_SUBMISSION = "ADD_NEW_OPTION_BUTTON"
         const val CREATION_VIEW_SUBMISSION = "CREATION_VIEW_SUBMISSION"
+        const val CREATE_DELEGATION_RULE_SUBMISSION = "CREATE_DELEGATION_RULE_SUBMISSION"
     }
 
     object ActionID {
@@ -48,6 +49,13 @@ object UIConstant {
         const val CANCEL_DELEGATION = "CANCEL_DELEGATION"
         val VOTE = "VOTE#(.*)#(.*)".toPattern()
         fun voteAction(pollID: PollID, optionID: OptionID): String = "VOTE#$pollID#$optionID"
+
+        // Delegation rules
+        const val ADD_DELEGATION_RULE = "ADD_DELEGATION_RULE"
+        const val CLEAR_DELEGATION_RULES = "CLEAR_DELEGATION_RULES"
+        const val DELETE_DELEGATION_RULE = "DELETE_DELEGATION_RULE"
+        const val POLLTAG_DELEGATION_CREATE = "POLLTAG_DELEGATION_CREATE"
+        const val USER_DELEGATION_SELECT = "USER_DELEGATION_SELECT"
     }
 
     object Text {
@@ -56,7 +64,7 @@ object UIConstant {
         }
 
         fun delegationError(toUserID: UserID): String {
-            return "Error! You can't delegate vote to <@$toUserID>. Delegation cycle is found."
+            return "Error! You can't delegate vote to ${userText(SlackUser((toUserID)))}. Delegation cycle is found."
         }
 
         fun pollText(poll: Poll): String {
@@ -65,6 +73,32 @@ object UIConstant {
 
         fun originalMessageText(link: String): String {
             return "<$link|View original message>"
+        }
+
+        fun tagText(tag: PollTag): String {
+            return "*_${tag.tagName}_*"
+        }
+
+        fun userText(user: SlackUser): String = "<@${user.id}>"
+
+
+        fun votingTime(votingTime: VotingTime): String {
+            fun format(timestamp: Long) = "<!date^$timestamp^{date_short_pretty} at {time}|Never>"
+
+            return when (votingTime) {
+                VotingTime.Unlimited -> "Never"
+                is VotingTime.From -> "Never"
+                is VotingTime.Ranged -> format(votingTime.range.endInclusive.unixEpochTimestamp)
+                is VotingTime.UpTo -> format(votingTime.date.unixEpochTimestamp)
+            }
+        }
+
+        fun anonymousText(flag: Boolean): String {
+            return if (flag) {
+                "🔒  Responses are Anonymous"
+            } else {
+                "🔓  Responses are Non-Anonymous"
+            }
         }
     }
 
