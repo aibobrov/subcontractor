@@ -17,11 +17,12 @@ object Works : Table() {
 
 object Orders: Table() {
     val workId = varchar("workId", 100)
-    val orderId = text("orderId")
+    val customerId = varchar("customerId", 100)
+    val executorId = varchar("executorId", 100)
     val order = text("order")
     val report = text("report").nullable()
 
-    override val primaryKey = PrimaryKey(workId, orderId)
+    override val primaryKey = PrimaryKey(workId, customerId, executorId)
 }
 
 object Workers: Table() {
@@ -103,17 +104,17 @@ class DataStorageSqlImpl<Work, WorkResults>(
     }
 
     override fun addOrder(workId: WorkId, orderId: OrderId, order: Order) {
-        val orderIdJson = Json.encodeToString(orderId)
         transaction {
             val maybeExistOrder = Orders.select {
-                (Orders.workId eq workId) and (Orders.orderId eq orderIdJson)
+                (Orders.workId eq workId) and (Orders.customerId eq orderId.customerId)  and (Orders.executorId eq orderId.executorId)
             }
             if (!maybeExistOrder.empty()) {
                 throw DispatcherError.OrderAlreadyExists
             }
             Orders.insert {
                 it[Orders.workId] = workId
-                it[Orders.orderId] = orderIdJson
+                it[Orders.executorId] = orderId.executorId
+                it[Orders.customerId] = orderId.customerId
                 it[Orders.order] = Json.encodeToString(order)
                 it[Orders.report] = null
             }
@@ -121,10 +122,9 @@ class DataStorageSqlImpl<Work, WorkResults>(
     }
 
     override fun getOrder(workId: WorkId, orderId: OrderId): Order {
-        val orderIdJson = Json.encodeToString(orderId)
         return transaction {
             val orderJson = Orders.select {
-                Orders.orderId eq orderIdJson
+                (Orders.workId eq workId) and (Orders.executorId eq orderId.executorId) and (Orders.customerId eq orderId.customerId)
             }.map {
                 it[Orders.order]
             }
@@ -138,8 +138,8 @@ class DataStorageSqlImpl<Work, WorkResults>(
 
     override fun addWorker(workId: WorkId, worker: Worker) {
         transaction {
-            val maybeExistWork = Workers.select {
-                Workers.workId eq workId
+            val maybeExistWork = Works.select {
+                Works.workId eq workId
             }
             val maybeExistWorker = Workers.select {
                 (Workers.workId eq workId) and (Workers.userId eq worker.userId)
@@ -160,8 +160,8 @@ class DataStorageSqlImpl<Work, WorkResults>(
 
     override fun modifyWorker(workId: WorkId, worker: Worker) {
         transaction {
-            val maybeExistWork = Workers.select {
-                Workers.workId eq workId
+            val maybeExistWork = Works.select {
+                Works.workId eq workId
             }
             val maybeExistWorker = Workers.select {
                 (Workers.workId eq workId) and (Workers.userId eq worker.userId)
@@ -180,8 +180,8 @@ class DataStorageSqlImpl<Work, WorkResults>(
 
     override fun deleteWorker(workId: WorkId, workerId: UserId) {
         transaction {
-            val maybeExistWork = Workers.select {
-                Workers.workId eq workId
+            val maybeExistWork = Works.select {
+                Works.workId eq workId
             }
             val maybeExistWorker = Workers.select {
                 (Workers.workId eq workId) and (Workers.userId eq workerId)
@@ -200,8 +200,8 @@ class DataStorageSqlImpl<Work, WorkResults>(
 
     override fun getWorker(workId: WorkId, workerId: UserId): Worker {
         return transaction {
-            val maybeExistWork = Workers.select {
-                Workers.workId eq workId
+            val maybeExistWork = Works.select {
+                Works.workId eq workId
             }
             val maybeExistWorker = Workers.select {
                 (Workers.workId eq workId) and (Workers.userId eq workerId)
@@ -250,15 +250,14 @@ class DataStorageSqlImpl<Work, WorkResults>(
     }
 
     override fun addWorkResult(workId: WorkId, orderId: OrderId, report: WorkResults?) {
-        val orderIdJson = Json.encodeToString(orderId)
         transaction {
             val maybeExistOrder = Orders.select {
-                (Orders.workId eq workId) and (Orders.orderId eq orderIdJson)
+                (Orders.workId eq workId) and (Orders.executorId eq orderId.executorId) and (Orders.customerId eq orderId.customerId)
             }
             if (maybeExistOrder.empty()) {
                 throw DispatcherError.OrderNotFound
             }
-            Orders.update({(Orders.workId eq workId) and (Orders.orderId eq orderIdJson)}) {
+            Orders.update({(Orders.workId eq workId) and (Orders.executorId eq orderId.executorId) and (Orders.customerId eq orderId.customerId)}) {
                 it[Orders.report] = report?.let { it1 -> workResultsSerializer.toJson(it1) }
             }
         }
@@ -268,7 +267,7 @@ class DataStorageSqlImpl<Work, WorkResults>(
         val orderIdJson = Json.encodeToString(orderId)
         return transaction {
             val reportJson = Orders.select {
-                (Orders.workId eq workId) and (Orders.orderId eq orderIdJson)
+                (Orders.workId eq workId) and (Orders.executorId eq orderId.executorId) and (Orders.customerId eq orderId.customerId)
             }.map {
                 it[Orders.report]
             }

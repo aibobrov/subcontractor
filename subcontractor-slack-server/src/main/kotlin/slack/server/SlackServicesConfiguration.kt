@@ -17,12 +17,13 @@ import slack.service.SlackPollCreationRepositoryImpl
 import slack.service.SlackRequestManagerProviderImpl
 import slack.service.SlackRequestProvider
 
-typealias DataBase = DataStorageTestVersion<Poll, PollResults>
+typealias DataBase = DataStorageSqlImpl<Poll, PollResults>
 
 @Configuration
 open class SlackServicesConfiguration {
 
-    private val dispatcherStorage : DataStorage<Poll, PollResults> = DataBase()
+    private val dispatcherStorage : DataStorage<Poll, PollResults> = DataBase("jdbc:postgresql://localhost:5432/test", "org.postgresql.Driver",
+        "root", "12345", PollSerializer(), PollResultsSerializer())
 
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {

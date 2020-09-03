@@ -10,15 +10,17 @@ sealed class VotingTime {
     object Unlimited : VotingTime()
 
     @Serializable
-    class Ranged(val range: ClosedRange<@Contextual LocalDateTime>) : VotingTime() {
-        val startDateTime: LocalDateTime get() = range.start
+    class Ranged(val range: ClosedRange<@Contextual LocalDateTime>) : VotingTime(), ScheduledTime {
+        override val startDateTime: LocalDateTime get() = range.start
     }
 
     @Serializable
-    class From(val startDateTime: @Contextual LocalDateTime) : VotingTime()
+    class From(override val startDateTime: @Contextual LocalDateTime) : VotingTime(), ScheduledTime
 
     @Serializable
     class UpTo(val date: @Contextual LocalDateTime) : VotingTime()
 
-
+    interface ScheduledTime {
+        val startDateTime: LocalDateTime
+    }
 }
