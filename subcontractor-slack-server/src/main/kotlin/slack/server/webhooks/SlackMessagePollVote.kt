@@ -6,6 +6,7 @@ import core.model.base.ChannelID
 import core.model.base.OptionID
 import core.model.base.PollID
 import core.model.base.UserID
+import core.model.storage.PollInfoStorage
 import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
@@ -18,7 +19,7 @@ import java.util.regex.Pattern
 
 class SlackMessagePollVoteAction(
     provider: SlackRequestProvider,
-    private val pollInfoStorage: PollInfoStorageImpl,
+    private val pollInfoStorage: PollInfoStorage,
     private val businessLogic: VotingBusinessLogic
 ) : SlackPatternBlockActionWebhook<SlackMessagePollVoteData>(
     provider,
@@ -28,7 +29,7 @@ class SlackMessagePollVoteAction(
 
     override fun handle(content: SlackMessagePollVoteData) {
         businessLogic.vote(content.pollID, content.userID, content.optionID)
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = pollInfoStorage.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)

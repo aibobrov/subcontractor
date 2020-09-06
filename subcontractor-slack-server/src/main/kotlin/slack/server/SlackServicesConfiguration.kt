@@ -6,25 +6,37 @@ import core.model.PollResults
 import core.model.PollResultsSerializer
 import core.model.PollSerializer
 import core.model.base.Poll
+import core.model.storage.PollInfoStorage
 import core.model.storage.PollInfoStorageImpl
+import core.model.storage.PollInfoStorageSqlImpl
+import core.model.storage.Times
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
 import service.VotingBusinessLogicImpl
 import slack.service.*
 
-typealias DataBase = DataStorageSqlImpl<Poll, PollResults>
+typealias DataBase = DataStorageSqlImpl<PollResults>
 
 @Configuration
 open class SlackServicesConfiguration {
-    private val dispatcherStorage: DataStorage<Poll, PollResults> = DataBase(
+    private val dispatcherStorage: DataStorage<PollResults> = DataBase(
         url = Config.DBURL,
         driver = "org.postgresql.Driver",
         user = Config.DBUSERNAME,
         password = Config.DBPASSWORD,
-        workSerializer = PollSerializer(),
         workResultsSerializer = PollResultsSerializer()
     )
+
+    private val pollInfoStorage = PollInfoStorageSqlImpl(
+        url = Config.DBURL,
+        driver = "org.postgresql.Driver",
+        user = Config.DBUSERNAME,
+        password = Config.DBPASSWORD,
+    )
+
+   // private val dispatcherStorage = DataStorageTestVersionImpl<PollResults>()
+   // private val pollInfoStorage = PollInfoStorageImpl()
 
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {
@@ -37,13 +49,13 @@ open class SlackServicesConfiguration {
     }
 
     @Bean
-    open fun createLiquidPollRepository(): PollInfoStorageImpl {
-        return PollInfoStorageImpl()
+    open fun createLiquidPollRepository(): PollInfoStorage {
+        return pollInfoStorage
     }
 
     @Bean
     open fun createBusinessLogic(): VotingBusinessLogic {
-        return VotingBusinessLogicImpl(dispatcherStorage)
+        return VotingBusinessLogicImpl(dispatcherStorage, pollInfoStorage)
     }
 
     @Bean

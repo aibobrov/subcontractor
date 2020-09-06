@@ -3,26 +3,21 @@ package service
 import core.logic.DataStorage
 import core.logic.DispatcherError
 import core.logic.DispatcherImpl
-import core.model.PollResults
-import core.model.VoteResults
-import core.model.VoteWork
-import core.model.Voter
+import core.model.*
 import core.model.base.*
 import core.model.errors.VotingError
+import core.model.storage.PollInfoStorage
 
 
 class VotingBusinessLogicImpl(
-    dispatcherStorage: DataStorage<Poll, PollResults>,
+    dispatcherStorage: DataStorage<PollResults>,
+    private val pollInfoStorage: PollInfoStorage
 ) : VotingBusinessLogic {
 
     private val dispatcher = DispatcherImpl(dispatcherStorage)
 
     override fun register(poll: Poll, votersId: List<UserID>) {
-        dispatcher.registerWork(poll.id, poll, poll.author.id, votersId)
-    }
-
-    override fun getPoll(pollID: PollID): Poll? {
-        return dispatcher.getWork(pollID)
+        dispatcher.registerWork(poll.id, poll.author.id, votersId)
     }
 
     override fun vote(pollID: PollID, userId: UserID, optionID: OptionID) {
@@ -50,7 +45,7 @@ class VotingBusinessLogicImpl(
 
         val voteResults: MutableMap<OptionID, MutableList<Voter>> = mutableMapOf()
 
-        val options = getPoll(pollID)?.options ?: return VoteResults(voteResults)
+        val options = pollInfoStorage.getPoll(pollID)?.options ?: return VoteResults(voteResults)
 
         for (option in options) {
             voteResults[option.id] = mutableListOf()
@@ -71,24 +66,29 @@ class VotingBusinessLogicImpl(
         return VoteResults(voteResults)
     }
 
-    // TODO: change to persistent store
-    private val delegations = mutableMapOf<UserID, List<DelegationRule>>()
-
-    override fun delegationRules(userId: UserID): List<DelegationRule> = delegations[userId] ?: listOf()
+    override fun delegationRules(userId: UserID): List<DelegationRule> {
+        return pollInfoStorage.getDelegationRules(PollVoter(userId))
+    }
 
     override fun deleteDelegationRule(userID: UserID, delegationRuleID: String) {
-        val rules = delegations[userID]?.toMutableList() ?: mutableListOf()
-        rules.removeIf { it.id == delegationRuleID }
-        delegations[userID] = rules
+        pollInfoStorage.deleteDelegationRule(PollVoter(userID), delegationRuleID)
     }
 
     override fun clearDelegationRules(forUserID: UserID) {
-        delegations[forUserID] = mutableListOf()
+        pollInfoStorage.clearDelegationRules(PollVoter(forUserID))
     }
 
     override fun addDelegationRule(delegationRule: DelegationRule) {
-        val rules = delegations[delegationRule.owner]?.toMutableList() ?: mutableListOf()
-        rules.add(delegationRule)
-        delegations[delegationRule.owner] = rules
+        pollInfoStorage.addDelegationRule(delegationRule)
+    }
+
+    override fun applyDelegationRules(userId: UserID, poll: Poll): UserID {
+        val rules = delegationRules(userId)
+        for (rule in rules) {
+            if (rule.tags.toSet() == poll.tags.toSet()) {
+                delegate(poll.id, userId, rule.toUserID) ?: return applyDelegationRules(rule.toUserID, poll)
+            }
+        }
+        return userId
     }
 }

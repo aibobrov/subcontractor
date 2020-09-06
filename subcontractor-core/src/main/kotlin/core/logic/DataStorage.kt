@@ -1,8 +1,7 @@
 package core.logic
 
-interface DataStorage<Work, WorkResults> {
-    fun addWork(workId: WorkId, work: Work)
-    fun getWork(workId: WorkId): Work
+interface DataStorage<WorkResults> {
+    fun addWork(workId: WorkId, customer: Customer)
     fun deleteWork(workId: WorkId)
     fun addOrder(workId: WorkId, orderId: OrderId, order: Order)
     fun getOrder(workId: WorkId, orderId: OrderId): Order
@@ -10,7 +9,6 @@ interface DataStorage<Work, WorkResults> {
     fun modifyWorker(workId: WorkId, worker: Worker)
     fun deleteWorker(workId: WorkId, workerId: UserId)
     fun getWorker(workId: WorkId, workerId: UserId): Worker
-    fun addCustomer(workId: WorkId, customer: Customer)
     fun modifyCustomer(workId: WorkId, customer: Customer)
     fun getCustomer(workId: WorkId): Customer
     fun addWorkResult(workId: WorkId, orderId: OrderId, report: WorkResults?)

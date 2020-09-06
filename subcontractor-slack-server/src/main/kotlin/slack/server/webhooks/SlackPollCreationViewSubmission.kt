@@ -8,8 +8,11 @@ import core.UIRepresentable
 import core.model.PollAudience
 import core.model.PollCreationTime
 import core.model.PollVoter
+import core.model.base.Poll
 import core.model.base.UserID
 import core.model.base.VotingTime
+import core.model.errors.VotingError
+import core.model.storage.PollInfoStorage
 import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
@@ -24,7 +27,7 @@ import java.util.concurrent.*
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
     private val creationRepository: SlackPollCreationRepository,
-    private val pollInfoStorage: PollInfoStorageImpl,
+    private val pollInfoStorage: PollInfoStorage,
     private val businessLogic: VotingBusinessLogic
 ) : SlackViewSubmissionWebhook<CreationViewSubmissionData, SlackPollMetadata>(
     provider,
@@ -50,6 +53,14 @@ class SlackPollCreationViewSubmission(
         val slackUsers = collectSlackUsers(builder.audience).get()
 
         businessLogic.register(newPoll, slackUsers)
+        pollInfoStorage.putPoll(newPoll.id, newPoll)
+
+        val newAudience = mutableSetOf<UserID>()
+        newAudience.addAll(builder.audience.conversations.map {it -> it.id})
+        newAudience.removeAll(slackUsers)
+        for (userId in slackUsers) {
+            newAudience.add(businessLogic.applyDelegationRules(userId, newPoll))
+        }
 
         val resultInfo = SlackVoteResultsFactory.emptyVoteResults(newPoll)
 
@@ -57,7 +68,7 @@ class SlackPollCreationViewSubmission(
 
         val pollText = UIConstant.Text.pollText(newPoll)
 
-        val broadcastFuture = slackBroadcastMessage(builder.audience, pollText, blocks, newPoll.votingTime)
+        val broadcastFuture = slackBroadcastMessage(PollAudience(newAudience.toList().map{it -> PollVoter(it) }), pollText, blocks, newPoll.votingTime)
         broadcastFuture.thenAccept { creationTimes ->
             pollInfoStorage.putPollCreationTimes(metadata.pollID, creationTimes)
         }

@@ -4,6 +4,7 @@ import com.slack.api.bolt.context.builtin.ActionContext
 import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.base.PollID
 import core.model.base.UserID
+import core.model.storage.PollInfoStorage
 import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
@@ -16,7 +17,7 @@ import java.lang.IllegalArgumentException
 
 class SlackMessagePollDelegationCancelAction(
     provider: SlackRequestProvider,
-    private val pollInfoStorage: PollInfoStorageImpl,
+    private val pollInfoStorage: PollInfoStorage,
     private val businessLogic: VotingBusinessLogic
 ) : SlackMessageBlockActionWebhook<SlackMessagePollDelegationCancelData>(
     provider,
@@ -25,7 +26,7 @@ class SlackMessagePollDelegationCancelAction(
     override val actionID: String = UIConstant.ActionID.CANCEL_DELEGATION
 
     override fun handle(content: SlackMessagePollDelegationCancelData) {
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = pollInfoStorage.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
         businessLogic.cancelDelegation(poll.id, content.userID)
 

@@ -1,14 +1,12 @@
 package core.logic
 
-interface Dispatcher<Work, WorkResults> {
+interface Dispatcher<WorkResults> {
     fun registerWork(
         workId: WorkId,
-        work: Work,
         customerId: UserId,
         executorsId: List<UserId>
     ): Map<UserId, OrderId>
 
-    fun getWork(workId: WorkId): Work
     fun deleteWork(workId: WorkId)
 
     fun delegateOrder(

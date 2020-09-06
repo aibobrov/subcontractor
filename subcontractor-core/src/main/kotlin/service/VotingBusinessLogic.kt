@@ -8,8 +8,6 @@ interface VotingBusinessLogic {
 
     fun register(poll: Poll, votersId: List<UserID>)
 
-    fun getPoll(pollID: PollID): Poll?
-
     fun vote(pollID: PollID, userId: UserID, optionID: OptionID)
 
     fun delegate(pollID: PollID, userId: UserID, toUserID: UserID): VotingError?
@@ -27,4 +25,6 @@ interface VotingBusinessLogic {
     fun clearDelegationRules(forUserID: UserID)
 
     fun addDelegationRule(delegationRule: DelegationRule)
+
+    fun applyDelegationRules(userId: UserID, poll: Poll): UserID
 }

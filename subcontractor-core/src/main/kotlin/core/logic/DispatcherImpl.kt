@@ -1,16 +1,16 @@
 package core.logic
 
-open class DispatcherImpl<Work, WorkResults>(
-    private val database: DataStorage<Work, WorkResults>
-) : Dispatcher<Work, WorkResults> {
+open class DispatcherImpl<WorkResults>(
+    private val database: DataStorage<WorkResults>
+) : Dispatcher<WorkResults> {
 
     override fun registerWork(
         workId: WorkId,
-        work: Work,
         customerId: UserId,
         executorsId: List<UserId>
     ): Map<UserId, OrderId> {
-        database.addWork(workId, work)
+        var customer = Customer(customerId, mapOf())
+        database.addWork(workId, customer)
         val orders = mutableMapOf<UserId, OrderId>()
         for (id in executorsId) {
             val orderId = OrderId(id, id)
@@ -21,13 +21,9 @@ open class DispatcherImpl<Work, WorkResults>(
             worker.addOrder(orderId)
             database.addWorker(workId, worker)
         }
-        val customer = Customer(customerId, orders)
-        database.addCustomer(workId, customer)
+        customer = Customer(customerId, orders)
+        database.modifyCustomer(workId, customer)
         return orders
-    }
-
-    override fun getWork(workId: WorkId): Work {
-        return database.getWork(workId)
     }
 
     override fun deleteWork(workId: WorkId) {

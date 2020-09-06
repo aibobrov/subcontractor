@@ -40,7 +40,7 @@ class SlackMessagePollVoteDelegationAction(
             return
         }
 
-        val poll = businessLogic.getPoll(content.pollID) ?: throw IllegalArgumentException()
+        val poll = pollInfoStorage.getPoll(content.pollID) ?: throw IllegalArgumentException()
 
         // Post info about delegation
         val permalink = provider.getPermanentMessageURL(content.channelID, content.ts)
@@ -54,6 +54,8 @@ class SlackMessagePollVoteDelegationAction(
             )
         }
 
+        val realUserTo = businessLogic.applyDelegationRules(content.delegatorID, poll)
+
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
         val voteInfo = SlackVoteResultsFactory.voteResults(poll, compactVoteResults, provider)
@@ -62,7 +64,7 @@ class SlackMessagePollVoteDelegationAction(
 
         val creationTimes = pollInfoStorage.getPollCreationTimes(poll.id)
 
-        val messageResponse = provider.sendChatMessage(poll.question, blocks, content.userID, poll.votingTime)
+        val messageResponse = provider.sendChatMessage(poll.question, blocks, realUserTo, poll.votingTime)
         messageResponse.thenAccept {
             if (it != null) {
                 creationTimes[it.voter] = it.time

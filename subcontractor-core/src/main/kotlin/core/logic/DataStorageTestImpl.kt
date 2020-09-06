@@ -1,26 +1,25 @@
 package core.logic
 
-class DataStorageTestVersion<Work, WorkResults> : DataStorage<Work, WorkResults> {
+class DataStorageTestVersion<WorkResults> : DataStorage<WorkResults> {
 
-    private val works = mutableMapOf<WorkId, Work>()
     private val customers = mutableMapOf<WorkId, Customer>()
     private val orders = mutableMapOf<WorkId, MutableMap<OrderId, Order>>()
     private val workers = mutableMapOf<WorkId, MutableMap<UserId, Worker>>()
     private val reports = mutableMapOf<WorkId, MutableMap<OrderId, WorkResults?>>()
 
 
-    override fun addWork(workId: WorkId, work: Work) {
-        if (works[workId] != null) {
+    override fun addWork(workId: WorkId, customer: Customer) {
+        if (customers[workId] != null) {
             throw DispatcherError.WorkerAlreadyExists
         }
-        works[workId] = work
+        customers[workId] = customer
         orders[workId] = mutableMapOf()
         workers[workId] = mutableMapOf()
         reports[workId] = mutableMapOf()
     }
 
     override fun deleteWork(workId: WorkId) {
-        if (works[workId] == null) {
+        if (customers[workId] == null) {
             throw DispatcherError.WorkNotFound
         }
         customers.remove(workId)
@@ -31,7 +30,7 @@ class DataStorageTestVersion<Work, WorkResults> : DataStorage<Work, WorkResults>
 
 
     override fun addOrder(workId: WorkId, orderId: OrderId, order: Order) {
-        if (works[workId] == null) {
+        if (customers[workId] == null) {
             throw DispatcherError.WorkNotFound
         }
         orders[workId]?.put(orderId, order)
@@ -96,17 +95,6 @@ class DataStorageTestVersion<Work, WorkResults> : DataStorage<Work, WorkResults>
             throw DispatcherError.WorkNotFound
         }
         customers[workId] = customer
-    }
-
-    override fun addCustomer(workId: WorkId, customer: Customer) {
-        if (works[workId] == null) {
-            throw DispatcherError.WorkNotFound
-        }
-        customers[workId] = customer
-    }
-
-    override fun getWork(workId: WorkId): Work {
-        return works[workId] ?: throw DispatcherError.WorkerNotFound
     }
 
 }
