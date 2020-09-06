@@ -2,7 +2,6 @@ package slack.server
 
 import com.slack.api.bolt.App
 import core.model.storage.PollInfoStorage
-import core.model.storage.PollInfoStorageImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic

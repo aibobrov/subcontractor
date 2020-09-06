@@ -7,7 +7,7 @@ import core.model.base.DelegationRuleID
 import core.model.base.Poll
 import core.model.base.PollID
 
-class PollInfoStorageImpl : PollInfoStorage {
+class PollInfoStorageTestImpl : PollInfoStorage {
 
     private val creationTimes = mutableMapOf<PollID, MutableMap<PollVoter, PollCreationTime>>()
     private val polls = mutableMapOf<PollID, Poll>()
@@ -22,6 +22,9 @@ class PollInfoStorageImpl : PollInfoStorage {
     }
 
     override fun addDelegationRule(rule: DelegationRule) {
+        if (delegations[PollVoter(rule.owner)] == null) {
+            delegations[PollVoter(rule.owner)] = mutableMapOf()
+        }
         delegations[PollVoter(rule.owner)]?.put(rule.id, rule)
     }
 

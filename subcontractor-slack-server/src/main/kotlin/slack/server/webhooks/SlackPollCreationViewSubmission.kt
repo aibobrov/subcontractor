@@ -8,12 +8,9 @@ import core.UIRepresentable
 import core.model.PollAudience
 import core.model.PollCreationTime
 import core.model.PollVoter
-import core.model.base.Poll
 import core.model.base.UserID
 import core.model.base.VotingTime
-import core.model.errors.VotingError
 import core.model.storage.PollInfoStorage
-import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.*
 import slack.server.base.SlackViewSubmissionDataFactory

@@ -132,7 +132,22 @@ open class DispatcherImpl<WorkResults>(
     }
 
     override fun getTheMostActiveRealExecutors(workId: WorkId, count: Int): Map<UserId, Int> {
-        TODO("Not yet implemented")
+        val customer = database.getCustomer(workId)
+        val realExecutors = customer.getRealExecutors()
+        val worksCount = mutableMapOf<UserId, Int>()
+        for (userId in realExecutors.values) {
+            if (worksCount[userId] == null) {
+                worksCount[userId] = 1
+            } else {
+                worksCount[userId] = worksCount[userId]!! + 1
+            }
+        }
+        val counts = worksCount.values.toList().sorted().reversed()
+        if (counts.isEmpty()) {
+            return worksCount
+        }
+        val pivot = counts.subList(0, count).last()
+        return worksCount.filter { it -> it.value >= pivot }
     }
 
     override fun getCustomerId(workId: WorkId): UserId {

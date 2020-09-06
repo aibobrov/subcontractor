@@ -5,7 +5,6 @@ import com.slack.api.bolt.request.builtin.BlockActionRequest
 import core.model.base.PollID
 import core.model.base.UserID
 import core.model.storage.PollInfoStorage
-import core.model.storage.PollInfoStorageImpl
 import service.VotingBusinessLogic
 import slack.model.SlackUIFactory
 import slack.model.SlackVoteResultsFactory

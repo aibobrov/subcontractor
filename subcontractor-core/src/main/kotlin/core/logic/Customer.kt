@@ -20,6 +20,18 @@ class Customer(
         }
     }
 
+    fun getRealExecutors(): Map<UserId, UserId> {
+        val realExecutors = mutableMapOf<UserId, UserId>()
+        for (report in workReports.values) {
+            if (report != null && report.reportPath.isEmpty()) {
+                val executorId = report.reportPath.first().customerId
+                val realExecutorId = report.reportPath.first().executorId
+                realExecutors[executorId] = realExecutorId
+            }
+        }
+        return realExecutors
+    }
+
     fun getWorkResults(): Map<UserId, WorkReport?> {
         return workReports
     }

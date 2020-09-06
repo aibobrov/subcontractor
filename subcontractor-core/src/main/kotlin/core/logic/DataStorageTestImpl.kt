@@ -1,6 +1,6 @@
 package core.logic
 
-class DataStorageTestVersion<WorkResults> : DataStorage<WorkResults> {
+class DataStorageTestImpl<WorkResults> : DataStorage<WorkResults> {
 
     private val customers = mutableMapOf<WorkId, Customer>()
     private val orders = mutableMapOf<WorkId, MutableMap<OrderId, Order>>()
