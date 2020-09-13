@@ -1,6 +1,8 @@
 # Subcontractor
 
+## Table of Contents
 - [Subcontractor](#subcontractor)
+  - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [TODO](#todo)
   - [Documentation](#documentation)
