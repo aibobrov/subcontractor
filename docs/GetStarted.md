@@ -28,7 +28,7 @@ Go to your app settings -> OAuth & Permissions and select these scopes:
 $ ngrok http 3000
 ```
 
-6. Create slack command.(Slack commands page).
+6. Create slack commands: `/liquid` and `/rules`. (see Slack commands page). 
 
 Set Request URL as ngrok forwarding address + '/slack/events'.
 
