@@ -1,5 +1,6 @@
 package service
 
+import core.model.PollResults
 import core.model.VoteResults
 import core.model.base.*
 import core.model.errors.VotingError
@@ -9,6 +10,10 @@ interface VotingBusinessLogic {
     fun register(poll: Poll, votersId: List<UserID>)
 
     fun vote(pollID: PollID, userId: UserID, optionID: OptionID)
+
+    fun getVote(pollID: PollID, userId: UserID): PollResults?
+
+    fun getDelegation(pollID: PollID, userId: UserID): UserID?
 
     fun delegate(pollID: PollID, userId: UserID, toUserID: UserID): VotingError?
 

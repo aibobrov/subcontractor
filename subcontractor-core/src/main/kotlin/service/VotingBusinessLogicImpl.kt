@@ -3,6 +3,7 @@ package service
 import core.logic.DataStorage
 import core.logic.DispatcherError
 import core.logic.DispatcherImpl
+import core.logic.OrderId
 import core.model.*
 import core.model.base.*
 import core.model.errors.VotingError
@@ -21,12 +22,26 @@ class VotingBusinessLogicImpl(
     }
 
     override fun vote(pollID: PollID, userId: UserID, optionID: OptionID) {
-        dispatcher.executeOrder(pollID, userId, PollResults(optionID))
+        dispatcher.executeAllOrders(pollID, userId, PollResults(optionID))
     }
+
+    override fun getVote(pollID: PollID, userId: UserID): PollResults? {
+        val ordersId = dispatcher.getOrdersId(pollID, userId)
+        if (ordersId.isNotEmpty()) {
+            return dispatcher.getWorkResults(pollID, ordersId[0])
+        }
+        return null
+    }
+
+    override fun getDelegation(pollID: PollID, userId: UserID): UserID? {
+        val delegations = dispatcher.getDelegations(pollID, userId)
+        return if (delegations.isEmpty()) null else delegations.values.first()
+    }
+
 
     override fun delegate(pollID: PollID, userId: UserID, toUserID: UserID): VotingError? {
         try {
-            dispatcher.delegateOrder(pollID, userId, toUserID)
+            dispatcher.delegateAllOrders(pollID, userId, toUserID)
         } catch (error: DispatcherError.CycleFound) {
             return VotingError.CycleFound
         }
@@ -34,11 +49,11 @@ class VotingBusinessLogicImpl(
     }
 
     override fun cancelVote(pollID: PollID, userId: UserID) {
-        dispatcher.cancelExecution(pollID, userId)
+        dispatcher.cancelAllExecutions(pollID, userId)
     }
 
     override fun cancelDelegation(pollID: PollID, userId: UserID) {
-        dispatcher.cancelDelegation(pollID, userId)
+        dispatcher.cancelAllDelegations(pollID, userId)
     }
 
     override fun voteResults(pollID: PollID): VoteResults {

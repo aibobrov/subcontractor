@@ -61,7 +61,7 @@ open class DispatcherImpl<WorkResults>(
         val newOrder = Order(newOrderId, ordersChain, time)
         database.addOrder(workId, newOrderId, newOrder)
         worker.addOrder(newOrderId)
-        customer.addDelegation(orderId, time)
+        customer.addDelegation(orderId, dstId, time)
         database.modifyWorker(workId, worker)
         return newOrderId
     }
@@ -79,7 +79,14 @@ open class DispatcherImpl<WorkResults>(
         return newOrderId
     }
 
-    private fun executeOrder(workId: WorkId, orderId: OrderId, customer: Customer, results: WorkResults?) {
+
+    private fun executeOrder(
+        workId: WorkId,
+        orderId: OrderId,
+        customer: Customer,
+        results: WorkResults?,
+        prevChain: OrdersChain = OrdersChain(listOf(), listOf())
+    ) {
 
         val order = database.getOrder(workId, orderId)
 
@@ -95,7 +102,7 @@ open class DispatcherImpl<WorkResults>(
         }
 
         database.addWorkResult(workId, orderId, results)
-        customer.setWorkReport(orderId.customerId, WorkReport((order.ordersChain.orders + orderId).reversed(), orderId))
+        customer.setWorkReport(orderId.customerId, WorkReport((prevChain.orders + order.ordersChain.orders + orderId).reversed(), orderId))
     }
 
 
@@ -159,19 +166,36 @@ open class DispatcherImpl<WorkResults>(
         return customer.getExecutorsId()
     }
 
-    override fun delegateOrder(workId: WorkId, srcId: UserId, dstId: UserId): List<OrderId> {
-        val customer = database.getWorker(workId, srcId)
-        val worker = database.getWorker(workId, srcId)
-        val ordersId = worker.getOrders()
-        val ordersList = mutableListOf<OrderId>()
+    override fun delegateAllOrders(workId: WorkId, srcId: UserId, dstId: UserId): List<OrderId> {
+        var customer = database.getWorker(workId, srcId)
+        val ordersId = customer.getOrders()
+        var ordersList = mutableListOf<OrderId>()
+        val resultList = mutableListOf<OrderId>()
         for (orderId in ordersId) {
             ordersList.add(delegateOrder(workId, orderId, customer, dstId))
         }
         database.modifyWorker(workId, customer)
-        return ordersList
+        resultList.addAll(ordersList)
+
+        var delegations = getDelegations(workId, dstId)
+        var customerId = dstId
+        while (delegations.isNotEmpty()) {
+            val toUserId = delegations.values.first()
+            customer = database.getWorker(workId, customerId)
+            val list = mutableListOf<OrderId>()
+            for (orderId in ordersList) {
+                list.add(delegateOrder(workId, orderId, customer, toUserId))
+            }
+            resultList.addAll(list)
+            ordersList = list
+            delegations = getDelegations(workId, toUserId)
+            customerId = toUserId
+            database.modifyWorker(workId, customer)
+        }
+        return resultList
     }
 
-    override fun executeOrder(workId: WorkId, userId: UserId, results: WorkResults?) {
+    override fun executeAllOrders(workId: WorkId, userId: UserId, results: WorkResults?) {
         val worker = database.getWorker(workId, userId)
         val customer = database.getCustomer(workId)
         val ordersId = worker.getOrders()
@@ -182,16 +206,33 @@ open class DispatcherImpl<WorkResults>(
 
     }
 
-    override fun cancelExecution(workId: WorkId, userId: UserId) {
-        executeOrder(workId, userId, null)
+    override fun cancelAllExecutions(workId: WorkId, userId: UserId) {
+        executeAllOrders(workId, userId, null)
     }
 
-    override fun cancelDelegation(workId: WorkId, userId: UserId) {
+    override fun cancelAllDelegations(workId: WorkId, userId: UserId) {
         val worker = database.getWorker(workId, userId)
         for (orderId in worker.getOrders()) {
             worker.deleteDelegation(orderId)
         }
         database.modifyWorker(workId, worker)
-        cancelExecution(workId, userId)
+        cancelAllExecutions(workId, userId)
+    }
+
+    override fun getDelegations(workId: WorkId, userId: UserId): Map<OrderId, UserId> {
+        val worker = database.getWorker(workId, userId)
+        val delegations = worker.getDelegations()
+        return delegations.map { it -> OrderId(it.key, it.value.first) to it.value.second.first }.toMap()
+    }
+
+    override fun getOrdersId(workId: WorkId, userId: UserId): List<OrderId> {
+        val worker = database.getWorker(workId, userId)
+        return worker.getOrders()
+    }
+
+    override fun getWorkResults(workId: WorkId, orderId: OrderId): WorkResults? {
+        val customer = database.getCustomer(workId)
+        val result = customer.getWorkResults(orderId.executorId)?.get(orderId)
+        return if (result == null) null else database.getWorkResult(workId, result.resultId)
     }
 }

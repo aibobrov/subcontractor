@@ -10,7 +10,7 @@ class DataStorageTestImpl<WorkResults> : DataStorage<WorkResults> {
 
     override fun addWork(workId: WorkId, customer: Customer) {
         if (customers[workId] != null) {
-            throw DispatcherError.WorkerAlreadyExists
+            throw DispatcherError.WorkAlreadyExists
         }
         customers[workId] = customer
         orders[workId] = mutableMapOf()
@@ -41,14 +41,14 @@ class DataStorageTestImpl<WorkResults> : DataStorage<WorkResults> {
     }
 
     override fun addWorker(workId: WorkId, worker: Worker) {
-        if (workers[workId] == null) {
+        if (customers[workId] == null) {
             throw DispatcherError.WorkNotFound
         }
         workers[workId]?.put(worker.userId, worker)
     }
 
     override fun modifyWorker(workId: WorkId, worker: Worker) {
-        if (workers[workId] == null) {
+        if (customers[workId] == null) {
             throw DispatcherError.WorkNotFound
         }
         if (workers[workId]?.get(worker.userId) == null) {
@@ -58,7 +58,7 @@ class DataStorageTestImpl<WorkResults> : DataStorage<WorkResults> {
     }
 
     override fun deleteWorker(workId: WorkId, workerId: UserId) {
-        if (workers[workId] == null) {
+        if (customers[workId] == null) {
             throw DispatcherError.WorkNotFound
         }
         if (workers[workId]?.get(workerId) == null) {
@@ -68,7 +68,7 @@ class DataStorageTestImpl<WorkResults> : DataStorage<WorkResults> {
     }
 
     override fun getWorker(workId: WorkId, workerId: UserId): Worker {
-        return workers[workId]?.get(workerId) ?: throw DispatcherError.WorkNotFound
+        return workers[workId]?.get(workerId) ?: throw DispatcherError.WorkerNotFound
     }
 
     override fun getCustomer(workId: WorkId): Customer {
