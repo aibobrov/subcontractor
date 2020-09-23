@@ -3,7 +3,6 @@ package slack.server.webhooks
 import com.slack.api.bolt.context.builtin.SlashCommandContext
 import com.slack.api.bolt.request.builtin.SlashCommandRequest
 import core.model.base.ChannelID
-import core.model.base.DelegationRule
 import core.model.base.UserID
 import service.VotingBusinessLogic
 import slack.model.SlackManageMetadata

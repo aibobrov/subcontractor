@@ -58,7 +58,7 @@ class PollInfoStorageSqlImpl(
     override fun putPoll(pollId: PollID, poll: Poll) {
         transaction(database) {
             Polls.insert {
-                it[Polls.polId] = pollId
+                it[polId] = pollId
                 it[Polls.poll] = pollSerializer.toJson(poll)
             }
         }
@@ -82,9 +82,9 @@ class PollInfoStorageSqlImpl(
     override fun addDelegationRule(rule: DelegationRule) {
         transaction(database) {
             Delegations.insert {
-                it[Delegations.voterId] = rule.owner
-                it[Delegations.delegationRuleId] = rule.id
-                it[Delegations.delegationRule] = Json.encodeToString(rule)
+                it[voterId] = rule.owner
+                it[delegationRuleId] = rule.id
+                it[delegationRule] = Json.encodeToString(rule)
             }
         }
     }
@@ -126,7 +126,7 @@ class PollInfoStorageSqlImpl(
                 try {
                     Times.insert {
                         it[Times.pollId] = pollId
-                        it[Times.voterId] = voter.id
+                        it[voterId] = voter.id
                         it[Times.time] = Json.encodeToString(time)
                     }
                 } catch (error: PSQLException) {
@@ -143,7 +143,7 @@ class PollInfoStorageSqlImpl(
             try {
                 Times.insert {
                     it[Times.pollId] = pollId
-                    it[Times.voterId] = voter.id
+                    it[voterId] = voter.id
                     it[Times.time] = Json.encodeToString(time)
                 }
             } catch (error: PSQLException) {

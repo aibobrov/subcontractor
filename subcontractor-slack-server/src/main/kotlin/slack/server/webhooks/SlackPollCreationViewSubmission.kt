@@ -19,7 +19,7 @@ import slack.server.base.ViewIdentifiable
 import slack.service.SlackPollCreationRepository
 import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
-import java.util.concurrent.*
+import java.util.concurrent.CompletableFuture
 
 class SlackPollCreationViewSubmission(
     provider: SlackRequestProvider,
@@ -53,7 +53,7 @@ class SlackPollCreationViewSubmission(
         pollInfoStorage.putPoll(newPoll.id, newPoll)
 
         val newAudience = mutableSetOf<UserID>()
-        newAudience.addAll(builder.audience.conversations.map {it -> it.id})
+        newAudience.addAll(builder.audience.conversations.map { it.id })
         newAudience.removeAll(slackUsers)
         for (userId in slackUsers) {
             newAudience.add(businessLogic.applyDelegationRules(userId, newPoll))
@@ -65,7 +65,12 @@ class SlackPollCreationViewSubmission(
 
         val pollText = UIConstant.Text.pollText(newPoll)
 
-        val broadcastFuture = slackBroadcastMessage(PollAudience(newAudience.toList().map{it -> PollVoter(it) }), pollText, blocks, newPoll.votingTime)
+        val broadcastFuture = slackBroadcastMessage(
+            PollAudience(newAudience.toList().map { PollVoter(it) }),
+            pollText,
+            blocks,
+            newPoll.votingTime
+        )
         broadcastFuture.thenAccept { creationTimes ->
             pollInfoStorage.putPollCreationTimes(metadata.pollID, creationTimes)
         }

@@ -22,6 +22,7 @@ class TaggedRuleManageView(val metadata: SlackManageMetadata, rules: List<Delega
             .close(Views.viewClose { it.type("plain_text").text(VIEW_CLOSE_BUTTON_TITLE) })
             .submit(Views.viewSubmit { it.type("plain_text").text(VIEW_CREATE_BUTTON_TITLE) })
             .privateMetadata(UIConstant.GSON.toJson(metadata))
+            .callbackId(UIConstant.CallbackID.TAGGED_VIEW_SUBMISSION)
             .blocks(withBlocks {
                 ruleActions.representIn(this)
                 taggedViews.forEach { it.representIn(this) }

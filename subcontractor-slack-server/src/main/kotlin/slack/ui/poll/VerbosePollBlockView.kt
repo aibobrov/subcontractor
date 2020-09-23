@@ -24,7 +24,6 @@ class VerbosePollBlockView(
             tagsBlockView.representIn(this)
             divider()
             buildPollDescription(this, poll.description)
-            divider()
             optionsBlockView.representIn(this)
             divider()
             delegationBlockView.representIn(this)
@@ -38,6 +37,7 @@ class VerbosePollBlockView(
             builder.context {
                 plainText(this@apply)
             }
+            builder.divider()
         }
     }
 

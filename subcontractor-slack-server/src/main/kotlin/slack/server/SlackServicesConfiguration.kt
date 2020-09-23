@@ -2,12 +2,11 @@ package slack.server
 
 import core.logic.DataStorage
 import core.logic.DataStorageSqlImpl
-import core.logic.DataStorageTestImpl
 import core.model.PollResults
 import core.model.PollResultsSerializer
+
 import core.model.storage.PollInfoStorage
 import core.model.storage.PollInfoStorageSqlImpl
-import core.model.storage.PollInfoStorageTestImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -17,7 +16,7 @@ import slack.service.*
 
 @Configuration
 open class SlackServicesConfiguration {
-   /* private val dispatcherStorage: DataStorage<PollResults> = DataBase(
+    private val dispatcherStorage: DataStorage<PollResults> = DataStorageSqlImpl(
         url = Config.DBURL,
         driver = "org.postgresql.Driver",
         user = Config.DBUSERNAME,
@@ -30,11 +29,12 @@ open class SlackServicesConfiguration {
         driver = "org.postgresql.Driver",
         user = Config.DBUSERNAME,
         password = Config.DBPASSWORD,
-    )*/
+    )
 
+    /* // In-memory version. Debug only
     private val dispatcherStorage = DataStorageTestImpl<PollResults>()
     private val pollInfoStorage = PollInfoStorageTestImpl()
-
+     */
     @Bean
     open fun createSlackProvider(): SlackRequestProvider {
         return SlackRequestManagerProviderImpl()

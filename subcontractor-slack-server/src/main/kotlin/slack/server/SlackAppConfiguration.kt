@@ -66,6 +66,7 @@ open class SlackAppConfiguration(
 
     // Rules management
     private val rulesManageCommand = SlackPollRulesManageSlashCommand(provider, businessLogic)
+    private val taggedRuleSubmission = SlackTaggedRuleManageViewSubmission(provider)
     private val rulesClearAction = SlackDelegationRulesClearAction(provider, businessLogic)
     private val rulesDeleteAction = SlackDelegationRuleDeleteAction(provider, businessLogic)
     private val rulesAddAction = SlackDelegationRuleAddAction(provider, delegationRuleRepository)
@@ -102,6 +103,7 @@ open class SlackAppConfiguration(
             cancelVoteAction,
             cancelDelegationAction,
             rulesManageCommand,
+            taggedRuleSubmission,
             rulesClearAction,
             rulesDeleteAction,
             rulesAddAction,

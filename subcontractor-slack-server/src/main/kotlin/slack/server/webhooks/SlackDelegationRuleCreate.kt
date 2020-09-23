@@ -18,12 +18,11 @@ class SlackDelegationRuleCreateAction(
     provider: SlackRequestProvider,
     private val businessLogic: VotingBusinessLogic,
     private val delegationRuleRepository: SlackDelegationRuleRepository
-) :
-    SlackViewSubmissionWebhook<SlackDelegationRuleCreateData, SlackManageMetadata>(
-        provider,
-        SlackDelegationRuleCreateData.Companion,
-        SlackManageMetadata::class.java
-    ) {
+) : SlackViewSubmissionWebhook<SlackDelegationRuleCreateData, SlackManageMetadata>(
+    provider,
+    SlackDelegationRuleCreateData.Companion,
+    SlackManageMetadata::class.java
+) {
     override val callbackID: String = UIConstant.CallbackID.CREATE_DELEGATION_RULE_SUBMISSION
 
     override fun handle(metadata: SlackManageMetadata, content: SlackDelegationRuleCreateData) {

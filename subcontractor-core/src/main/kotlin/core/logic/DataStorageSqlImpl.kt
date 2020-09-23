@@ -96,10 +96,10 @@ class DataStorageSqlImpl<WorkResults>(
             }
             Orders.insert {
                 it[Orders.workId] = workId
-                it[Orders.executorId] = orderId.executorId
-                it[Orders.customerId] = orderId.customerId
+                it[executorId] = orderId.executorId
+                it[customerId] = orderId.customerId
                 it[Orders.order] = Json.encodeToString(order)
-                it[Orders.report] = null
+                it[report] = null
             }
         }
     }
@@ -135,7 +135,7 @@ class DataStorageSqlImpl<WorkResults>(
             }
             Workers.insert {
                 it[Workers.workId] = workId
-                it[Workers.userId] = worker.userId
+                it[userId] = worker.userId
                 it[Workers.worker] = Json.encodeToString(worker)
             }
         }

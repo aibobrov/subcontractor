@@ -18,8 +18,8 @@ class AdvancedSettingsBlockView(
             elements {
                 buildShowResponsesOption(this, advancedOption.showResponses)
                 buildIsAnonymousOption(this, advancedOption.isAnonymous)
-                buildStartPollDateOption(this, advancedOption.startDateTimeEnabled)
-                buildFinishPollDateOption(this, advancedOption.finishDateTimeEnabled)
+//                buildStartPollDateOption(this, advancedOption.startDateTimeEnabled)
+//                buildFinishPollDateOption(this, advancedOption.finishDateTimeEnabled)
             }
         }
     }

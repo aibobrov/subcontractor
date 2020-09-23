@@ -154,7 +154,7 @@ open class DispatcherImpl<WorkResults>(
             return worksCount
         }
         val pivot = counts.subList(0, count).last()
-        return worksCount.filter { it -> it.value >= pivot }
+        return worksCount.filter { it.value >= pivot }
     }
 
     override fun getCustomerId(workId: WorkId): UserId {
@@ -222,7 +222,7 @@ open class DispatcherImpl<WorkResults>(
     override fun getDelegations(workId: WorkId, userId: UserId): Map<OrderId, UserId> {
         val worker = database.getWorker(workId, userId)
         val delegations = worker.getDelegations()
-        return delegations.map { it -> OrderId(it.key, it.value.first) to it.value.second.first }.toMap()
+        return delegations.map { OrderId(it.key, it.value.first) to it.value.second.first }.toMap()
     }
 
     override fun getOrdersId(workId: WorkId, userId: UserId): List<OrderId> {
