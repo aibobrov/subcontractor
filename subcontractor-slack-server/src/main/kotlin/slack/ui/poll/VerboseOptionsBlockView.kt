@@ -13,7 +13,8 @@ class VerboseOptionsBlockView(
     private val pollID: PollID,
     private val options: List<PollOption>,
     private val optionVoters: SlackVerboseVoteResults,
-    private val showResponses: Boolean
+    private val showResponses: Boolean,
+    private val isAnonymous: Boolean
 ) : SlackBlockUIRepresentable {
     override fun representIn(builder: LayoutBlockDsl) {
         buildPollOptions(builder)
@@ -43,12 +44,14 @@ class VerboseOptionsBlockView(
     }
 
     private fun buildQuestionContext(builder: LayoutBlockDsl, voters: List<SlackUserProfile>) {
-        builder.context {
-            elements {
-                if (showResponses) {
-                    voters.forEach { buildVoter(this, it) }
+        if (showResponses) {
+            builder.context {
+                elements {
+                    if (isAnonymous) {
+                        voters.forEach { buildVoter(this, it) }
+                    }
+                    plainText(VerbosePollBlockView.votesCountLabel(voters.size))
                 }
-                plainText(VerbosePollBlockView.votesCountLabel(voters.size))
             }
         }
     }

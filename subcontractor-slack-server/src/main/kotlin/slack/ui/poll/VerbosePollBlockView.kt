@@ -15,7 +15,8 @@ class VerbosePollBlockView(
     private val titleBlockView = PollTitleBlockView(poll.question)
     private val tagsBlockView = PollTagsBlockView(poll.tags)
     private val delegationBlockView = DelegationBlockView(poll.id)
-    private val optionsBlockView = VerboseOptionsBlockView(poll.id, poll.options, voteResults, showResults)
+    private val optionsBlockView =
+        VerboseOptionsBlockView(poll.id, poll.options, voteResults, showResults, poll.isAnonymous)
     private val contextBlockView = PollContextBlockView(poll)
 
     override fun representIn(builder: LayoutBlockDsl) {
