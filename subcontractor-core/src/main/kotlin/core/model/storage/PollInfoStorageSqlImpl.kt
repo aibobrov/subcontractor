@@ -26,9 +26,9 @@ object Polls : Table() {
 object Times : Table() {
     val pollId = varchar("pollId", 100)
     val voterId = varchar("voterId", 100)
-    val time = text("time")
+    val time = varchar("time", 100)
 
-    override val primaryKey = PrimaryKey(pollId, voterId)
+    override val primaryKey = PrimaryKey(pollId, voterId, time)
 }
 
 object Delegations : Table() {
@@ -40,10 +40,10 @@ object Delegations : Table() {
 }
 
 class PollInfoStorageSqlImpl(
-    url: String,
-    driver: String,
-    user: String,
-    password: String
+        url: String,
+        driver: String,
+        user: String,
+        password: String
 ) : PollInfoStorage {
 
     private val pollSerializer = PollSerializer()
@@ -67,7 +67,7 @@ class PollInfoStorageSqlImpl(
     override fun getPoll(pollId: PollID): Poll? {
         return transaction(database) {
             val pollJson = Polls.select {
-               Polls.polId eq pollId
+                Polls.polId eq pollId
             }.map {
                 it[Polls.poll]
             }
@@ -127,11 +127,11 @@ class PollInfoStorageSqlImpl(
                     Times.insert {
                         it[Times.pollId] = pollId
                         it[voterId] = voter.id
-                        it[Times.time] = Json.encodeToString(time)
+                        it[Times.time] = time.value
                     }
                 } catch (error: PSQLException) {
-                    Times.update ({(Times.pollId eq pollId) eq (Times.voterId eq voter.id)}) {
-                        it[Times.time] = Json.encodeToString(time)
+                    Times.update ({(Times.pollId eq pollId) and (Times.voterId eq voter.id)}) {
+                        it[Times.time] = time.value
                     }
                 }
             }
@@ -140,16 +140,10 @@ class PollInfoStorageSqlImpl(
 
     override fun putPollCreationTimes(pollId: PollID, voter: PollVoter, time: PollCreationTime) {
         transaction(database) {
-            try {
-                Times.insert {
-                    it[Times.pollId] = pollId
-                    it[voterId] = voter.id
-                    it[Times.time] = Json.encodeToString(time)
-                }
-            } catch (error: PSQLException) {
-                Times.update ({(Times.pollId eq pollId) eq (Times.voterId eq voter.id)}) {
-                    it[Times.time] = Json.encodeToString(time)
-                }
+            Times.insert {
+                it[Times.pollId] = pollId
+                it[voterId] = voter.id
+                it[Times.time] = time.value
             }
         }
     }
@@ -165,7 +159,7 @@ class PollInfoStorageSqlImpl(
             for (pair in resultJson) {
                 val voterId = pair.first
                 val time = pair.second
-                result[PollVoter(voterId)] = Json.decodeFromString(time)
+                result[PollVoter(voterId)] = PollCreationTime(time)
             }
             result
         }

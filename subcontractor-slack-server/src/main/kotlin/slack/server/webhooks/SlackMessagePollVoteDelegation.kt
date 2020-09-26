@@ -55,7 +55,7 @@ class SlackMessagePollVoteDelegationAction(
             )
         }
 
-        val realUserTo = businessLogic.applyDelegationRules(content.delegatorID, poll)
+        val realUserTo = businessLogic.applyDelegationRules(content.userID, poll)
 
         val voteResults = businessLogic.voteResults(poll.id)
         val compactVoteResults = SlackVoteResultsFactory.compactVoteResults(voteResults)
@@ -65,20 +65,15 @@ class SlackMessagePollVoteDelegationAction(
 
         val creationTimes = pollInfoStorage.getPollCreationTimes(poll.id)
 
-        if (creationTimes[PollVoter(realUserTo)] != null) {
-            val messageResponse = provider.sendChatMessage(poll.question, blocks, realUserTo, poll.votingTime)
-            messageResponse.thenAccept {
-                if (it != null) {
-                    creationTimes[it.voter] = it.time
-                    for (entry in creationTimes) {
-                        provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
-                    }
-                    pollInfoStorage.putPollCreationTimes(poll.id, creationTimes)
+        val messageResponse = provider.sendChatMessage(poll.question, blocks, realUserTo, poll.votingTime)
+        messageResponse.thenAccept {
+            println(it?.voter)
+            if (it != null) {
+                creationTimes[it.voter] = it.time
+                for (entry in creationTimes) {
+                    provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
                 }
-            }
-        } else {
-            for (entry in creationTimes) {
-                provider.updateChatMessage(blocks, entry.key.id, entry.value.value)
+                pollInfoStorage.putPollCreationTimes(poll.id, it.voter, it.time)
             }
         }
     }
