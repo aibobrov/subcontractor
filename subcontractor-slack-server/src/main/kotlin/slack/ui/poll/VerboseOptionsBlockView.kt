@@ -47,7 +47,7 @@ class VerboseOptionsBlockView(
         if (showResponses) {
             builder.context {
                 elements {
-                    if (isAnonymous) {
+                    if (!isAnonymous) {
                         voters.forEach { buildVoter(this, it) }
                     }
                     plainText(VerbosePollBlockView.votesCountLabel(voters.size))
