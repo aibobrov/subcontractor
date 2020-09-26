@@ -4,9 +4,9 @@ import core.logic.DataStorage
 import core.logic.DataStorageSqlImpl
 import core.model.PollResults
 import core.model.PollResultsSerializer
-
 import core.model.storage.PollInfoStorage
 import core.model.storage.PollInfoStorageSqlImpl
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -15,20 +15,26 @@ import slack.service.*
 
 
 @Configuration
-open class SlackServicesConfiguration {
+open class SlackServicesConfiguration(
+    @Value("\${db.url}") val dbUrl: String,
+    @Value("\${db.username}") val dbUsername: String,
+    @Value("\${db.password}") val dbPassword: String
+) {
+
+
     private val dispatcherStorage: DataStorage<PollResults> = DataStorageSqlImpl(
-        url = Config.DBURL,
+        url = dbUrl,
         driver = "org.postgresql.Driver",
-        user = Config.DBUSERNAME,
-        password = Config.DBPASSWORD,
+        user = dbUsername,
+        password = dbPassword,
         workResultsSerializer = PollResultsSerializer()
     )
 
     private val pollInfoStorage = PollInfoStorageSqlImpl(
-        url = Config.DBURL,
+        url = dbUrl,
         driver = "org.postgresql.Driver",
-        user = Config.DBUSERNAME,
-        password = Config.DBPASSWORD,
+        user = dbUsername,
+        password = dbPassword
     )
 
     /* // In-memory version. Debug only

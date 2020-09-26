@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "db.url",
+      "type": "java.lang.String",
+      "description": "Subcontractor db url."
+    },
+    {
+      "name": "db.username",
+      "type": "java.lang.String",
+      "description": "Subcontractor db username."
+    },
+    {
+      "name": "db.password",
+      "type": "java.lang.String",
+      "description": "Subcontractor db password."
+    }
+  ]
+}

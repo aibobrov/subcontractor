@@ -1,7 +1,10 @@
 package slack.server
 
 import com.slack.api.bolt.App
+import com.slack.api.bolt.AppConfig
 import core.model.storage.PollInfoStorage
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import service.VotingBusinessLogic
@@ -13,12 +16,15 @@ import slack.service.SlackRequestProvider
 import slack.ui.base.UIConstant
 
 @Configuration
+@ConfigurationProperties("slack")
 open class SlackAppConfiguration(
     provider: SlackRequestProvider,
     creationRepository: SlackPollCreationRepository,
     pollInfoStorage: PollInfoStorage,
     businessLogic: VotingBusinessLogic,
-    delegationRuleRepository: SlackDelegationRuleRepository
+    delegationRuleRepository: SlackDelegationRuleRepository,
+    @Value("\${slack.token}") val slackToken: String,
+    @Value("\${slack.signingSecret}") val slackSigningSecret: String,
 ) {
     // Poll creation
     private val liquidCommand = SlackPollCreationSlashCommand(provider, creationRepository)
@@ -75,7 +81,11 @@ open class SlackAppConfiguration(
 
     @Bean
     open fun initSlackApp(): App {
-        val app = App()
+        val appConfig = AppConfig().apply {
+            singleTeamBotToken = slackToken
+            signingSecret = slackSigningSecret
+        }
+        val app = App(appConfig)
         val webhooks: List<RegistrableWebhook> = listOf(
             liquidCommand,
             creationSubmission,
