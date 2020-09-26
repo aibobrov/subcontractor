@@ -6,3 +6,7 @@ db:
   url: "postgresql://localhost/subcontractor"
   username: postgres
   password: ""
+slack:
+  token: xoxb-xxx
+  signingSecret: 665c-xxx
+

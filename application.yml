@@ -3,7 +3,7 @@ logging.level:
 server:
   port: 3000
 db:
-  url: "postgresql://localhost/subcontractor"
+  url: "postgresql://localhost/test"
   username: postgres
   password: ""
 slack:

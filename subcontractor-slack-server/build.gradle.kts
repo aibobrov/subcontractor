@@ -34,13 +34,11 @@ tasks {
     }
 }
 
-tasks.withType<JavaExec> {
-    file("$rootDir/.env")
-        .readLines()
-        .map { it.split("=") }
-        .forEach { list ->
-            check(list.size == 2) { "Should be 2 elements for transforming into pair" }
-            val (key, value) = list
-            environment(key, value)
+val installBootDist by tasks.getting {
+    doLast {
+        copy {
+            from("src/main/resources/application.yml")
+            into(buildDir.resolve("install/subcontractor-slack-server-boot/bin/"))
         }
+    }
 }

@@ -18,10 +18,12 @@ Go to your app settings -> OAuth & Permissions and select these scopes:
 
 3. Install your app in your development workspace
 
-4. Edit `.env` file using your app's tokens.
+4. Build application using `./gradlew installBootDist`. The destination directory is `build/install`
 
-`SLACK_BOT_TOKEN` from OAuth & Permissions page (Bot User OAuth Access Token).
-`SLACK_SIGNING_SECRET` from Basic Information page (look for Signing Secret field)
+5. Edit `application.yml` in `build/install/bin` file using your app's tokens.
+
+`slack.token` from OAuth & Permissions page (Bot User OAuth Access Token).
+`slack.signingSecret` from Basic Information page (look for Signing Secret field)
 
 5. Start `ngrok` tunnel
 ```bash
