@@ -121,7 +121,6 @@ open class DispatcherImpl<WorkResults>(
         val worker = database.getWorker(workId, orderId.executorId)
         worker.deleteDelegation(orderId)
         database.modifyWorker(workId, worker)
-        cancelExecution(workId, orderId)
     }
 
     override fun getWorkResults(workId: WorkId): Map<UserId, WorkResults?> {
@@ -200,7 +199,9 @@ open class DispatcherImpl<WorkResults>(
         val customer = database.getCustomer(workId)
         val ordersId = worker.getOrders()
         for (orderId in ordersId) {
-            executeOrder(workId, orderId, customer, results)
+            try {
+                executeOrder(workId, orderId, customer, results)
+            } catch (error: DispatcherError.DelegationIsNotRelevant) { }
         }
         database.modifyCustomer(workId, customer)
 
@@ -216,7 +217,6 @@ open class DispatcherImpl<WorkResults>(
             worker.deleteDelegation(orderId)
         }
         database.modifyWorker(workId, worker)
-        cancelAllExecutions(workId, userId)
     }
 
     override fun getDelegations(workId: WorkId, userId: UserId): Map<OrderId, UserId> {

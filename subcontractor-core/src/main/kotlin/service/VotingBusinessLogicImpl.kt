@@ -10,8 +10,8 @@ import core.model.storage.PollInfoStorage
 
 
 class VotingBusinessLogicImpl(
-    dispatcherStorage: DataStorage<PollResults>,
-    private val pollInfoStorage: PollInfoStorage
+        dispatcherStorage: DataStorage<PollResults>,
+        private val pollInfoStorage: PollInfoStorage
 ) : VotingBusinessLogic {
 
     private val dispatcher = DispatcherImpl(dispatcherStorage)
@@ -21,7 +21,9 @@ class VotingBusinessLogicImpl(
     }
 
     override fun vote(pollID: PollID, userId: UserID, optionID: OptionID) {
-        dispatcher.executeAllOrders(pollID, userId, PollResults(optionID))
+        try {
+            dispatcher.executeAllOrders(pollID, userId, PollResults(optionID))
+        } catch (error: DispatcherError.DelegationIsNotRelevant) { }
     }
 
     override fun getVote(pollID: PollID, userId: UserID): PollResults? {
@@ -38,6 +40,7 @@ class VotingBusinessLogicImpl(
     }
 
 
+    @Synchronized
     override fun delegate(pollID: PollID, userId: UserID, toUserID: UserID): VotingError? {
         try {
             dispatcher.delegateAllOrders(pollID, userId, toUserID)
@@ -48,7 +51,9 @@ class VotingBusinessLogicImpl(
     }
 
     override fun cancelVote(pollID: PollID, userId: UserID) {
-        dispatcher.cancelAllExecutions(pollID, userId)
+        try {
+            dispatcher.cancelAllExecutions(pollID, userId)
+        } catch (error: DispatcherError.DelegationIsNotRelevant) { }
     }
 
     override fun cancelDelegation(pollID: PollID, userId: UserID) {
@@ -96,6 +101,7 @@ class VotingBusinessLogicImpl(
         pollInfoStorage.addDelegationRule(delegationRule)
     }
 
+    @Synchronized
     override fun applyDelegationRules(userId: UserID, poll: Poll): UserID {
         val rules = delegationRules(userId)
         for (rule in rules) {
@@ -106,3 +112,4 @@ class VotingBusinessLogicImpl(
         return userId
     }
 }
+

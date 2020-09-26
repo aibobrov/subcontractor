@@ -4,6 +4,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
@@ -34,11 +35,11 @@ object Workers : Table() {
 
 
 class DataStorageSqlImpl<WorkResults>(
-    url: String,
-    driver: String,
-    user: String,
-    password: String,
-    private val workResultsSerializer: Serializer<WorkResults>
+        url: String,
+        driver: String,
+        user: String,
+        password: String,
+        private val workResultsSerializer: Serializer<WorkResults>
 ) : DataStorage<WorkResults> {
 
     private val database = Database.connect(url, driver, user, password)
@@ -92,14 +93,17 @@ class DataStorageSqlImpl<WorkResults>(
                 (Orders.workId eq workId) and (Orders.customerId eq orderId.customerId) and (Orders.executorId eq orderId.executorId)
             }
             if (!maybeExistOrder.empty()) {
-                throw DispatcherError.OrderAlreadyExists
-            }
-            Orders.insert {
-                it[Orders.workId] = workId
-                it[executorId] = orderId.executorId
-                it[customerId] = orderId.customerId
-                it[Orders.order] = Json.encodeToString(order)
-                it[report] = null
+                Orders.update( {(Orders.workId eq workId) and (Orders.customerId eq orderId.customerId) and (Orders.executorId eq orderId.executorId)}) {
+                    it[Orders.order] = Json.encodeToString(order)
+                }
+            } else {
+                Orders.insert {
+                    it[Orders.workId] = workId
+                    it[executorId] = orderId.executorId
+                    it[customerId] = orderId.customerId
+                    it[Orders.order] = Json.encodeToString(order)
+                    it[report] = null
+                }
             }
         }
     }
