@@ -1,7 +1,6 @@
 plugins {
-    val kotlinVersion = "1.4.0"
-    base
-    kotlin("jvm") version kotlinVersion apply false
+    kotlin("jvm") version "1.4.10" apply false
+    kotlin("plugin.serialization") version "1.4.10" apply false
 }
 
 allprojects {
