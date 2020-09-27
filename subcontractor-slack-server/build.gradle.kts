@@ -42,3 +42,18 @@ val installBootDist by tasks.getting {
         }
     }
 }
+
+val bootJar by tasks.getting(org.springframework.boot.gradle.tasks.bundling.BootJar::class){
+    launchScript()
+}
+
+val deployLocally by tasks.creating(Copy::class){
+    group = "distribution"
+    dependsOn(bootJar)
+    from(bootJar)
+    val deployedConfig = file("/var/www/subcontractor/application.yml")
+    if(!deployedConfig.exists()){
+        from("src/main/resources/application.yml")
+    }
+    into("/var/www/subcontractor")
+}
